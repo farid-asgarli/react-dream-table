@@ -1,6 +1,11 @@
 {
   "name": "react-dream-table",
-  "version": "0.1.7",
+  "version": "0.1.8",
+  "keywords": [
+    "table",
+    "react-table",
+    "data-table"
+  ],
   "main": "dist/index.js",
   "files": [
     "dist"
