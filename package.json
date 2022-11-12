@@ -1,6 +1,6 @@
 {
   "name": "react-dream-table",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "keywords": [
     "table",
     "react-table",
@@ -19,8 +19,8 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "react": ">=16.9.0",
-    "react-dom": ">=16.9.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   },
   "scripts": {
     "build": "rollup -c",
