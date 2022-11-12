@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ColumnType,
-  TablePaginationProps,
-  TableTypeDefinition,
-} from "../types/Table";
+import { ColumnType, TablePaginationProps, TableProps } from "../types/Table";
 import {
   DataFetchingType,
   SelectedFilterType,
@@ -14,7 +10,7 @@ import {
 export function useFilterManagement<DataType extends Record<string, any>>(
   columns: ColumnType<DataType>[],
   data?: DataType[],
-  serverSide?: TableTypeDefinition<DataType>["serverSide"],
+  serverSide?: TableProps<DataType>["serverSide"],
   paginationDefaults?: PaginationTableProps["paginationDefaults"]
 ) {
   const PAGINATION_CURRENT_PAGE = paginationDefaults?.defaultCurrentPage ?? 1;
@@ -150,10 +146,11 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     if (!fetchedFilterRef.current.has(key)) {
       let mappedFilters: string[] | undefined;
 
-      const columnFilterType = columns.find((x) => x.key === key)?.filter;
+      const column = columns.find((x) => x.key === key);
+      const columnFilterType = column?.filter;
 
-      if (Array.isArray(columnFilterType)) {
-        mappedFilters = columnFilterType;
+      if (column?.defaultFilters) {
+        mappedFilters = column.defaultFilters;
       } else {
         if (serverSide?.filters?.onFilterSearch) {
           startFetching("filter-fetch");

@@ -1,5 +1,6 @@
 import {
   ContextMenu,
+  EllipsisProps,
   PaginationTableProps,
   SelectedFilterType,
   TableRowKeyType,
@@ -16,8 +17,12 @@ export type ColumnType<DataType> = {
   dataRender?: (entity: DataType) => React.ReactNode;
   /** Custom rendering of table heads `th`. */
   columnRender?: () => React.ReactNode;
-  /** Enables filtering of data. `true` for default filtering, `function` for customized display of filters. */
-  filter?: boolean | Array<string> | ((filter: string) => string);
+  /** Enables filtering of data. `true` for default filtering,  `function` for customized display of filters. */
+  filter?: boolean | ((filter: string) => string);
+  /** Set of default filters to display. Will override automatic filter generation. */
+  defaultFilters?: Array<string> | undefined;
+  /** Action to take when overflow of content occurs. */
+  ellipsis?: EllipsisProps | boolean | undefined;
 };
 
 export type TablePaginationProps = {
@@ -55,7 +60,8 @@ type ElementStyling = {
   style?: React.CSSProperties | undefined;
 };
 
-export type TableTypeDefinition<DataType> = {
+/** Set of type defintions for `Table` component. */
+export type TableProps<DataType> = {
   /** Columns that will be used in the table. */
   columns: ColumnType<DataType>[];
   /** Data to display. Object keys must match column keys if default rendering is used. */
@@ -111,10 +117,9 @@ export type TableTypeDefinition<DataType> = {
     };
   };
   tableHeight?: "static" | "auto";
-  /**
-   * Allows the ability to use custom table styling.
-   */
+  /** Allows the ability to use custom table styling. */
   themeProperties?: TableTheme;
+  ellipsis?: boolean;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
   elementStylings?: {

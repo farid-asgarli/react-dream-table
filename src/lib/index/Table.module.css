@@ -32,17 +32,6 @@ table.Table.HeaderTable {
   padding: 0.75rem 0.75rem 0 0.75rem;
 }
 
-table.Table td,
-.FilterHeader .Content {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  word-break: keep-all;
-  position: relative;
-  overflow-wrap: break-word;
-  user-select: none;
-  overflow: hidden;
-}
-
 table.Table td {
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
@@ -200,7 +189,7 @@ table.Table thead th:not(.ContextHeader):hover {
   position: relative;
 }
 
-.FilterHeader .Content {
+.Ellipsis {
   white-space: nowrap;
   text-overflow: ellipsis;
   word-break: keep-all;

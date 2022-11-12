@@ -7,7 +7,7 @@ import { PaginationTable } from "../components/ui/PaginationTable/PaginationTabl
 import LoadingTable from "../components/ui/LoadingTable/LoadingTable";
 import EmptyTable from "../components/ui/EmptyTable/EmptyTable";
 import LoadingOverlay from "../components/ui/LoadingOverlay/LoadingOverlay";
-import type { ContextLocalization, TableTypeDefinition } from "../types/Table";
+import type { ContextLocalization, TableProps } from "../types/Table";
 import { TableLocalization } from "../localization/default";
 import { DefaultTheme } from "../theme/default";
 import { useTableTools } from "../hooks/tableTools";
@@ -16,7 +16,7 @@ import { useDetectKeyPress } from "../hooks/detectKeyPress";
 import { TableStyleProps } from "../types/Utils";
 
 function Table<DataType extends Record<string, any>>(
-  tableProps: TableTypeDefinition<DataType>
+  tableProps: TableProps<DataType>
 ) {
   const {
     isHoverable,

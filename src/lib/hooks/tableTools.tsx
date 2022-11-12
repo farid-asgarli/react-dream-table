@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type {
   ContextMenuVisibility,
+  EllipsisProps,
   FilterMenuVisibility,
   TableRowKeyType,
 } from "../types/Utils";
@@ -8,7 +9,7 @@ import MultiDotIcon from "../icons/MultiDot";
 import SearchIcon from "../icons/Search";
 import { useFilterManagement } from "./filterManagement";
 import { concatStyles } from "../utils/ConcatStyles";
-import { TableTypeDefinition } from "../types/Table";
+import { ColumnType, TableProps } from "../types/Table";
 
 const CONTEXT_MENU_KEY = "_context-menu-key";
 const SELECTION_KEY = "_selection-key";
@@ -17,7 +18,7 @@ export function useTableTools<DataType extends Record<string, any>>({
   tableProps,
   styles,
 }: {
-  tableProps: TableTypeDefinition<DataType>;
+  tableProps: TableProps<DataType>;
   styles: Record<string, string>;
 }) {
   const {
@@ -58,6 +59,15 @@ export function useTableTools<DataType extends Record<string, any>>({
 
   const [contextMenu, setContextMenu] =
     useState<ContextMenuVisibility<DataType>>();
+
+  function determineEllipsis(
+    column: ColumnType<DataType>,
+    propKey?: keyof EllipsisProps | undefined
+  ) {
+    if (typeof column.ellipsis === "boolean") return column.ellipsis === true;
+    else if (propKey) return column.ellipsis?.[propKey] === true;
+    return false;
+  }
 
   function handleUpdateSelection(value: TableRowKeyType, event: boolean) {
     if (event === false)
@@ -145,7 +155,12 @@ export function useTableTools<DataType extends Record<string, any>>({
   const handleMapRow = useCallback(
     (data: DataType, isRowActive: boolean) => {
       const mappedRows = columns.map((col) => (
-        <td key={col.key}>
+        <td
+          className={concatStyles(
+            determineEllipsis(col, "rowData") && styles.Ellipsis
+          )}
+          key={col.key}
+        >
           {col.dataRender ? col.dataRender(data) : data[col.key]}
         </td>
       ));
@@ -216,7 +231,13 @@ export function useTableTools<DataType extends Record<string, any>>({
 
   const handleMapTableHead = useMemo(() => {
     const columnsToRender = columns.map((x) => (
-      <th className={styles.FilterHeader} key={x.key}>
+      <th
+        className={concatStyles(
+          styles.FilterHeader,
+          determineEllipsis(x, "columnHead") && styles.Ellipsis
+        )}
+        key={x.key}
+      >
         <div className={concatStyles(x.filter && styles.FilterWrapper)}>
           <div className={styles.Content}>
             {x.columnRender ? x.columnRender() : x.title}

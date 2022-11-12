@@ -80,3 +80,8 @@ export type PaginationTableProps = {
     defaultPageSize?: number;
   };
 };
+
+export type EllipsisProps = {
+  columnHead: boolean;
+  rowData: boolean;
+};
