@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   ContextMenuVisibility,
   EllipsisProps,
@@ -173,6 +173,7 @@ export function useTableTools<DataType extends Record<string, any>>({
               title="Menu"
               className={styles.ContextMenuButton}
               onClick={(e) => {
+                e.stopPropagation();
                 handleDisplayContextMenu({
                   data,
                   position: {
@@ -244,15 +245,16 @@ export function useTableTools<DataType extends Record<string, any>>({
           </div>
           {x.filter && (
             <button
-              onClick={(e) =>
+              onClick={(e) => {
+                e.stopPropagation();
                 handleDisplayFilterMenu({
                   key: x.key,
                   position: {
                     xAxis: e.clientX,
                     yAxis: e.clientY,
                   },
-                })
-              }
+                });
+              }}
               className={styles.SearchButton}
             >
               <SearchIcon
