@@ -1,0 +1,41 @@
+{
+  "name": "react-dream-table",
+  "version": "0.1.3",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "contributors": [
+    "farid.asgarli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/faridOP/react-table"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.9.0",
+    "react-dom": ">=16.9.0"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "@types/node": "^16.18.3",
+    "@types/react": "^18.0.25",
+    "@types/react-dom": "^18.0.8",
+    "babel-core": "^6.26.3",
+    "babel-runtime": "^6.26.0",
+    "react-scripts": "5.0.1",
+    "rollup": "^2.79.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^4.8.4"
+  }
+}

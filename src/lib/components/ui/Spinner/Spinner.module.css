@@ -1,0 +1,53 @@
+.Body .Spinner {
+  bottom: 36px;
+  animation: preloader-spinner 0.5s linear infinite;
+}
+
+.Body .Spinner .SpinnerIcon {
+  stroke: var(--color-primary);
+  stroke-width: 3px;
+  stroke-dasharray: 314%, 314%;
+  animation: preloader-spinner-icon-anim 1s linear infinite alternate;
+}
+
+@keyframes preloader-logo-anim {
+  0% {
+    filter: opacity(0);
+    transform: translateY(-30px);
+  }
+
+  100% {
+    filter: opacity(1);
+    transform: translateY(0);
+  }
+}
+
+@keyframes preloader-title-anim {
+  0% {
+    filter: opacity(0);
+  }
+
+  100% {
+    filter: opacity(1);
+  }
+}
+
+@keyframes preloader-spinner {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes preloader-spinner-icon-anim {
+  0% {
+    stroke-dasharray: 0%, 314%;
+  }
+
+  100% {
+    stroke-dasharray: 314%, 314%;
+  }
+}

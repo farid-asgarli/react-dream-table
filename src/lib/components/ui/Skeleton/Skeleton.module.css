@@ -1,0 +1,35 @@
+@keyframes shimmer {
+  0% {
+    background-position: -50vw 0;
+  }
+  100% {
+    background-position: 50vw 0;
+  }
+}
+
+.Line {
+  background: #e2e4e7;
+  border-radius: 5px;
+  height: 25px;
+  margin: 10px 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.Line::before {
+  position: absolute;
+  content: "";
+  height: 100%;
+  width: 100%;
+  background-image: linear-gradient(
+    to right,
+    #e2e4e7 0%,
+    #d4d5d6 20%,
+    #d4d5d6 40%,
+    #e2e4e7 100%
+  );
+  background-repeat: no-repeat;
+  /* background-size: 450px 400px; */
+  animation: shimmer 1s linear infinite;
+}
