@@ -6,7 +6,7 @@
 
 ## Useful links
 
-- [React Dream Table](https://codesandbox.io/s/nice-blackburn-2b817t)
+- [Demo](https://codesandbox.io/s/nice-blackburn-2b817t)
 
 ### Installation
 
