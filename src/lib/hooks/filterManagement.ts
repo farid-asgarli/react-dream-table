@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ColumnType, TablePaginationProps, TableProps } from "../types/Table";
 import {
@@ -51,20 +52,29 @@ export function useFilterManagement<DataType extends Record<string, any>>(
       if (!data || data.length === 0) return;
       let filteredData: DataType[] = [...data];
       if (filters) {
+        const assignFilter = (item: DataType, key: string) => {
+          const equalityComparer = columns.find(
+            (x) => x.key === key
+          )?.filterEqualityComparer;
+          const currentItemFilters = filters?.[key];
+          // If filter array contains no items, stop execution.
+          if (currentItemFilters.size === 0) return true;
+
+          // Convert object to string and compare.
+
+          for (const f of currentItemFilters.keys()) {
+            if (
+              (equalityComparer && equalityComparer?.(item[key], f)) ||
+              (!equalityComparer &&
+                f?.toLowerCase() === `${item[key]}`?.toLowerCase())
+            )
+              return true;
+          }
+          return false;
+        };
+
         for (const key in filters) {
-          filteredData = filteredData.filter((item) => {
-            const currentItemFilters = filters?.[key];
-            // If filter array contains no items, stop execution.
-            if (currentItemFilters.size === 0) return true;
-
-            // Convert object to string and compare.
-
-            for (const f of currentItemFilters.keys()) {
-              if (f?.toLowerCase() === `${item[key]}`?.toLowerCase())
-                return true;
-            }
-            return false;
-          });
+          filteredData = filteredData.filter((item) => assignFilter(item, key));
         }
       }
       return filteredData;

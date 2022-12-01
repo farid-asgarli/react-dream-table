@@ -1,9 +1,16 @@
-import { ContextLocalization, TablePaginationProps } from "./Table";
+import { ColumnType, ContextLocalization, TablePaginationProps } from "./Table";
 
 export type ContextMenu = {
   content: React.ReactNode;
   key: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
+};
+
+export type SettingsMenuProps = {
+  columns: { key: string; title?: string }[];
+  visibleColumnKeys: Set<string>;
+  handleHeaderVisibility(key: string): Set<string>;
+  // visible: boolean;
 };
 
 export type ContextMenuVisibility<DataType> = {
@@ -58,6 +65,7 @@ export type FilterMenuProps = {
   ) => Promise<void>;
   value: string | undefined;
   columnKey: string;
+  currentColumn?: ColumnType<any>;
   onHide?: (visible: boolean) => void;
   selectedFilters?: Set<string>;
   isServerSide?: boolean;
@@ -79,6 +87,7 @@ export type PaginationTableProps = {
     defaultCurrentPage?: number;
     defaultPageSize?: number;
   };
+  settingsMenuProps: Omit<SettingsMenuProps, "visible">;
 };
 
 export type EllipsisProps = {

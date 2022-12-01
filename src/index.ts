@@ -1,4 +1,4 @@
-import Table from "./lib/index/Table";
+import { Table } from "./lib/index/TableConstructor/Table/Table";
 import {
   ColumnType,
   ContextLocalization,

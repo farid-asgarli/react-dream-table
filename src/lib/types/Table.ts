@@ -6,23 +6,43 @@ import {
   TableRowKeyType,
 } from "./Utils";
 
+export type TableElementProps = React.HTMLAttributes<HTMLDivElement>;
+
 export type ColumnType<DataType> = {
   /** Unique identifier key of column. Using `key` allows data object to be indexed on per-key basis. */
   key: string;
   /** Width of column either in `px` or `%`. */
-  width?: number | string | undefined;
+  width?: number | undefined;
   /** Title to render on column head, `th`. */
   title?: string | undefined;
   /** Custom rendering of data. */
   dataRender?: (entity: DataType) => React.ReactNode;
+  /** Custom rendering of filter values. */
+  filterRender?: (text: string) => React.ReactNode;
+  /** Custom rendering of data when the value is either undefined or null. */
+  dataRenderOnNullOrUndefined?: (entity: DataType) => React.ReactNode;
   /** Custom rendering of table heads `th`. */
   columnRender?: () => React.ReactNode;
   /** Enables filtering of data. `true` for default filtering,  `function` for customized display of filters. */
   filter?: boolean | ((filter: string) => string);
   /** Set of default filters to display. Will override automatic filter generation. */
   defaultFilters?: Array<string> | undefined;
-  /** Action to take when overflow of content occurs. */
+  /** Action to take when overflow of content occurs.
+   * @default true
+   **/
   ellipsis?: EllipsisProps | boolean | undefined;
+  /** Custom prop rendering for the input element in filter search menu. */
+  filterSearchInputProps?: (
+    key: string
+  ) => React.InputHTMLAttributes<HTMLInputElement>;
+  filterEqualityComparer?: (
+    selectedFilter: string,
+    valueToCompare: any
+  ) => boolean;
+  filterSearchEqualityComparer?: (
+    inputValue: string,
+    valueToCompare: any
+  ) => boolean;
 };
 
 export type TablePaginationProps = {
@@ -116,12 +136,13 @@ export type TableProps<DataType> = {
       ) => Promise<void>;
     };
   };
-  tableHeight?: "static" | "auto";
+  tableHeight?: string | number | undefined;
+  tableLayout?: "fixed" | "auto";
   /** Allows the ability to use custom table styling. */
   themeProperties?: TableTheme;
-  ellipsis?: boolean;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
+  /** Class or style based element styling.  */
   elementStylings?: {
     filterMenu?: ElementStyling;
     tableHead?: ElementStyling;

@@ -1,0 +1,30 @@
+.table-row {
+  display: flex;
+  flex-direction: row;
+  padding: 0 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  width: fit-content;
+  break-inside: avoid;
+}
+
+.table-main.hoverable .table-row:not(.active):hover .table-row-data,
+.table-main.hoverable .table-row:not(.active):hover {
+  background-color: #f1f3f5;
+}
+
+.table-row.active .table-row-data,
+.table-row.active {
+  background-color: var(--color-background);
+}
+
+/* .table-row .table-row-data:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.table-row .table-row-data:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+} */

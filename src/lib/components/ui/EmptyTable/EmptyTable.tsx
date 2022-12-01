@@ -12,17 +12,11 @@ export default function EmptyTable({
   localization: ContextLocalization;
 }) {
   return (
-    <table className={concatStyles(styles.EmptyTable)} {...props}>
-      <tbody>
-        <tr>
-          <td>
-            <div className={styles.EmptyWrapper}>
-              <Empty className={styles.Icon} />
-              <span className={styles.Text}>{localization.filterEmpty}</span>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div className={concatStyles(styles.EmptyTable)} {...props}>
+      <div className={styles.EmptyWrapper}>
+        <Empty className={styles.Icon} />
+        <span className={styles.Text}>{localization.filterEmpty}</span>
+      </div>
+    </div>
   );
 }

@@ -2,14 +2,13 @@ import typescript from "rollup-plugin-typescript2";
 import postcss from "rollup-plugin-postcss";
 import pkg from "./package.json";
 
-export default {
+const config = {
   input: "src/index.ts",
   output: [
     {
       file: pkg.main,
       format: "cjs",
       exports: "named",
-      sourcemap: true,
       strict: false,
     },
   ],
@@ -18,8 +17,9 @@ export default {
     typescript({ objectHashIgnoreUnknownHack: true }),
     postcss({
       extract: false,
-      modules: true,
     }),
   ],
   external: ["react", "react-dom"],
 };
+
+export default config;

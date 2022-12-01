@@ -2,7 +2,7 @@ import React from "react";
 import { ContextLocalization } from "../../../types/Table";
 import Fade from "../../animations/Fade/Fade";
 import Spinner from "../Spinner/Spinner";
-import styles from "./LoadingOverlay.module.css";
+import "./LoadingOverlay.css";
 export default function LoadingOverlay({
   visible,
   localization,
@@ -12,10 +12,10 @@ export default function LoadingOverlay({
   localization: ContextLocalization;
 }) {
   return (
-    <Fade className={styles.LoadingOverlay} visible={visible} {...props}>
-      <div className={styles.Content}>
+    <Fade as="div" className={"loading-overlay"} visible={visible} {...props}>
+      <div className={"content"}>
         <Spinner />
-        <span className={styles.Title}>{localization.dataLoading}</span>
+        <span className={"title"}>{localization.dataLoading}</span>
       </div>
     </Fade>
   );

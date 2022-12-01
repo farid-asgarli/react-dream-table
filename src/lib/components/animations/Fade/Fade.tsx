@@ -1,6 +1,7 @@
-import React, { HTMLAttributes, useEffect, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { HTMLAttributes, ReactHTML, useEffect, useState } from "react";
 import { concatStyles } from "../../../utils/ConcatStyles";
-import styles from "./Fade.module.css";
+import "./Fade.css";
 const Fade: React.FC<
   HTMLAttributes<HTMLDivElement> & {
     visible?: boolean;
@@ -9,6 +10,7 @@ const Fade: React.FC<
      */
     duration?: number;
     onAnimationFinish?: (visible: boolean) => void;
+    as?: keyof ReactHTML;
   }
 > = ({
   className,
@@ -16,6 +18,7 @@ const Fade: React.FC<
   visible = true,
   onAnimationFinish,
   duration = 300,
+  as = "div",
   ...props
 }) => {
   const [callTimeout, setCallTimeout] = useState<NodeJS.Timeout>();
@@ -41,21 +44,24 @@ const Fade: React.FC<
     handleAnimation(visible);
   }, [visible]);
 
-  return (
-    <div
-      className={concatStyles(
-        styles.Body,
-        className,
-        visible ? styles.FadeIn : styles.FadeOut,
-        !shouldShow && styles.Disable
-      )}
-      style={{
-        animationDuration: `${duration}ms`,
-      }}
-      {...props}
-    >
-      {shouldShow && children}
-    </div>
+  const bodyProps = {
+    className: concatStyles(
+      className,
+      visible ? "fade-in" : "fade-out",
+      !shouldShow && "disabled"
+    ),
+    style: {
+      animationDuration: `${duration}ms`,
+    },
+    ...props,
+  };
+
+  const elementToDisplay = React.createElement(
+    as,
+    bodyProps,
+    shouldShow && children
   );
+
+  return elementToDisplay;
 };
 export default Fade;

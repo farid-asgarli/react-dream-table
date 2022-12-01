@@ -1,0 +1,21 @@
+.table-row-data {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0px 10px;
+  transition: background 0.2s ease-in-out;
+  border-bottom: 1px solid rgb(224, 224, 224);
+}
+
+.table-row-data.ellipsis > div {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* .multi-col-ellipsis{
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+} */

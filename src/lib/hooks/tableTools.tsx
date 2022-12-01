@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useCallback, useMemo, useState } from "react";
 import type {
   ContextMenuVisibility,
   EllipsisProps,
@@ -10,16 +11,18 @@ import SearchIcon from "../icons/Search";
 import { useFilterManagement } from "./filterManagement";
 import { concatStyles } from "../utils/ConcatStyles";
 import { ColumnType, TableProps } from "../types/Table";
+import { TableHeadData } from "../index/TableConstructor/TableHeadData/TableHeadData";
+import { TableRow } from "../index/TableConstructor/TableRow/TableRow";
+import { TableRowData } from "../index/TableConstructor/TableRowData/TableRowData";
+import { TableMeasures } from "../static/measures";
 
 const CONTEXT_MENU_KEY = "_context-menu-key";
 const SELECTION_KEY = "_selection-key";
 
 export function useTableTools<DataType extends Record<string, any>>({
   tableProps,
-  styles,
 }: {
   tableProps: TableProps<DataType>;
-  styles: Record<string, string>;
 }) {
   const {
     columns,
@@ -51,6 +54,9 @@ export function useTableTools<DataType extends Record<string, any>>({
     paginationDefaults
   );
 
+  const contextMenuColumnWidth = TableMeasures.contextMenuColumnWidth;
+  const selectionMenuColumnWidth = TableMeasures.selectionMenuColumnWidth;
+
   const [activeRow, setActiveRow] = useState<TableRowKeyType>();
   const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(
     new Set()
@@ -60,10 +66,17 @@ export function useTableTools<DataType extends Record<string, any>>({
   const [contextMenu, setContextMenu] =
     useState<ContextMenuVisibility<DataType>>();
 
+  const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(
+    new Set(columns.map((x) => x.key))
+  );
+
+  const columnsToRender = columns.filter((col) => visibleHeaders.has(col.key));
+
   function determineEllipsis(
     column: ColumnType<DataType>,
     propKey?: keyof EllipsisProps | undefined
   ) {
+    if (column.ellipsis === undefined) return true;
     if (typeof column.ellipsis === "boolean") return column.ellipsis === true;
     else if (propKey) return column.ellipsis?.[propKey] === true;
     return false;
@@ -154,24 +167,46 @@ export function useTableTools<DataType extends Record<string, any>>({
 
   const handleMapRow = useCallback(
     (data: DataType, isRowActive: boolean) => {
-      const mappedRows = columns.map((col) => (
-        <td
-          className={concatStyles(
-            determineEllipsis(col, "rowData") && styles.Ellipsis
-          )}
-          key={col.key}
-        >
-          {col.dataRender ? col.dataRender(data) : data[col.key]}
-        </td>
-      ));
+      const mappedRows = columnsToRender.map((col) => {
+        function conditionalRenderIfNullOrEmpty(data: any) {
+          if (
+            col.dataRenderOnNullOrUndefined &&
+            (data === null || data === undefined)
+          )
+            return col.dataRenderOnNullOrUndefined(data);
+          return data;
+        }
+
+        return (
+          <TableRowData
+            className={concatStyles(
+              determineEllipsis(col, "rowData") && "ellipsis"
+            )}
+            key={col.key}
+            rowProps={{
+              width: col.width ?? TableMeasures.defaultColumnWidth,
+            }}
+          >
+            {col.dataRender
+              ? col.dataRender(data)
+              : conditionalRenderIfNullOrEmpty(data[col.key])}
+          </TableRowData>
+        );
+      });
 
       if (renderContextMenu) {
         const contextMenuShortcut = (
-          <td key={CONTEXT_MENU_KEY} className={styles.ContextMenuContainer}>
+          <TableRowData
+            key={CONTEXT_MENU_KEY}
+            className={"context-menu-container"}
+            rowProps={{
+              width: contextMenuColumnWidth,
+            }}
+          >
             <button
               type="button"
               title="Menu"
-              className={styles.ContextMenuButton}
+              className={"context-menu-button"}
               onClick={(e) => {
                 e.stopPropagation();
                 handleDisplayContextMenu({
@@ -183,25 +218,30 @@ export function useTableTools<DataType extends Record<string, any>>({
                 });
               }}
             >
-              <MultiDotIcon className={styles.ContextMenuIcon} />
+              <MultiDotIcon className={"context-menu-icon"} />
             </button>
-          </td>
+          </TableRowData>
         );
         mappedRows.push(contextMenuShortcut);
       }
 
       if (selectionMode === "multiple") {
         const selectionColumn = (
-          <td key={SELECTION_KEY}>
+          <TableRowData
+            key={SELECTION_KEY}
+            rowProps={{
+              width: selectionMenuColumnWidth,
+            }}
+          >
             <input
-              className={styles.Checkbox}
+              className={"checkbox"}
               onChange={(e) =>
                 handleUpdateSelection(data[uniqueRowKey], e.target.checked)
               }
               checked={isRowActive}
               type={"checkbox"}
             />
-          </td>
+          </TableRowData>
         );
         return [selectionColumn, ...mappedRows];
       }
@@ -215,32 +255,24 @@ export function useTableTools<DataType extends Record<string, any>>({
       selectionMode,
       contextMenu,
       uniqueRowKey,
+      visibleHeaders,
     ]
   );
-  const handleMapColGroups = useMemo(() => {
-    const columnsToMap = columns.map(({ key, width }) => (
-      <col key={key} style={{ width }} />
-    ));
-    if (renderContextMenu)
-      columnsToMap.push(<col key={CONTEXT_MENU_KEY} style={{ width: "5%" }} />);
-    if (selectionMode === "multiple") {
-      const selectionCol = <col key={SELECTION_KEY} />;
-      return [selectionCol, ...columnsToMap];
-    }
-    return columnsToMap;
-  }, [columns, selectionMode, renderContextMenu]);
 
   const handleMapTableHead = useMemo(() => {
-    const columnsToRender = columns.map((x) => (
-      <th
+    const colsToRender = columnsToRender.map((x) => (
+      <TableHeadData
         className={concatStyles(
-          styles.FilterHeader,
-          determineEllipsis(x, "columnHead") && styles.Ellipsis
+          "filter-header",
+          determineEllipsis(x, "columnHead") && "ellipsis"
         )}
         key={x.key}
+        rowProps={{
+          width: x.width ?? TableMeasures.defaultColumnWidth,
+        }}
       >
-        <div className={concatStyles(x.filter && styles.FilterWrapper)}>
-          <div className={styles.Content}>
+        <div className={concatStyles(x.filter && "filter-wrapper")}>
+          <div className={"content"}>
             {x.columnRender ? x.columnRender() : x.title}
           </div>
           {x.filter && (
@@ -255,30 +287,39 @@ export function useTableTools<DataType extends Record<string, any>>({
                   },
                 });
               }}
-              className={styles.SearchButton}
+              type="button"
+              title="Filter"
+              className={"search-button"}
             >
               <SearchIcon
                 className={concatStyles(
-                  styles.SearchIcon,
-                  selectedFilters[x.key]?.size > 0 && styles.Active
+                  "search-icon",
+                  selectedFilters[x.key]?.size > 0 && "active"
                 )}
               />
             </button>
           )}
         </div>
-      </th>
+      </TableHeadData>
     ));
 
     if (renderContextMenu)
-      columnsToRender.push(
-        <th className={styles.ContextHeader} key={CONTEXT_MENU_KEY}></th>
+      colsToRender.push(
+        <TableHeadData
+          className={"context-header"}
+          key={CONTEXT_MENU_KEY}
+          rowProps={{ width: contextMenuColumnWidth }}
+        />
       );
 
     if (selectionMode === "multiple") {
       const selectionColumn = (
-        <th key={SELECTION_KEY}>
+        <TableHeadData
+          rowProps={{ width: selectionMenuColumnWidth }}
+          key={SELECTION_KEY}
+        >
           <input
-            className={styles.Checkbox}
+            className={"checkbox"}
             onChange={(e) =>
               setSelectedRows(
                 !e.target.checked
@@ -289,12 +330,19 @@ export function useTableTools<DataType extends Record<string, any>>({
             checked={data?.length === selectedRows.size}
             type={"checkbox"}
           />
-        </th>
+        </TableHeadData>
       );
-      return [selectionColumn, ...columnsToRender];
+      return [selectionColumn, ...colsToRender];
     }
-    return columnsToRender;
-  }, [columns, data, selectionMode, selectedRows, renderContextMenu]);
+    return colsToRender;
+  }, [
+    columns,
+    data,
+    selectionMode,
+    selectedRows,
+    renderContextMenu,
+    visibleHeaders,
+  ]);
 
   const handleRowClick = useCallback(
     (
@@ -315,27 +363,43 @@ export function useTableTools<DataType extends Record<string, any>>({
       data?.map((x, i) => {
         const isRowActive = selectedRows.has(x[uniqueRowKey]);
         return (
-          <tr
+          <TableRow
             className={concatStyles(
-              (activeRow === x[uniqueRowKey] || isRowActive) && styles.Active
+              (activeRow === x[uniqueRowKey] || isRowActive) && "active"
             )}
-            onClick={(e) => handleRowClick(e, x[uniqueRowKey])}
+            onClick={(e: any) => handleRowClick(e, x[uniqueRowKey])}
             key={i}
           >
             {handleMapRow(x, isRowActive)}
-          </tr>
+          </TableRow>
         );
       }),
 
     [activeRow, data, handleMapRow]
   );
 
+  function handleHeaderVisibility(key: string) {
+    const visibleHeadersCopy = new Set(visibleHeaders);
+
+    if (visibleHeadersCopy.size > 1 && visibleHeadersCopy.has(key)) {
+      visibleHeadersCopy.delete(key);
+
+      const columnSelectedFilters = selectedFilters[key];
+      if (columnSelectedFilters && columnSelectedFilters.size > 0)
+        updateSelectedFilters(key);
+    } else visibleHeadersCopy.add(key);
+
+    setVisibleHeaders(visibleHeadersCopy);
+
+    return visibleHeadersCopy;
+  }
+
   return {
-    handleMapColGroups,
     handleMapData,
     handleMapTableHead,
     handleDisplayContextMenu,
     handleDisplayFilterMenu,
+    handleHeaderVisibility,
     contextMenu,
     filterMenu,
     paginationProps,
@@ -348,5 +412,6 @@ export function useTableTools<DataType extends Record<string, any>>({
     inputValue,
     fetching,
     data,
+    visibleHeaders,
   };
 }

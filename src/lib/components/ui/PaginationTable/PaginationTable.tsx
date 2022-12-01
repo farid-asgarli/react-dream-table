@@ -1,11 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState } from "react";
+import { useDetectOutsideClick } from "../../../hooks/detectOutsideClick";
 import ArrowLeft from "../../../icons/ArrowLeft";
 import ArrowRight from "../../../icons/ArrowRight";
+import Gear from "../../../icons/Gear";
 import type { PaginationTableProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
-import styles from "./PaginationTable.module.css";
+import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
+import "./PaginationTable.css";
 
 interface RenderPaginationButtonProps {
   navigateTo: number;
@@ -21,11 +24,14 @@ export function PaginationTable({
   localization,
   paginationDefaults,
   className,
+  settingsMenuProps,
   ...props
 }: PaginationTableProps & React.HTMLAttributes<HTMLDivElement>) {
   const DEFAULT_PAGE_SIZES =
     paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
 
+  const [settingsMenuVisible, setSettingsMenuVisible] =
+    useState<boolean>(false);
   const renderPaginationNumbers = useMemo(
     () =>
       renderPaginationButtons({
@@ -41,7 +47,7 @@ export function PaginationTable({
     () => (
       <select
         title={localization.paginationPageSize}
-        className={styles.PageSizeSelector}
+        className={"page-size-selector"}
         defaultValue={paginationProps.pageSize}
         onChange={(e) =>
           updatePaginationProps({ currentPage: 1, pageSize: +e.target.value })
@@ -60,40 +66,62 @@ export function PaginationTable({
   const renderDataCount = useMemo(
     () => (
       <>
-        <span className={styles.Title}>
+        <span className={"title"}>
           {localization.paginationTotalCount} :&nbsp;
         </span>
-        <span className={styles.DataCount}>{paginationProps.dataCount}</span>
+        <span className={"data-count"}>{paginationProps.dataCount}</span>
       </>
     ),
     [paginationProps.dataCount]
   );
 
+  const settingsMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useDetectOutsideClick(
+    [
+      {
+        key: "settingsMenu",
+        ref: settingsMenuRef,
+      },
+    ],
+    (_, key) => setSettingsMenuVisible(false)
+  );
+
+  const renderSettinsMenu = useMemo(() => {
+    return (
+      <Fade visible={settingsMenuVisible}>
+        <SettingsMenu ref={settingsMenuRef} {...settingsMenuProps} />
+      </Fade>
+    );
+  }, [settingsMenuProps, settingsMenuVisible]);
+
   return (
-    <table
-      className={concatStyles(styles.PaginationTable, className)}
-      {...props}
-    >
-      <tfoot>
-        <tr>
-          <th>
-            <Fade>
-              <div className={styles.Bottom}>
-                <div className={styles.PaginationDataCount}>
-                  {renderDataCount}
-                </div>
-                <div className={styles.PaginationPageNumbers}>
-                  {renderPaginationNumbers}
-                </div>
-                <div className={styles.PaginationPageSize}>
-                  {renderPaginationPageSize}
-                </div>
-              </div>
-            </Fade>
-          </th>
-        </tr>
-      </tfoot>
-    </table>
+    <div className={concatStyles("pagination-table", className)} {...props}>
+      <Fade>
+        <div className={"bottom"}>
+          <div className={"pagination-data-count"}>
+            <div className={"settings"}>
+              <button
+                type="button"
+                title="Settings"
+                onClick={() => setSettingsMenuVisible((prev) => !prev)}
+                className={"settings-button"}
+              >
+                <Gear className={"settings-icon"} />
+              </button>
+            </div>
+            {renderSettinsMenu}
+            {renderDataCount}
+          </div>
+          <div className={"pagination-page-numbers"}>
+            {renderPaginationNumbers}
+          </div>
+          <div className={"pagination-page-size"}>
+            {renderPaginationPageSize}
+          </div>
+        </div>
+      </Fade>
+    </div>
   );
 }
 
@@ -103,7 +131,7 @@ function renderPaginationButtons({
   onPaginationChange,
   localization,
   paginationDefaults,
-}: Omit<PaginationTableProps, "fetching">) {
+}: Omit<PaginationTableProps, "fetching" | "settingsMenuProps">) {
   function renderButton({
     navigateTo,
     component,
@@ -123,10 +151,7 @@ function renderPaginationButtons({
       <button
         title={title ?? `${navigateTo}`}
         type="button"
-        className={concatStyles(
-          isActive && styles.Active,
-          styles.PaginationButton
-        )}
+        className={concatStyles(isActive && "active", "pagination-button")}
         onClick={handleClick}
         disabled={isActive || disabled === true}
         key={component ? navigateTo + "arrow" : navigateTo}
@@ -173,14 +198,14 @@ function renderPaginationButtons({
     return [
       renderButton({
         navigateTo: prev1,
-        component: <ArrowLeft className={styles.ArrowIcon} />,
+        component: <ArrowLeft className={"arrow-icon"} />,
         disabled: prev1 === 0,
         title: localization.paginationPrev,
       }),
       ...buttons.map((num) => renderButton({ navigateTo: num })),
       renderButton({
         navigateTo: next1,
-        component: <ArrowRight className={styles.ArrowIcon} />,
+        component: <ArrowRight className={"arrow-icon"} />,
         disabled: next1 > buttonCount,
         title: localization.paginationNext,
       }),
