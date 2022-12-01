@@ -1,4 +1,4 @@
-.Body {
+.settings-menu-body {
   z-index: 99;
   position: absolute;
   padding: 10px;
@@ -13,7 +13,7 @@
   left: 0;
 }
 
-.Body .HeadersListWrapper {
+.settings-menu-body .columns-list-wrapper {
   max-height: 200px;
   overflow-y: auto;
   margin-top: 20px;
@@ -21,11 +21,11 @@
   border-radius: 0.5rem;
 }
 
-.HeadersListWrapper ul {
+.settings-menu-body .columns-list-wrapper ul {
   padding: 0 4px;
 }
 
-li.FilterElement {
+li.filter-element {
   transition: 0.3s ease-in-out background;
   list-style: none;
   border-radius: 6px;
@@ -35,7 +35,7 @@ li.FilterElement {
   font-weight: 400;
 }
 
-li.FilterElement button {
+li.filter-element button {
   all: unset;
   cursor: pointer;
   width: 100%;
@@ -44,12 +44,12 @@ li.FilterElement button {
   align-items: center;
 }
 
-li.FilterElement button:disabled {
+li.filter-element button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-li.FilterElement button span {
+li.filter-element button span {
   white-space: nowrap;
   text-overflow: ellipsis;
   word-break: keep-all;
@@ -59,39 +59,39 @@ li.FilterElement button span {
   overflow: hidden;
 }
 
-li.FilterElement .CloseIconWrapper {
+li.filter-element .close-icon-wrapper {
   margin-left: auto;
   display: flex;
   align-items: center;
 }
-li.FilterElement button .CloseIcon {
+li.filter-element button .close-icon {
   width: 20px;
   fill: var(--color-primary);
 }
 
-li.FilterElement:hover {
+li.filter-element:hover {
   background: var(--color-background);
 }
 
-li.FilterElement.Active {
+li.filter-element.active {
   background: var(--color-background);
   font-weight: 500;
 }
-.HeadersListWrapper::-webkit-scrollbar {
+.columns-list-wrapper::-webkit-scrollbar {
   width: 20px;
 }
 
-.HeadersListWrapper::-webkit-scrollbar-track {
+.columns-list-wrapper::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-.HeadersListWrapper::-webkit-scrollbar-thumb {
+.columns-list-wrapper::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
   border-radius: 5px;
   border: 6px solid transparent;
   background-clip: content-box;
 }
 
-.HeadersListWrapper::-webkit-scrollbar-thumb:hover {
+.columns-list-wrapper::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }

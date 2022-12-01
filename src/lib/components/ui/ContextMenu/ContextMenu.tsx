@@ -1,7 +1,7 @@
 import React from "react";
 import Fade from "../../animations/Fade/Fade";
 import type { ContextMenuProps } from "../../../types/Utils";
-import styles from "./ContextMenu.module.css";
+import "./ContextMenu.css";
 import { concatStyles } from "../../../utils/ConcatStyles";
 
 export const ContextMenuOverlay = React.forwardRef<
@@ -10,12 +10,12 @@ export const ContextMenuOverlay = React.forwardRef<
 >(({ elements, visible, onHide, className, ...props }, ref) => (
   <Fade
     onAnimationFinish={onHide}
-    className={styles.ContextAnimator}
+    className={"context-animator"}
     visible={visible}
   >
     <div
       ref={ref}
-      className={concatStyles(styles.ContextMenuOverlay, className)}
+      className={concatStyles("context-menu-overlay", className)}
       {...props}
     >
       {elements

@@ -1,9 +1,9 @@
-.ContextAnimator {
+.context-animator {
   z-index: 99;
   position: fixed;
 }
 
-.ContextMenuOverlay {
+.context-menu-overlay {
   box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
   z-index: 99;
   width: 120px;
@@ -16,7 +16,7 @@
   position: fixed;
 }
 
-.ContextMenuOverlay button {
+.context-menu-overlay button {
   all: unset;
   display: flex;
   align-items: center;
@@ -26,9 +26,9 @@
   cursor: pointer;
 }
 
-.ContextMenuOverlay button > span {
+.context-menu-overlay button > span {
   margin-left: 10px;
 }
-.ContextMenuOverlay button:hover {
+.context-menu-overlay button:hover {
   background-color: #f1f3f5;
 }

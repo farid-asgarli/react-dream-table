@@ -1,6 +1,5 @@
-import { concatStyles } from "../../../utils/ConcatStyles";
-import styles from "./Skeleton.module.css";
+import "./Skeleton.css";
 
 export default function Skeleton() {
-  return <div className={concatStyles(styles.Line)} />;
+  return <div className={"skeleton-line"} />;
 }

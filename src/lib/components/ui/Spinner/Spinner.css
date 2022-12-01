@@ -1,9 +1,9 @@
-.Body .Spinner {
+.spinner-body .spinner {
   bottom: 36px;
   animation: preloader-spinner 0.5s linear infinite;
 }
 
-.Body .Spinner .SpinnerIcon {
+.spinner-body .spinner .spinner-icon {
   stroke: var(--color-primary);
   stroke-width: 3px;
   stroke-dasharray: 314%, 314%;

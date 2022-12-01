@@ -1,4 +1,4 @@
-.EmptyWrapper {
+.empty-table .empty-table-wrapper {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -7,17 +7,17 @@
   min-height: 100px;
 }
 
-.EmptyWrapper .Icon {
+.empty-table .empty-table-wrapper .empty-icon {
   width: 30px;
   fill: #7e868c;
 }
-.EmptyWrapper .Text {
+.empty-table .empty-table-wrapper .empty-text {
   font-size: 12px;
   font-weight: 700;
   color: #7e868c;
   text-transform: uppercase;
 }
 
-.EmptyTable {
+.empty-table {
   width: 100%;
 }

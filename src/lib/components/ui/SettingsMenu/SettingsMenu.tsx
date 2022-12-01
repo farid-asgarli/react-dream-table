@@ -1,27 +1,23 @@
-import React, { useEffect } from "react";
+import React from "react";
 import CheckMark from "../../../icons/CheckMark";
 import { SettingsMenuProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
-import styles from "./SettingsMenu.module.css";
+import "./SettingsMenu.css";
 
 export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps>(
   ({ columns, handleHeaderVisibility, visibleColumnKeys, ...props }, ref) => {
-    useEffect(() => {
-      console.log("rendered settingsMenu");
-    }, []);
-
     return (
-      <div className={styles.Body} ref={ref}>
-        <div className={styles.HeadersListWrapper}>
+      <div className={"settings-menu-body"} ref={ref}>
+        <div className={"columns-list-wrapper"}>
           <ul>
             {columns.map(({ key, title }) => {
               const isSelectionActive = visibleColumnKeys.has(key);
               return (
                 <li
                   className={concatStyles(
-                    styles.FilterElement,
-                    isSelectionActive && styles.Active
+                    "filter-element",
+                    isSelectionActive && "active"
                   )}
                   onClick={() => handleHeaderVisibility(key)}
                   key={key}
@@ -34,9 +30,9 @@ export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps>(
                     <span>{title ?? `[${key}]`}</span>
                     <Fade
                       visible={isSelectionActive}
-                      className={styles.CloseIconWrapper}
+                      className={"close-icon-wrapper"}
                     >
-                      <CheckMark className={styles.CloseIcon} />
+                      <CheckMark className={"close-icon"} />
                     </Fade>
                   </button>
                 </li>

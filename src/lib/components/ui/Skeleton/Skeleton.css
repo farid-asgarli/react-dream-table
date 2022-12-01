@@ -7,7 +7,7 @@
   }
 }
 
-.Line {
+.skeleton-line {
   background: #e2e4e7;
   border-radius: 5px;
   height: 25px;
@@ -17,7 +17,7 @@
   width: 100%;
 }
 
-.Line::before {
+.skeleton-line::before {
   position: absolute;
   content: "";
   height: 100%;
