@@ -53,7 +53,6 @@
 
 .table-scroller {
   width: auto;
-  height: 260px;
   min-height: 100%;
 }
 
@@ -61,4 +60,5 @@
   position: absolute;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }

@@ -9,12 +9,12 @@
   break-inside: avoid;
 }
 
-.table-main.hoverable .table-row:not(.active):hover .table-row-data,
+/* .table-main.hoverable .table-row:not(.active):hover .table-row-data, */
 .table-main.hoverable .table-row:not(.active):hover {
   background-color: #f1f3f5;
 }
 
-.table-row.active .table-row-data,
+/* .table-row.active .table-row-data, */
 .table-row.active {
   background-color: var(--color-background);
 }

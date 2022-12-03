@@ -35,6 +35,7 @@ export const FilterMenu = React.forwardRef<
       string | undefined
     >(value ?? StringExtensions.Empty);
 
+    const inputRef = useRef<HTMLInputElement>(null);
     const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
     function clearUpdateTimeout() {
       if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
@@ -42,6 +43,7 @@ export const FilterMenu = React.forwardRef<
     }
 
     useEffect(() => {
+      inputRef.current?.focus();
       return () => {
         clearUpdateTimeout();
       };
@@ -151,6 +153,7 @@ export const FilterMenu = React.forwardRef<
               placeholder={localization.filterSearchPlaceholder}
               onChange={handleInputChange}
               value={currentInputValue}
+              ref={inputRef}
               {...currentColumn?.filterSearchInputProps?.(columnKey)}
             />
 

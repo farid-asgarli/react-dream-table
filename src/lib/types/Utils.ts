@@ -94,3 +94,46 @@ export type EllipsisProps = {
   columnHead: boolean;
   rowData: boolean;
 };
+
+//#region Table constructor
+export type TableElementProps = Pick<
+  React.HTMLAttributes<HTMLDivElement>,
+  "className" | "style" | "children" | "onClick"
+>;
+
+export interface TableHeadDataProps extends TableElementProps {
+  columnKey: string;
+  rowProps?: {
+    width?: string | number | undefined;
+  };
+  draggingProps?: {
+    isDraggable?: boolean | undefined;
+    draggingActive?: boolean | undefined;
+  };
+  resizingProps?: {
+    onMouseDown: (columnKey: string) => void;
+    activeIndex?: string | undefined;
+    isResizable?: boolean | undefined;
+  };
+  toolBoxes?: (JSX.Element | undefined)[];
+}
+
+export interface TableHeadProps extends TableElementProps {
+  items: Array<TableHeadDataProps>;
+  setColumnOrder: React.Dispatch<React.SetStateAction<Array<string>>>;
+  draggingEnabled?: boolean | undefined;
+}
+
+export interface TableBodyProps extends TableElementProps {
+  loadingVisible: boolean;
+  localization: ContextLocalization;
+}
+
+export interface TableRowProps extends TableElementProps {}
+
+export interface TableRowDataProps extends TableElementProps {
+  rowProps?: {
+    width?: string | number | undefined;
+  };
+}
+///#endregion

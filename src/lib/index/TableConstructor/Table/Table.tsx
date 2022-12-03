@@ -22,7 +22,6 @@ export function Table<DataType extends Record<string, any>>(
 ) {
   const {
     isHoverable,
-    isRowClickable,
     renderContextMenu,
     loading,
     onPaginationChange,
@@ -35,6 +34,7 @@ export function Table<DataType extends Record<string, any>>(
     style,
     elementStylings,
     columns,
+    draggableColumns,
   } = tableProps;
 
   const localizationRef = useRef<ContextLocalization>(TableLocalization);
@@ -61,9 +61,11 @@ export function Table<DataType extends Record<string, any>>(
     inputValue,
     data,
     visibleHeaders,
+    columnMeasures,
     updateInputValue,
     updateSelectedFilters,
     updatePaginationProps,
+    setColumnOrder,
   } = useTableTools({
     tableProps,
   });
@@ -155,9 +157,11 @@ export function Table<DataType extends Record<string, any>>(
         : 0;
 
     return (
-      tableProps.columns.reduce((partialSum, a) => {
-        if (!visibleHeaders.has(a.key)) return partialSum;
-        return partialSum + (a.width ?? TableMeasures.defaultColumnWidth);
+      Array.from(columnMeasures).reduce((partialSum, a) => {
+        const key = a[0];
+        const value = a[1];
+        if (!visibleHeaders.has(key)) return partialSum;
+        return partialSum + value;
       }, 0) +
       tableHasSelectionWidth +
       TableMeasures.contextMenuColumnWidth +
@@ -168,11 +172,15 @@ export function Table<DataType extends Record<string, any>>(
       /**padding */
       18
     );
-  }, [tableProps.columns, tableProps.selectionMode, visibleHeaders]);
+  }, [columnMeasures, tableProps.selectionMode, visibleHeaders]);
 
   const dataTable = (
     <div className="table-container">
-      <TableHead>{handleMapTableHead}</TableHead>
+      <TableHead
+        draggingEnabled={!!draggableColumns}
+        setColumnOrder={setColumnOrder}
+        items={handleMapTableHead}
+      />
       {loading ? (
         <LoadingTable />
       ) : data && data.length > 0 ? (
@@ -203,9 +211,8 @@ export function Table<DataType extends Record<string, any>>(
       {filterMenuElement()}
       <div
         className={concatStyles(
-          "table-main",
+          "table-main clickable",
           isHoverable && "hoverable",
-          isRowClickable && "clickable",
           elementStylings?.tableBody?.className
         )}
       >

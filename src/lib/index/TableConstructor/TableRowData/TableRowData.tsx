@@ -1,4 +1,5 @@
-import { TableElementProps } from "../../../types/Table";
+import { TableMeasures } from "../../../static/measures";
+import { TableRowDataProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableRowData.css";
 export function TableRowData({
@@ -6,18 +7,14 @@ export function TableRowData({
   className,
   rowProps,
   ...props
-}: TableElementProps & {
-  rowProps?: {
-    width?: string | number | undefined;
-  };
-}) {
+}: TableRowDataProps) {
   return (
     <div
       style={{
+        minHeight: TableMeasures.defaultDataRowHeight,
+        maxHeight: TableMeasures.defaultDataRowHeight,
         minWidth: rowProps?.width,
         maxWidth: rowProps?.width,
-        minHeight: 52,
-        maxHeight: 52,
       }}
       className={concatStyles("table-row-data", className)}
       {...props}

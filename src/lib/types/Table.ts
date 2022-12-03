@@ -6,7 +6,50 @@ import {
   TableRowKeyType,
 } from "./Utils";
 
-export type TableElementProps = React.HTMLAttributes<HTMLDivElement>;
+export type TablePaginationProps = {
+  /** Current page size to display. */
+  pageSize?: number;
+  /** Current page of table. */
+  currentPage?: number;
+  /** Total size of data elements. */
+  dataCount?: number;
+};
+
+/**
+ * Allows the ability to use custom localization.
+ */
+export type ContextLocalization = {
+  dataLoading: string;
+  filterSearchPlaceholder: string;
+  filterReset: string;
+  filterLoading: string;
+  dataEmpty: string;
+  filterEmpty: string;
+  paginationPageSize: string;
+  paginationNext: string;
+  paginationPrev: string;
+  paginationTotalCount: string;
+};
+
+export type TableTheme = {
+  backgroundColor: string;
+  primaryColor: string;
+};
+
+type ElementStyling = {
+  className?: string | undefined;
+  style?: React.CSSProperties | undefined;
+};
+
+type ResizableColumnProps = {
+  minColumnResizeWidth?: number | undefined;
+  maxColumnResizeWidth?: number | undefined;
+  columnsToExclude?: Array<string>;
+};
+
+type DraggableColumnProps = {
+  columnsToExclude?: Array<string>;
+};
 
 export type ColumnType<DataType> = {
   /** Unique identifier key of column. Using `key` allows data object to be indexed on per-key basis. */
@@ -45,53 +88,18 @@ export type ColumnType<DataType> = {
   ) => boolean;
 };
 
-export type TablePaginationProps = {
-  /** Current page size to display. */
-  pageSize?: number;
-  /** Current page of table. */
-  currentPage?: number;
-  /** Total size of data elements. */
-  dataCount?: number;
-};
-
-/**
- * Allows the ability to use custom localization.
- */
-export type ContextLocalization = {
-  dataLoading: string;
-  filterSearchPlaceholder: string;
-  filterReset: string;
-  filterLoading: string;
-  dataEmpty: string;
-  filterEmpty: string;
-  paginationPageSize: string;
-  paginationNext: string;
-  paginationPrev: string;
-  paginationTotalCount: string;
-};
-
-export type TableTheme = {
-  backgroundColor: string;
-  primaryColor: string;
-};
-
-type ElementStyling = {
-  className?: string | undefined;
-  style?: React.CSSProperties | undefined;
-};
-
 /** Set of type defintions for `Table` component. */
 export type TableProps<DataType> = {
   /** Columns that will be used in the table. */
-  columns: ColumnType<DataType>[];
+  readonly columns: ColumnType<DataType>[];
   /** Data to display. Object keys must match column keys if default rendering is used. */
   data?: DataType[];
   /** Identifier key of the data object. */
   readonly uniqueRowKey: keyof DataType;
   /** Allows the user to hover over the rows. */
   isHoverable?: boolean | undefined;
-  /** Allows the user to click and activate a row. */
-  isRowClickable?: boolean | undefined;
+  // /** Allows the user to click and activate a row. */
+  // isRowClickable?: boolean | undefined;
   /** Allows the usage of checkboxes and row selection. */
   selectionMode?: "multiple";
   /** Allows the ability to use custom localization. */
@@ -109,7 +117,7 @@ export type TableProps<DataType> = {
   loading?: boolean;
   /** Callback function to execute on row click. */
   onRowClick?: (
-    e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     /** Unique key of the row. */
     rowKey: TableRowKeyType
   ) => void;
@@ -137,7 +145,6 @@ export type TableProps<DataType> = {
     };
   };
   tableHeight?: string | number | undefined;
-  tableLayout?: "fixed" | "auto";
   /** Allows the ability to use custom table styling. */
   themeProperties?: TableTheme;
   className?: string | undefined;
@@ -150,4 +157,13 @@ export type TableProps<DataType> = {
     tableBody?: ElementStyling;
     contextMenu?: ElementStyling;
   };
+  /** Allows the ability to resize the columns.
+   * @default false
+   */
+  resizableColumns?: ResizableColumnProps | boolean;
+  draggableColumns?: DraggableColumnProps | boolean;
+  // pinnedColumns?: {
+  //   left?: Array<string>;
+  //   right?: Array<string>;
+  // };
 };

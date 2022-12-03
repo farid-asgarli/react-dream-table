@@ -62,6 +62,6 @@ const Fade: React.FC<
     shouldShow && children
   );
 
-  return elementToDisplay;
+  return shouldShow ? elementToDisplay : null;
 };
 export default Fade;

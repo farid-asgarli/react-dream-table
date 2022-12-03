@@ -1,5 +1,5 @@
 import LoadingOverlay from "../../../components/ui/LoadingOverlay/LoadingOverlay";
-import { ContextLocalization, TableElementProps } from "../../../types/Table";
+import { TableBodyProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableBody.css";
 
@@ -9,10 +9,7 @@ export function TableBody({
   localization,
   loadingVisible,
   ...props
-}: TableElementProps & {
-  loadingVisible: boolean;
-  localization: ContextLocalization;
-}) {
+}: TableBodyProps) {
   return (
     <div className="table-body">
       <LoadingOverlay visible={loadingVisible} localization={localization} />
