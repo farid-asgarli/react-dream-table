@@ -9,16 +9,8 @@ export default function SearchButton({
   iconProps?: React.SVGProps<SVGSVGElement>;
 }) {
   return (
-    <button
-      type="button"
-      title="Filter"
-      className={"search-button"}
-      {...buttonProps}
-    >
-      <SearchIcon
-        {...iconProps}
-        className={concatStyles("search-icon", iconProps?.className)}
-      />
+    <button type="button" title="Filter" className={"search-button"} {...buttonProps}>
+      <SearchIcon {...iconProps} className={concatStyles("search-icon", iconProps?.className)} />
     </button>
   );
 }

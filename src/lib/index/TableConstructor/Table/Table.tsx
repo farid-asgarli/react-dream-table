@@ -142,8 +142,8 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
   });
 
   const calculateTableWidth = useMemo(() => {
-    const tableHasSelectionWidth = tableProps.selectionMode === "multiple" ? TableMeasures.selectionMenuColumnWidth : 0;
-
+    const tableSelectionWidth = tableProps.selectionMode === "multiple" ? TableMeasures.selectionMenuColumnWidth : 0;
+    const tableExpandedRowWidth = tableProps.expandedRows ? TableMeasures.expandedMenuColumnWidth : 0;
     return (
       Array.from(columnMeasures).reduce((partialSum, a) => {
         const key = a[0];
@@ -151,7 +151,8 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         if (!visibleHeaders.has(key)) return partialSum;
         return partialSum + value;
       }, 0) +
-      tableHasSelectionWidth +
+      tableSelectionWidth +
+      tableExpandedRowWidth +
       TableMeasures.contextMenuColumnWidth +
       /**scrollbar width */
       20 +
@@ -160,7 +161,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       /**padding */
       18
     );
-  }, [columnMeasures, tableProps.selectionMode, visibleHeaders]);
+  }, [columnMeasures, tableProps.expandedRows, tableProps.selectionMode, visibleHeaders]);
 
   const dataTable = (
     <div className="table-container">

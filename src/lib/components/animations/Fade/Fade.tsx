@@ -12,15 +12,7 @@ const Fade: React.FC<
     onAnimationFinish?: (visible: boolean) => void;
     as?: keyof ReactHTML;
   }
-> = ({
-  className,
-  children,
-  visible = true,
-  onAnimationFinish,
-  duration = 300,
-  as = "div",
-  ...props
-}) => {
+> = ({ className, children, visible = true, onAnimationFinish, duration = 300, as = "div", ...props }) => {
   const [callTimeout, setCallTimeout] = useState<NodeJS.Timeout>();
   const [shouldShow, setShouldShow] = useState<boolean>(visible);
 
@@ -45,22 +37,14 @@ const Fade: React.FC<
   }, [visible]);
 
   const bodyProps = {
-    className: concatStyles(
-      className,
-      visible ? "fade-in" : "fade-out",
-      !shouldShow && "disabled"
-    ),
+    className: concatStyles(className, visible ? "fade-in" : "fade-out", !shouldShow && "disabled"),
     style: {
       animationDuration: `${duration}ms`,
     },
     ...props,
   };
 
-  const elementToDisplay = React.createElement(
-    as,
-    bodyProps,
-    shouldShow && children
-  );
+  const elementToDisplay = React.createElement(as, bodyProps, shouldShow && children);
 
   return shouldShow ? elementToDisplay : null;
 };

@@ -17,6 +17,7 @@ import { TableConstans } from "../static/constants";
 import { useColumnResizer } from "./columnResizer";
 import SearchButton from "../components/ui/Buttons/SearchButton/SearchButton";
 import ContextMenuButton from "../components/ui/Buttons/ContextMenuButton/ContextMenuButton";
+import ExpandButton from "../components/ui/Buttons/ExpandButton/ExpandButton";
 
 export function useTableTools<DataType extends Record<string, any>>({
   tableProps,
@@ -34,6 +35,7 @@ export function useTableTools<DataType extends Record<string, any>>({
     paginationDefaults,
     resizableColumns,
     draggableColumns,
+    expandedRows,
   } = tableProps;
 
   const {
@@ -51,25 +53,32 @@ export function useTableTools<DataType extends Record<string, any>>({
 
   /** List of checked items in the table. */
   const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(new Set());
-
   /** Filter menu visibility props. */
   const [filterMenu, setFilterMenu] = useState<FilterMenuVisibility>();
-
   /** Context menu visibility props. */
   const [contextMenu, setContextMenu] = useState<ContextMenuVisibility<DataType>>();
-
   /** Set of visible column headers. */
   const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(new Set(columns.map((x) => x.key)));
-
   /** Set of column dimensions (e.g. width). */
   const [columnMeasures, setColumnMeasures] = useState<Map<string, number>>(
     new Map(columns.map(({ key, width }) => [key, width ?? TableMeasures.defaultColumnWidth]))
   );
-
+  /** Set of column keys in sorted order. */
   const [columnOrder, setColumnOrder] = useState<Array<string>>(columns.map(({ key }) => key));
+  /** Set of expanded row keys. */
+  const [expandedRowKeys, setExpandedRowKeys] = useState<Set<TableRowKeyType>>(new Set());
 
   function handleChangeColumnSize(key: string, newWidth: number) {
     setColumnMeasures((prev) => new Map(prev).set(key, newWidth));
+  }
+
+  function handleExpandColumn(key: TableRowKeyType) {
+    setExpandedRowKeys((prev) => {
+      const stateCopy = new Set(prev);
+      if (prev.has(key)) stateCopy.delete(key);
+      else stateCopy.add(key);
+      return stateCopy;
+    });
   }
 
   const headerDataRefs = useRef(new Map<string, HTMLDivElement | null>());
@@ -82,6 +91,7 @@ export function useTableTools<DataType extends Record<string, any>>({
         width: TableMeasures.contextMenuColumnWidth,
       });
     }
+
     if (selectionMode === "multiple") {
       columnsCopy = [
         {
@@ -91,11 +101,22 @@ export function useTableTools<DataType extends Record<string, any>>({
         ...columnsCopy,
       ];
     }
+    if (expandedRows) {
+      columnsCopy = [
+        {
+          key: TableConstans.EXPANDABLE_KEY,
+          width: TableMeasures.expandedMenuColumnWidth,
+        },
+        ...columnsCopy,
+      ];
+    }
+
     return columnsCopy.filter(
       (col) =>
         visibleHeaders.has(col.key) ||
         col.key === TableConstans.SELECTION_KEY ||
-        col.key === TableConstans.CONTEXT_MENU_KEY
+        col.key === TableConstans.CONTEXT_MENU_KEY ||
+        col.key === TableConstans.EXPANDABLE_KEY
     );
   }, [columns, columnOrder, visibleHeaders]);
 
@@ -206,6 +227,10 @@ export function useTableTools<DataType extends Record<string, any>>({
     }
   }
 
+  useEffect(() => {
+    console.log(expandedRowKeys);
+  }, [expandedRowKeys]);
+
   const handleMapRow = useCallback(
     (data: DataType, isRowActive: boolean) => {
       const mappedRows = columnsToRender.map((col) => {
@@ -238,7 +263,17 @@ export function useTableTools<DataType extends Record<string, any>>({
                 />
               </TableRowData>
             );
-
+          case TableConstans.EXPANDABLE_KEY:
+            return (
+              <TableRowData className={"expandable-container"} {...tableRowDataProps}>
+                {(!expandedRows?.excludeWhen || !expandedRows.excludeWhen(data)) && (
+                  <ExpandButton
+                    isExpanded={expandedRowKeys.has(data[uniqueRowKey])}
+                    onClick={() => handleExpandColumn(data[uniqueRowKey])}
+                  />
+                )}
+              </TableRowData>
+            );
           case TableConstans.SELECTION_KEY:
             return (
               <TableRowData {...tableRowDataProps}>
@@ -268,7 +303,16 @@ export function useTableTools<DataType extends Record<string, any>>({
       return mappedRows;
     },
 
-    [columnsToRender, renderContextMenu, selectedRows, selectionMode, contextMenu, uniqueRowKey, columnMeasures]
+    [
+      columnsToRender,
+      renderContextMenu,
+      selectedRows,
+      selectionMode,
+      contextMenu,
+      uniqueRowKey,
+      columnMeasures,
+      expandedRowKeys,
+    ]
   );
 
   //#region Column-Resize
@@ -309,7 +353,8 @@ export function useTableTools<DataType extends Record<string, any>>({
           };
         case TableConstans.CONTEXT_MENU_KEY:
           return { ...tableHeadProps, className: "context-header" };
-
+        case TableConstans.EXPANDABLE_KEY:
+          return { ...tableHeadProps, className: "expandable-header" };
         default:
           return {
             ...tableHeadProps,
@@ -374,10 +419,15 @@ export function useTableTools<DataType extends Record<string, any>>({
     () =>
       data?.map((x, i) => {
         const isRowActive = selectedRows.has(x[uniqueRowKey]);
+        const isRowExpanded = expandedRowKeys.has(x[uniqueRowKey]);
         return (
           <TableRow
             className={concatStyles(isRowActive && "active")}
             onClick={(e) => handleRowClick(e, x[uniqueRowKey])}
+            expandedProps={{
+              isRowExpanded: isRowExpanded,
+              children: expandedRows?.render?.(x),
+            }}
             key={i}
           >
             {handleMapRow(x, isRowActive)}
@@ -385,7 +435,7 @@ export function useTableTools<DataType extends Record<string, any>>({
         );
       }),
 
-    [data, handleMapRow]
+    [data, expandedRowKeys, handleMapRow]
   );
 
   function handleHeaderVisibility(key: string) {

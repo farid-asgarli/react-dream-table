@@ -140,6 +140,10 @@ export type TableProps<DataType> = {
    */
   resizableColumns?: ResizableColumnProps | boolean;
   draggableColumns?: DraggableColumnProps | boolean;
+  expandedRows?: {
+    render?: (data: DataType) => React.ReactNode;
+    excludeWhen?: (data: DataType) => boolean;
+  };
   // pinnedColumns?: {
   //   left?: Array<string>;
   //   right?: Array<string>;

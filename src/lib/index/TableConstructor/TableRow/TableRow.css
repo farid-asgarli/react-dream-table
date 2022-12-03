@@ -19,6 +19,10 @@
   background-color: var(--color-background);
 }
 
+.table-row-expansion {
+  padding: 10px 12px;
+}
+
 /* .table-row .table-row-data:first-child {
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;

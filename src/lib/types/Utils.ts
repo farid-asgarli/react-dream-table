@@ -1,3 +1,4 @@
+import React from "react";
 import { ColumnType, ContextLocalization, TablePaginationProps } from "./Table";
 
 export type ContextMenu = {
@@ -120,7 +121,12 @@ export interface TableBodyProps extends TableElementProps {
   localization: ContextLocalization;
 }
 
-export interface TableRowProps extends TableElementProps {}
+export interface TableRowProps extends TableElementProps {
+  expandedProps?: {
+    children: React.ReactNode;
+    isRowExpanded: boolean;
+  };
+}
 
 export interface TableRowDataProps extends TableElementProps {
   rowProps?: {

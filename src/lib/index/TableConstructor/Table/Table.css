@@ -70,7 +70,8 @@
   margin-left: auto;
 } */
 
-.table-main .context-menu-button {
+.table-main .context-menu-button,
+.table-main .expand-button {
   all: unset;
   display: flex;
   justify-content: center;
@@ -83,7 +84,18 @@
   cursor: pointer;
   transition: 0.3s ease-in-out background;
 }
-.table-main .context-menu-button:hover {
+
+.table-main .expand-button .expand-icon {
+  transition: 0.2s ease-in-out transform;
+  fill: #7e868c;
+}
+
+.table-main .expand-button.expanded .expand-icon {
+  transform: rotate(45deg);
+}
+
+.table-main .context-menu-button:hover,
+.table-main .expand-button:hover {
   background: var(--color-background);
 }
 
