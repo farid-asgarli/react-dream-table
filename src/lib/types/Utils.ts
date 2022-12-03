@@ -55,14 +55,8 @@ export type TableRowKeyType = string | number;
 export type FilterMenuProps = {
   visible: boolean;
   fetchedFilter: Map<string, string[]>;
-  updateSelectedFilters(
-    key?: string | undefined,
-    value?: string | string[] | undefined
-  ): Promise<void>;
-  updateInputValue: (
-    key?: string | undefined,
-    value?: string | undefined
-  ) => Promise<void>;
+  updateSelectedFilters(key?: string | undefined, value?: string | string[] | undefined): Promise<void>;
+  updateInputValue: (key?: string | undefined, value?: string | undefined) => Promise<void>;
   value: string | undefined;
   columnKey: string;
   currentColumn?: ColumnType<any>;
@@ -75,10 +69,7 @@ export type FilterMenuProps = {
 
 export type PaginationTableProps = {
   paginationProps: TablePaginationProps;
-  updatePaginationProps: (
-    valuesToUpdate: TablePaginationProps,
-    shouldTriggerServerUpdate?: boolean
-  ) => void;
+  updatePaginationProps: (valuesToUpdate: TablePaginationProps, shouldTriggerServerUpdate?: boolean) => void;
   onPaginationChange?: (props: TablePaginationProps) => void;
   fetching: Set<DataFetchingType>;
   localization: ContextLocalization;

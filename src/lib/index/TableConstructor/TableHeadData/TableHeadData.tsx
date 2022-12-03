@@ -6,32 +6,14 @@ import { TableHeadDataProps } from "../../../types/Utils";
 import { TableMeasures } from "../../../static/measures";
 import "./TableHeadData.css";
 
-export const TableHeadData = React.forwardRef<
-  HTMLDivElement,
-  TableHeadDataProps
->(
+export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps>(
   (
-    {
-      children,
-      rowProps,
-      draggingProps,
-      columnKey,
-      className,
-      style,
-      resizingProps,
-      toolBoxes,
-      ...props
-    },
+    { children, rowProps, draggingProps, columnKey, className, style, resizingProps, toolBoxes, ...props },
     tableHeadDataRef
   ) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      setActivatorNodeRef,
-      transform,
-      transition,
-    } = useSortable({ id: columnKey });
+    const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({
+      id: columnKey,
+    });
 
     const draggableProps = draggingProps?.isDraggable
       ? {
@@ -76,9 +58,7 @@ export const TableHeadData = React.forwardRef<
         {resizingProps?.isResizable && (
           <div
             onMouseDown={(e) => resizingProps?.onMouseDown(columnKey)}
-            className={`resize-handle ${
-              resizingProps?.activeIndex === columnKey ? "active" : "idle"
-            }`}
+            className={`resize-handle ${resizingProps?.activeIndex === columnKey ? "active" : "idle"}`}
           />
         )}
       </div>

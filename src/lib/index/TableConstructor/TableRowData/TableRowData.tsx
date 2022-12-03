@@ -2,12 +2,7 @@ import { TableMeasures } from "../../../static/measures";
 import { TableRowDataProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableRowData.css";
-export function TableRowData({
-  children,
-  className,
-  rowProps,
-  ...props
-}: TableRowDataProps) {
+export function TableRowData({ children, className, rowProps, ...props }: TableRowDataProps) {
   return (
     <div
       style={{

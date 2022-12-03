@@ -47,43 +47,26 @@ export function useTableTools<DataType extends Record<string, any>>({
     pipeFetchedFilters,
     updateSelectedFilters,
     fetching,
-  } = useFilterManagement<DataType>(
-    columns,
-    apiData,
-    serverSide,
-    paginationDefaults
-  );
+  } = useFilterManagement<DataType>(columns, apiData, serverSide, paginationDefaults);
 
   /** List of checked items in the table. */
-  const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(
-    new Set()
-  );
+  const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(new Set());
 
   /** Filter menu visibility props. */
   const [filterMenu, setFilterMenu] = useState<FilterMenuVisibility>();
 
   /** Context menu visibility props. */
-  const [contextMenu, setContextMenu] =
-    useState<ContextMenuVisibility<DataType>>();
+  const [contextMenu, setContextMenu] = useState<ContextMenuVisibility<DataType>>();
 
   /** Set of visible column headers. */
-  const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(
-    new Set(columns.map((x) => x.key))
-  );
+  const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(new Set(columns.map((x) => x.key)));
 
   /** Set of column dimensions (e.g. width). */
   const [columnMeasures, setColumnMeasures] = useState<Map<string, number>>(
-    new Map(
-      columns.map(({ key, width }) => [
-        key,
-        width ?? TableMeasures.defaultColumnWidth,
-      ])
-    )
+    new Map(columns.map(({ key, width }) => [key, width ?? TableMeasures.defaultColumnWidth]))
   );
 
-  const [columnOrder, setColumnOrder] = useState<Array<string>>(
-    columns.map(({ key }) => key)
-  );
+  const [columnOrder, setColumnOrder] = useState<Array<string>>(columns.map(({ key }) => key));
 
   function handleChangeColumnSize(key: string, newWidth: number) {
     setColumnMeasures((prev) => new Map(prev).set(key, newWidth));
@@ -92,9 +75,7 @@ export function useTableTools<DataType extends Record<string, any>>({
   const headerDataRefs = useRef(new Map<string, HTMLDivElement | null>());
 
   const columnsToRender = useMemo(() => {
-    let columnsCopy = [...columns].sort(
-      (a, b) => columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
-    );
+    let columnsCopy = [...columns].sort((a, b) => columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key));
     if (renderContextMenu) {
       columnsCopy.push({
         key: TableConstans.CONTEXT_MENU_KEY,
@@ -118,10 +99,7 @@ export function useTableTools<DataType extends Record<string, any>>({
     );
   }, [columns, columnOrder, visibleHeaders]);
 
-  function determineEllipsis(
-    column: ColumnType<DataType>,
-    propKey?: keyof EllipsisProps | undefined
-  ) {
+  function determineEllipsis(column: ColumnType<DataType>, propKey?: keyof EllipsisProps | undefined) {
     if (column.ellipsis === undefined) return true;
     if (typeof column.ellipsis === "boolean") return column.ellipsis === true;
     else if (propKey) return column.ellipsis?.[propKey] === true;
@@ -131,10 +109,8 @@ export function useTableTools<DataType extends Record<string, any>>({
   const checkIfColumnIsResizable = useCallback(
     (columnKey: string) => {
       if (!resizableColumns) return false;
-      if (typeof resizableColumns === "boolean" && resizableColumns === true)
-        return true;
-      else if (!resizableColumns.columnsToExclude?.includes(columnKey))
-        return true;
+      if (typeof resizableColumns === "boolean" && resizableColumns === true) return true;
+      else if (!resizableColumns.columnsToExclude?.includes(columnKey)) return true;
     },
     [resizableColumns]
   );
@@ -142,10 +118,8 @@ export function useTableTools<DataType extends Record<string, any>>({
   const checkIfColumnIsDraggable = useCallback(
     (columnKey: string) => {
       if (!draggableColumns) return false;
-      if (typeof draggableColumns === "boolean" && draggableColumns === true)
-        return true;
-      else if (!draggableColumns.columnsToExclude?.includes(columnKey))
-        return true;
+      if (typeof draggableColumns === "boolean" && draggableColumns === true) return true;
+      else if (!draggableColumns.columnsToExclude?.includes(columnKey)) return true;
     },
     [draggableColumns]
   );
@@ -162,9 +136,7 @@ export function useTableTools<DataType extends Record<string, any>>({
   }
 
   async function handleDisplayFilterMenu(
-    prop?:
-      | { key: string; position: FilterMenuVisibility["position"] }
-      | undefined,
+    prop?: { key: string; position: FilterMenuVisibility["position"] } | undefined,
     visibility: "visible" | "hidden" | "destroy-on-close" = "visible"
   ) {
     if (prop) {
@@ -238,10 +210,7 @@ export function useTableTools<DataType extends Record<string, any>>({
     (data: DataType, isRowActive: boolean) => {
       const mappedRows = columnsToRender.map((col) => {
         function conditionalRenderIfNullOrEmpty(data: any) {
-          if (
-            col.dataRenderOnNullOrUndefined &&
-            (data === null || data === undefined)
-          )
+          if (col.dataRenderOnNullOrUndefined && (data === null || data === undefined))
             return col.dataRenderOnNullOrUndefined(data);
           return data;
         }
@@ -254,10 +223,7 @@ export function useTableTools<DataType extends Record<string, any>>({
         switch (col.key) {
           case TableConstans.CONTEXT_MENU_KEY:
             return (
-              <TableRowData
-                className={"context-menu-container"}
-                {...tableRowDataProps}
-              >
+              <TableRowData className={"context-menu-container"} {...tableRowDataProps}>
                 <ContextMenuButton
                   onClick={(e) => {
                     e.stopPropagation();
@@ -287,17 +253,13 @@ export function useTableTools<DataType extends Record<string, any>>({
           default:
             return (
               <TableRowData
-                className={concatStyles(
-                  determineEllipsis(col, "rowData") && "ellipsis"
-                )}
+                className={concatStyles(determineEllipsis(col, "rowData") && "ellipsis")}
                 {...tableRowDataProps}
                 rowProps={{
                   width: columnMeasures.get(col.key),
                 }}
               >
-                {col.dataRender
-                  ? col.dataRender(data)
-                  : conditionalRenderIfNullOrEmpty(data[col.key])}
+                {col.dataRender ? col.dataRender(data) : conditionalRenderIfNullOrEmpty(data[col.key])}
               </TableRowData>
             );
         }
@@ -306,15 +268,7 @@ export function useTableTools<DataType extends Record<string, any>>({
       return mappedRows;
     },
 
-    [
-      columnsToRender,
-      renderContextMenu,
-      selectedRows,
-      selectionMode,
-      contextMenu,
-      uniqueRowKey,
-      columnMeasures,
-    ]
+    [columnsToRender, renderContextMenu, selectedRows, selectionMode, contextMenu, uniqueRowKey, columnMeasures]
   );
 
   //#region Column-Resize
@@ -323,14 +277,8 @@ export function useTableTools<DataType extends Record<string, any>>({
     {
       headerDataRefs: headerDataRefs.current,
       handleChangeColumnSize,
-      minColumnResizeWidth:
-        typeof resizableColumns === "boolean"
-          ? undefined
-          : resizableColumns?.minColumnResizeWidth,
-      maxColumnResizeWidth:
-        typeof resizableColumns === "boolean"
-          ? undefined
-          : resizableColumns?.maxColumnResizeWidth,
+      minColumnResizeWidth: typeof resizableColumns === "boolean" ? undefined : resizableColumns?.minColumnResizeWidth,
+      maxColumnResizeWidth: typeof resizableColumns === "boolean" ? undefined : resizableColumns?.maxColumnResizeWidth,
     },
     // Enable column resizing if only 'true' or 'props' are passed as an arg.
     !!resizableColumns
@@ -352,11 +300,7 @@ export function useTableTools<DataType extends Record<string, any>>({
               <input
                 className={"checkbox"}
                 onChange={(e) =>
-                  setSelectedRows(
-                    !e.target.checked
-                      ? new Set()
-                      : new Set(data!.map((x) => x[uniqueRowKey]))
-                  )
+                  setSelectedRows(!e.target.checked ? new Set() : new Set(data!.map((x) => x[uniqueRowKey])))
                 }
                 checked={data?.length === selectedRows.size}
                 type={"checkbox"}
@@ -369,24 +313,15 @@ export function useTableTools<DataType extends Record<string, any>>({
         default:
           return {
             ...tableHeadProps,
-            className: concatStyles(
-              determineEllipsis(col, "columnHead") && "ellipsis",
-              "filter-header"
-            ),
+            className: concatStyles(determineEllipsis(col, "columnHead") && "ellipsis", "filter-header"),
             children: (
               <div className={concatStyles(col.filter && "filter-wrapper")}>
-                <div
-                  className={concatStyles(
-                    determineEllipsis(col, "columnHead") && "ellipsis",
-                    "content"
-                  )}
-                >
+                <div className={concatStyles(determineEllipsis(col, "columnHead") && "ellipsis", "content")}>
                   {col.columnRender ? col.columnRender() : col.title}
                 </div>
               </div>
             ),
-            ref: (ref: HTMLDivElement | null) =>
-              headerDataRefs.current.set(col.key, ref),
+            ref: (ref: HTMLDivElement | null) => headerDataRefs.current.set(col.key, ref),
             resizingProps: {
               onMouseDown: mouseDown,
               activeIndex,
@@ -413,8 +348,7 @@ export function useTableTools<DataType extends Record<string, any>>({
                     });
                   }}
                   iconProps={{
-                    className:
-                      selectedFilters[col.key]?.size > 0 ? "active" : undefined,
+                    className: selectedFilters[col.key]?.size > 0 ? "active" : undefined,
                   }}
                 />
               ) : undefined,
@@ -424,20 +358,10 @@ export function useTableTools<DataType extends Record<string, any>>({
     });
 
     return colsToRender;
-  }, [
-    data,
-    selectionMode,
-    selectedRows,
-    renderContextMenu,
-    columnsToRender,
-    columnMeasures,
-  ]);
+  }, [data, selectionMode, selectedRows, renderContextMenu, columnsToRender, columnMeasures]);
 
   const handleRowClick = useCallback(
-    (
-      e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-      rowKey: TableRowKeyType
-    ) => {
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>, rowKey: TableRowKeyType) => {
       if (selectionMode === "multiple") {
         handleUpdateSelection(rowKey);
       }
@@ -471,8 +395,7 @@ export function useTableTools<DataType extends Record<string, any>>({
       visibleHeadersCopy.delete(key);
 
       const columnSelectedFilters = selectedFilters[key];
-      if (columnSelectedFilters && columnSelectedFilters.size > 0)
-        updateSelectedFilters(key);
+      if (columnSelectedFilters && columnSelectedFilters.size > 0) updateSelectedFilters(key);
     } else visibleHeadersCopy.add(key);
 
     setVisibleHeaders(visibleHeadersCopy);

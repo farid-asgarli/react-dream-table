@@ -1,12 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ColumnType, TablePaginationProps, TableProps } from "../types/Table";
-import {
-  DataFetchingType,
-  SelectedFilterType,
-  FetchedFilterType,
-  PaginationTableProps,
-} from "../types/Utils";
+import { DataFetchingType, SelectedFilterType, FetchedFilterType, PaginationTableProps } from "../types/Utils";
 
 export function useFilterManagement<DataType extends Record<string, any>>(
   columns: ColumnType<DataType>[],
@@ -25,16 +20,12 @@ export function useFilterManagement<DataType extends Record<string, any>>(
   /**
    * Collection of already fetched filters.
    */
-  const [fetchedFilters, setFetchedFilters] = useState<FetchedFilterType>(
-    new Map()
-  );
+  const [fetchedFilters, setFetchedFilters] = useState<FetchedFilterType>(new Map());
 
   /**
    * Collection of user selected filters.
    */
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilterType>(
-    {}
-  );
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilterType>({});
 
   // Refs are used in place of state when performing callbacks, as they keep the up-to-date value.
   const selectedFilterRef = useRef<SelectedFilterType>({});
@@ -53,9 +44,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
       let filteredData: DataType[] = [...data];
       if (filters) {
         const assignFilter = (item: DataType, key: string) => {
-          const equalityComparer = columns.find(
-            (x) => x.key === key
-          )?.filterEqualityComparer;
+          const equalityComparer = columns.find((x) => x.key === key)?.filterEqualityComparer;
           const currentItemFilters = filters?.[key];
           // If filter array contains no items, stop execution.
           if (currentItemFilters.size === 0) return true;
@@ -65,8 +54,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
           for (const f of currentItemFilters.keys()) {
             if (
               (equalityComparer && equalityComparer?.(item[key], f)) ||
-              (!equalityComparer &&
-                f?.toLowerCase() === `${item[key]}`?.toLowerCase())
+              (!equalityComparer && f?.toLowerCase() === `${item[key]}`?.toLowerCase())
             )
               return true;
           }
@@ -82,9 +70,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     [data, selectedFilters]
   );
 
-  const filteredData = serverSide?.filters?.onFilterSelect
-    ? data
-    : pipeFilters(data, selectedFilters);
+  const filteredData = serverSide?.filters?.onFilterSelect ? data : pipeFilters(data, selectedFilters);
 
   const [paginationProps, setPaginationProps] = useState<TablePaginationProps>({
     currentPage: PAGINATION_CURRENT_PAGE,
@@ -113,8 +99,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     let filtersToDisplay: SelectedFilterType;
 
     //Reset pagination's current page to one on filters' change
-    if (paginationPropsRef.current.currentPage !== 1)
-      updatePaginationProps({ currentPage: 1 }, false);
+    if (paginationPropsRef.current.currentPage !== 1) updatePaginationProps({ currentPage: 1 }, false);
 
     setSelectedFilters((prev) => {
       if (!value) {
@@ -183,10 +168,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     if (key) updateFetchedFilters(key, []);
   }
 
-  function updatePaginationProps(
-    valuesToUpdate: TablePaginationProps,
-    shouldTriggerServerUpdate: boolean = true
-  ) {
+  function updatePaginationProps(valuesToUpdate: TablePaginationProps, shouldTriggerServerUpdate: boolean = true) {
     setPaginationProps((prev) => {
       const updatedPagination = { ...prev, ...valuesToUpdate };
       if (shouldTriggerServerUpdate && serverSide?.pagination?.onChange) {
@@ -220,16 +202,10 @@ export function useFilterManagement<DataType extends Record<string, any>>(
   }, [data, fetchedFilters, selectedFilters]);
 
   useEffect(() => {
-    if (
-      serverSide?.filters?.onFilterSelect &&
-      Object.keys(selectedFilters).length > 0
-    ) {
+    if (serverSide?.filters?.onFilterSelect && Object.keys(selectedFilters).length > 0) {
       startFetching("filter-select");
       serverSide?.filters
-        ?.onFilterSelect?.(
-          selectedFilterRef.current,
-          paginationPropsRef.current
-        )
+        ?.onFilterSelect?.(selectedFilterRef.current, paginationPropsRef.current)
         .then(() => stopFetching("filter-select"));
     }
   }, [selectedFilters]);

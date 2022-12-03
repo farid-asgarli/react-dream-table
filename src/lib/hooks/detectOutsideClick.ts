@@ -15,11 +15,7 @@ export function useDetectOutsideClick<TRef>(
   callback?: (event: MouseEvent, key?: string) => void
 ) {
   useEffect(() => {
-    function fireEvent(
-      ref: React.RefObject<TRef>,
-      event: MouseEvent,
-      key?: string
-    ) {
+    function fireEvent(ref: React.RefObject<TRef>, event: MouseEvent, key?: string) {
       if (ref.current && !(ref.current as any).contains(event.target)) {
         callback?.(event, key);
       }
@@ -28,9 +24,7 @@ export function useDetectOutsideClick<TRef>(
     function handleClickOutside(event: MouseEvent) {
       !Array.isArray(refObject)
         ? fireEvent(refObject, event)
-        : refObject.forEach((refObject) =>
-            fireEvent(refObject.ref, event, refObject.key)
-          );
+        : refObject.forEach((refObject) => fireEvent(refObject.ref, event, refObject.key));
     }
 
     document.addEventListener("mousedown", handleClickOutside);

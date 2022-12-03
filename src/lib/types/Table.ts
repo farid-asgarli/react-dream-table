@@ -1,10 +1,4 @@
-import {
-  ContextMenu,
-  EllipsisProps,
-  PaginationTableProps,
-  SelectedFilterType,
-  TableRowKeyType,
-} from "./Utils";
+import { ContextMenu, EllipsisProps, PaginationTableProps, SelectedFilterType, TableRowKeyType } from "./Utils";
 
 export type TablePaginationProps = {
   /** Current page size to display. */
@@ -75,17 +69,9 @@ export type ColumnType<DataType> = {
    **/
   ellipsis?: EllipsisProps | boolean | undefined;
   /** Custom prop rendering for the input element in filter search menu. */
-  filterSearchInputProps?: (
-    key: string
-  ) => React.InputHTMLAttributes<HTMLInputElement>;
-  filterEqualityComparer?: (
-    selectedFilter: string,
-    valueToCompare: any
-  ) => boolean;
-  filterSearchEqualityComparer?: (
-    inputValue: string,
-    valueToCompare: any
-  ) => boolean;
+  filterSearchInputProps?: (key: string) => React.InputHTMLAttributes<HTMLInputElement>;
+  filterEqualityComparer?: (selectedFilter: string, valueToCompare: any) => boolean;
+  filterSearchEqualityComparer?: (inputValue: string, valueToCompare: any) => boolean;
 };
 
 /** Set of type defintions for `Table` component. */
@@ -103,9 +89,7 @@ export type TableProps<DataType> = {
   /** Allows the usage of checkboxes and row selection. */
   selectionMode?: "multiple";
   /** Allows the ability to use custom localization. */
-  localization?: (
-    currentLocalization: ContextLocalization
-  ) => ContextLocalization;
+  localization?: (currentLocalization: ContextLocalization) => ContextLocalization;
   /** Display three-dot context menu at the end of the row.  */
   renderContextMenu?: (
     data: DataType | undefined,
@@ -129,19 +113,13 @@ export type TableProps<DataType> = {
   serverSide?: {
     pagination?: {
       dataCount: number;
-      onChange: (
-        paginationProps: TablePaginationProps,
-        filters: SelectedFilterType
-      ) => Promise<void>;
+      onChange: (paginationProps: TablePaginationProps, filters: SelectedFilterType) => Promise<void>;
     };
     filters?: {
       /** Fires an event when input field's value is changed.  */
       onFilterSearch?: (key: string, inputValue?: string) => Promise<string[]>;
       /** Fires an event when filter selection is changed. */
-      onFilterSelect?: (
-        filters: SelectedFilterType,
-        paginationProps: TablePaginationProps
-      ) => Promise<void>;
+      onFilterSelect?: (filters: SelectedFilterType, paginationProps: TablePaginationProps) => Promise<void>;
     };
   };
   tableHeight?: string | number | undefined;

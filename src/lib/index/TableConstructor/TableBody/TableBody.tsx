@@ -3,13 +3,7 @@ import { TableBodyProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableBody.css";
 
-export function TableBody({
-  children,
-  className,
-  localization,
-  loadingVisible,
-  ...props
-}: TableBodyProps) {
+export function TableBody({ children, className, localization, loadingVisible, ...props }: TableBodyProps) {
   return (
     <div className="table-body">
       <LoadingOverlay visible={loadingVisible} localization={localization} />

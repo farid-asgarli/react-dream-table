@@ -17,9 +17,7 @@ import { concatStyles } from "../../../utils/ConcatStyles";
 import { TableMeasures } from "../../../static/measures";
 import "./Table.css";
 
-export function Table<DataType extends Record<string, any>>(
-  tableProps: TableProps<DataType>
-) {
+export function Table<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
     isHoverable,
     renderContextMenu,
@@ -38,9 +36,7 @@ export function Table<DataType extends Record<string, any>>(
   } = tableProps;
 
   const localizationRef = useRef<ContextLocalization>(TableLocalization);
-  localizationRef.current = localization
-    ? localization(TableLocalization)
-    : TableLocalization;
+  localizationRef.current = localization ? localization(TableLocalization) : TableLocalization;
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
@@ -73,12 +69,7 @@ export function Table<DataType extends Record<string, any>>(
   const contextMenuElement = renderContextMenu && contextMenu && (
     <ContextMenuOverlay
       ref={contextMenuRef}
-      elements={renderContextMenu(
-        contextMenu.data,
-        selectedRows,
-        paginationProps,
-        selectedFilters
-      )}
+      elements={renderContextMenu(contextMenu.data, selectedRows, paginationProps, selectedFilters)}
       style={{
         left: contextMenu.position?.xAxis,
         top: contextMenu.position?.yAxis,
@@ -151,10 +142,7 @@ export function Table<DataType extends Record<string, any>>(
   });
 
   const calculateTableWidth = useMemo(() => {
-    const tableHasSelectionWidth =
-      tableProps.selectionMode === "multiple"
-        ? TableMeasures.selectionMenuColumnWidth
-        : 0;
+    const tableHasSelectionWidth = tableProps.selectionMode === "multiple" ? TableMeasures.selectionMenuColumnWidth : 0;
 
     return (
       Array.from(columnMeasures).reduce((partialSum, a) => {
@@ -176,18 +164,12 @@ export function Table<DataType extends Record<string, any>>(
 
   const dataTable = (
     <div className="table-container">
-      <TableHead
-        draggingEnabled={!!draggableColumns}
-        setColumnOrder={setColumnOrder}
-        items={handleMapTableHead}
-      />
+      <TableHead draggingEnabled={!!draggableColumns} setColumnOrder={setColumnOrder} items={handleMapTableHead} />
       {loading ? (
         <LoadingTable />
       ) : data && data.length > 0 ? (
         <TableBody
-          loadingVisible={
-            fetching.has("filter-select") || fetching.has("pagination")
-          }
+          loadingVisible={fetching.has("filter-select") || fetching.has("pagination")}
           localization={localizationRef.current}
           style={{
             height: tableHeight,
@@ -203,10 +185,7 @@ export function Table<DataType extends Record<string, any>>(
   );
 
   return (
-    <div
-      style={{ ...defaultStyling, ...style }}
-      className={concatStyles(className, "table-wrapper")}
-    >
+    <div style={{ ...defaultStyling, ...style }} className={concatStyles(className, "table-wrapper")}>
       {contextMenuElement}
       {filterMenuElement()}
       <div
