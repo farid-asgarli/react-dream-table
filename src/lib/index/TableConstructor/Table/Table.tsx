@@ -14,7 +14,7 @@ import LoadingTable from "../../../components/ui/LoadingTable/LoadingTable";
 import EmptyTable from "../../../components/ui/EmptyTable/EmptyTable";
 import { PaginationTable } from "../../../components/ui/PaginationTable/PaginationTable";
 import { concatStyles } from "../../../utils/ConcatStyles";
-import { TableMeasures } from "../../../static/measures";
+import { TableDimensions } from "../../../static/measures";
 import "./Table.css";
 
 export function Table<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
@@ -22,17 +22,17 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     isHoverable,
     renderContextMenu,
     loading,
-    onPaginationChange,
     serverSide,
     localization,
-    tableHeight,
+    tableHeight = "100%",
     themeProperties = DefaultTheme,
-    paginationDefaults,
+    pagination,
     className,
     style,
     elementStylings,
     columns,
     draggableColumns,
+    changeColumnVisibility,
   } = tableProps;
 
   const localizationRef = useRef<ContextLocalization>(TableLocalization);
@@ -57,7 +57,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     inputValue,
     data,
     visibleHeaders,
-    columnMeasures,
+    columnDimensions,
     updateInputValue,
     updateSelectedFilters,
     updatePaginationProps,
@@ -97,7 +97,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           value={inputValue?.[filterMenu.key]}
           ref={filterMenuRef}
           selectedFilters={selectedFilters[filterMenu.key]}
-          isServerSide={!!serverSide?.filters?.onFilterSearch}
+          isServerSide={!!serverSide?.filters?.onFilterSearchAsync}
           loading={fetching.has("filter-fetch")}
           localization={localizationRef.current}
           className={elementStylings?.filterMenu?.className}
@@ -142,10 +142,10 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
   });
 
   const calculateTableWidth = useMemo(() => {
-    const tableSelectionWidth = tableProps.selectionMode === "multiple" ? TableMeasures.selectionMenuColumnWidth : 0;
-    const tableExpandedRowWidth = tableProps.expandedRows ? TableMeasures.expandedMenuColumnWidth : 0;
+    const tableSelectionWidth = tableProps.selectionMode === "multiple" ? TableDimensions.selectionMenuColumnWidth : 0;
+    const tableExpandedRowWidth = tableProps.expandableRows ? TableDimensions.expandedMenuColumnWidth : 0;
     return (
-      Array.from(columnMeasures).reduce((partialSum, a) => {
+      Array.from(columnDimensions).reduce((partialSum, a) => {
         const key = a[0];
         const value = a[1];
         if (!visibleHeaders.has(key)) return partialSum;
@@ -153,7 +153,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       }, 0) +
       tableSelectionWidth +
       tableExpandedRowWidth +
-      TableMeasures.contextMenuColumnWidth +
+      TableDimensions.contextMenuColumnWidth +
       /**scrollbar width */
       20 +
       /**scrollbar border */
@@ -161,16 +161,16 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       /**padding */
       18
     );
-  }, [columnMeasures, tableProps.expandedRows, tableProps.selectionMode, visibleHeaders]);
+  }, [columnDimensions, tableProps.expandableRows, tableProps.selectionMode, visibleHeaders]);
 
   const dataTable = (
     <div className="table-container">
       <TableHead draggingEnabled={!!draggableColumns} setColumnOrder={setColumnOrder} items={handleMapTableHead} />
       {loading ? (
-        <LoadingTable />
+        <LoadingTable style={{ height: tableHeight }} />
       ) : data && data.length > 0 ? (
         <TableBody
-          loadingVisible={fetching.has("filter-select") || fetching.has("pagination")}
+          loadingVisible={fetching.has("filter-select") || fetching.has("pagination") || fetching.has("sort")}
           localization={localizationRef.current}
           style={{
             height: tableHeight,
@@ -180,7 +180,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           {handleMapData}
         </TableBody>
       ) : (
-        <EmptyTable localization={localizationRef.current} />
+        <EmptyTable style={{ height: tableHeight }} localization={localizationRef.current} />
       )}
     </div>
   );
@@ -199,16 +199,20 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         {dataTable}
         {data && (
           <PaginationTable
+            changeColumnVisibility={changeColumnVisibility}
             paginationProps={paginationProps}
             updatePaginationProps={updatePaginationProps}
-            onPaginationChange={onPaginationChange}
+            onPaginationChange={pagination?.onPaginationChange}
             fetching={fetching}
             localization={localizationRef.current}
-            paginationDefaults={paginationDefaults}
+            paginationDefaults={pagination?.defaults}
             className={elementStylings?.tableFoot?.className}
             style={elementStylings?.tableFoot?.style}
             settingsMenuProps={{
-              columns: columns,
+              columns:
+                typeof changeColumnVisibility !== "boolean" && changeColumnVisibility?.defaultValues
+                  ? changeColumnVisibility?.defaultValues
+                  : columns,
               handleHeaderVisibility,
               visibleColumnKeys: visibleHeaders,
             }}

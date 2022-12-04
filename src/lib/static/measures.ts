@@ -1,6 +1,6 @@
-export const TableMeasures = {
+export const TableDimensions = {
   contextMenuColumnWidth: 50,
-  selectionMenuColumnWidth: 100,
+  selectionMenuColumnWidth: 50,
   expandedMenuColumnWidth: 50,
   defaultColumnWidth: 100,
   defaultDataRowHeight: 52,

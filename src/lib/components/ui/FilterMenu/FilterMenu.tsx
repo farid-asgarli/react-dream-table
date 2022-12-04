@@ -8,10 +8,7 @@ import { concatStyles } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
 import Spinner from "../Spinner/Spinner";
 import "./FilterMenu.css";
-export const FilterMenu = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & FilterMenuProps
->(
+export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & FilterMenuProps>(
   (
     {
       visible,
@@ -31,9 +28,7 @@ export const FilterMenu = React.forwardRef<
     },
     ref
   ) => {
-    const [currentInputValue, setCurrentInputValue] = useState<
-      string | undefined
-    >(value ?? StringExtensions.Empty);
+    const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(value ?? StringExtensions.Empty);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -65,15 +60,9 @@ export const FilterMenu = React.forwardRef<
     const displaySelectedFilters = useMemo(() => {
       if (!selectedFilters) return [];
       return Array.from(selectedFilters).map((x) => (
-        <li
-          className={"filter-element active"}
-          onClick={() => updateSelectedFilters(columnKey, `${x}`)}
-          key={x}
-        >
+        <li className={"filter-element active"} onClick={() => updateSelectedFilters(columnKey, `${x}`)} key={x}>
           <button type="button" title={x}>
-            <span>
-              {currentColumn?.filterRender ? currentColumn.filterRender(x) : x}
-            </span>
+            <span>{currentColumn?.filteringProps?.render ? currentColumn.filteringProps?.render(x) : x}</span>
             <Fade className={"close-icon-wrapper"}>
               <Close className={"close-icon"} />
             </Fade>
@@ -98,18 +87,15 @@ export const FilterMenu = React.forwardRef<
           if (selectedFilters?.has(x)) return false;
           if (isServerSide || !value) return true;
 
-          if (currentColumn?.filterSearchEqualityComparer) {
-            return currentColumn.filterSearchEqualityComparer(value, x);
+          if (currentColumn?.filteringProps?.searchEqualityComparer) {
+            return currentColumn.filteringProps?.searchEqualityComparer(value, x);
           } else {
             let inputValue = `${value}`.toLocaleLowerCase();
             return x.toLowerCase().includes(inputValue);
           }
         });
 
-        if (
-          filters?.length === 0 &&
-          (!selectedFilters || selectedFilters?.size === 0)
-        )
+        if (filters?.length === 0 && (!selectedFilters || selectedFilters?.size === 0))
           return (
             <Fade>
               <li className={"no-result"}>
@@ -121,12 +107,8 @@ export const FilterMenu = React.forwardRef<
 
         return filters?.map((x) => (
           <li className={concatStyles("filter-element")} key={x}>
-            <button
-              onClick={() => updateSelectedFilters(columnKey, `${x}`)}
-              type="button"
-              title={x}
-            >
-              {currentColumn?.filterRender ? currentColumn.filterRender(x) : x}
+            <button onClick={() => updateSelectedFilters(columnKey, `${x}`)} type="button" title={x}>
+              {currentColumn?.filteringProps?.render ? currentColumn.filteringProps?.render(x) : x}
             </button>
           </li>
         ));
@@ -137,16 +119,8 @@ export const FilterMenu = React.forwardRef<
     );
 
     return (
-      <Fade
-        onAnimationFinish={onHide}
-        className={"context-animator"}
-        visible={visible}
-      >
-        <div
-          ref={ref}
-          className={concatStyles("search-wrapper", className)}
-          {...props}
-        >
+      <Fade onAnimationFinish={onHide} className={"context-animator"} visible={visible}>
+        <div ref={ref} className={concatStyles("search-wrapper", className)} {...props}>
           <div className={"search-input-wrapper"}>
             <input
               key={columnKey}
@@ -154,7 +128,7 @@ export const FilterMenu = React.forwardRef<
               onChange={handleInputChange}
               value={currentInputValue}
               ref={inputRef}
-              {...currentColumn?.filterSearchInputProps?.(columnKey)}
+              {...currentColumn?.filteringProps?.searchInputProps?.(columnKey)}
             />
 
             <button

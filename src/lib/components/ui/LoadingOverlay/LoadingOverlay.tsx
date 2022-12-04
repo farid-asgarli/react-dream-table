@@ -12,10 +12,12 @@ export default function LoadingOverlay({
   localization: ContextLocalization;
 }) {
   return (
-    <Fade as="div" className={"loading-overlay"} visible={visible} {...props}>
-      <div className={"content"}>
-        <Spinner />
-        <span className={"title"}>{localization.dataLoading}</span>
+    <Fade visible={visible} {...props}>
+      <div className="loading-overlay">
+        <div className={"content"}>
+          <Spinner />
+          <span className={"title"}>{localization.dataLoading}</span>
+        </div>
       </div>
     </Fade>
   );

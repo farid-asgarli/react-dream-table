@@ -3,14 +3,22 @@ import React, { ButtonHTMLAttributes } from "react";
 import { concatStyles } from "../../../../utils/ConcatStyles";
 
 export default function SearchButton({
-  iconProps,
+  className,
+  isActive,
+  isVisible,
   ...buttonProps
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  iconProps?: React.SVGProps<SVGSVGElement>;
+  isActive?: boolean;
+  isVisible?: boolean;
 }) {
   return (
-    <button type="button" title="Filter" className={"search-button"} {...buttonProps}>
-      <SearchIcon {...iconProps} className={concatStyles("search-icon", iconProps?.className)} />
+    <button
+      type="button"
+      title="Filter"
+      className={concatStyles("action-button", isActive && "active", isVisible && "visible", className)}
+      {...buttonProps}
+    >
+      <SearchIcon className={concatStyles("action-icon")} />
     </button>
   );
 }

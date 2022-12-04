@@ -5,6 +5,7 @@
   align-items: center;
   gap: 10px;
   min-height: 100px;
+  height: 100%;
 }
 
 .empty-table .empty-table-wrapper .empty-icon {

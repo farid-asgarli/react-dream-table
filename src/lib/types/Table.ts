@@ -1,4 +1,11 @@
-import { ContextMenu, EllipsisProps, PaginationTableProps, SelectedFilterType, TableRowKeyType } from "./Utils";
+import {
+  ContextMenu,
+  EllipsisProps,
+  PaginationTableProps,
+  SelectedFilterType,
+  SortDirectionType,
+  TableRowKeyType,
+} from "./Utils";
 
 export type TablePaginationProps = {
   /** Current page size to display. */
@@ -7,6 +14,10 @@ export type TablePaginationProps = {
   currentPage?: number;
   /** Total size of data elements. */
   dataCount?: number;
+};
+
+export type ColumnVisibilityProps = {
+  defaultValues: Array<{ key: string; title: string }>;
 };
 
 /**
@@ -45,6 +56,43 @@ type DraggableColumnProps = {
   columnsToExclude?: Array<string>;
 };
 
+type ExpandableRowProps<DataType> = {
+  render?: (data: DataType) => React.ReactNode;
+  excludeWhen?: (data: DataType) => boolean;
+  onRowExpanded?: (uniqueId: TableRowKeyType) => void;
+  onRowShrinked?: (uniqueId: TableRowKeyType) => void;
+};
+
+type ClientPaginationProps = {
+  /** Fires an event when either page size or current page changes.  */
+  onPaginationChange?: (props: TablePaginationProps) => void;
+  /** Defaults for table pagination. */
+  defaults?: PaginationTableProps["paginationDefaults"];
+};
+
+type ClientSortingProps<DataType> = {
+  onSortingChange?: (key: string, direction: SortDirectionType, sortedData: DataType[]) => void;
+};
+
+type ColumnFilteringProps = {
+  /** Set of default filters to display. Will override automatic filter generation. */
+  defaultFilters?: Array<string> | undefined;
+  /** Custom rendering of filter values. */
+  render?: (text: string) => React.ReactNode;
+  /** Custom prop rendering for the input element in filter search menu. */
+  equalityComparer?: (selectedFilter: string, valueToCompare: any) => boolean;
+  searchInputProps?: (key: string) => React.InputHTMLAttributes<HTMLInputElement>;
+  searchEqualityComparer?: (inputValue: string, valueToCompare: any) => boolean;
+};
+
+type ColumnSortingProps<DataType> = {
+  sortingComparer?: (
+    first: DataType[keyof DataType],
+    second: DataType[keyof DataType],
+    alg: SortDirectionType
+  ) => number;
+};
+
 export type ColumnType<DataType> = {
   /** Unique identifier key of column. Using `key` allows data object to be indexed on per-key basis. */
   key: string;
@@ -54,24 +102,19 @@ export type ColumnType<DataType> = {
   title?: string | undefined;
   /** Custom rendering of data. */
   dataRender?: (entity: DataType) => React.ReactNode;
-  /** Custom rendering of filter values. */
-  filterRender?: (text: string) => React.ReactNode;
   /** Custom rendering of data when the value is either undefined or null. */
   dataRenderOnNullOrUndefined?: (entity: DataType) => React.ReactNode;
   /** Custom rendering of table heads `th`. */
   columnRender?: () => React.ReactNode;
-  /** Enables filtering of data. `true` for default filtering,  `function` for customized display of filters. */
-  filter?: boolean | ((filter: string) => string);
-  /** Set of default filters to display. Will override automatic filter generation. */
-  defaultFilters?: Array<string> | undefined;
+  /** Enables filtering of data. */
+  filter?: boolean | undefined;
+  filteringProps?: ColumnFilteringProps;
   /** Action to take when overflow of content occurs.
    * @default true
    **/
+  sort?: boolean;
+  sortingProps?: ColumnSortingProps<DataType> | undefined;
   ellipsis?: EllipsisProps | boolean | undefined;
-  /** Custom prop rendering for the input element in filter search menu. */
-  filterSearchInputProps?: (key: string) => React.InputHTMLAttributes<HTMLInputElement>;
-  filterEqualityComparer?: (selectedFilter: string, valueToCompare: any) => boolean;
-  filterSearchEqualityComparer?: (inputValue: string, valueToCompare: any) => boolean;
 };
 
 /** Set of type defintions for `Table` component. */
@@ -84,8 +127,6 @@ export type TableProps<DataType> = {
   readonly uniqueRowKey: keyof DataType;
   /** Allows the user to hover over the rows. */
   isHoverable?: boolean | undefined;
-  // /** Allows the user to click and activate a row. */
-  // isRowClickable?: boolean | undefined;
   /** Allows the usage of checkboxes and row selection. */
   selectionMode?: "multiple";
   /** Allows the ability to use custom localization. */
@@ -105,23 +146,29 @@ export type TableProps<DataType> = {
     /** Unique key of the row. */
     rowKey: TableRowKeyType
   ) => void;
-  /** Fires an event when either page size or current page changes.  */
-  onPaginationChange?: (props: TablePaginationProps) => void;
-  /** Defaults for table pagination. */
-  paginationDefaults?: PaginationTableProps["paginationDefaults"];
+  pagination?: ClientPaginationProps | undefined;
+  sorting?: ClientSortingProps<DataType> | undefined;
   /** Configurations to allow API based filtering and pagination. */
   serverSide?: {
     pagination?: {
       dataCount: number;
-      onChange: (paginationProps: TablePaginationProps, filters: SelectedFilterType) => Promise<void>;
+      onChangeAsync: (paginationProps: TablePaginationProps, filters: SelectedFilterType) => Promise<void>;
     };
     filters?: {
       /** Fires an event when input field's value is changed.  */
-      onFilterSearch?: (key: string, inputValue?: string) => Promise<string[]>;
+      onFilterSearchAsync?: (key: string, inputValue?: string) => Promise<string[]>;
       /** Fires an event when filter selection is changed. */
-      onFilterSelect?: (filters: SelectedFilterType, paginationProps: TablePaginationProps) => Promise<void>;
+      onFilterSelectAsync?: (filters: SelectedFilterType, paginationProps: TablePaginationProps) => Promise<void>;
+    };
+    sorting?: {
+      /** Fires an event when sorting occures.  */
+      onSortingChangeAsync?: (key: string, direction: SortDirectionType) => Promise<void>;
     };
   };
+  /**
+   * Height of the scrollable body of table.
+   * @default "100%"
+   */
   tableHeight?: string | number | undefined;
   /** Allows the ability to use custom table styling. */
   themeProperties?: TableTheme;
@@ -138,14 +185,15 @@ export type TableProps<DataType> = {
   /** Allows the ability to resize the columns.
    * @default false
    */
-  resizableColumns?: ResizableColumnProps | boolean;
-  draggableColumns?: DraggableColumnProps | boolean;
-  expandedRows?: {
-    render?: (data: DataType) => React.ReactNode;
-    excludeWhen?: (data: DataType) => boolean;
-  };
-  // pinnedColumns?: {
-  //   left?: Array<string>;
-  //   right?: Array<string>;
-  // };
+  resizableColumns?: ResizableColumnProps | boolean | undefined;
+  /** Allows the ability to drag columns and change their order. */
+  draggableColumns?: DraggableColumnProps | boolean | undefined;
+  /** Allows the ability for a row to expand. */
+  expandableRows?: ExpandableRowProps<DataType> | undefined;
+  /** Allows the ability to alter column visibility. */
+  changeColumnVisibility?: ColumnVisibilityProps | boolean | undefined;
 };
+// pinnedColumns?: {
+//   left?: Array<string>;
+//   right?: Array<string>;
+// };

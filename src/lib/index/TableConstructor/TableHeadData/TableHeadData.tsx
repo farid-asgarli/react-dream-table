@@ -3,7 +3,7 @@ import React from "react";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import { CSS } from "@dnd-kit/utilities";
 import { TableHeadDataProps } from "../../../types/Utils";
-import { TableMeasures } from "../../../static/measures";
+import { TableDimensions } from "../../../static/measures";
 import "./TableHeadData.css";
 
 export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps>(
@@ -35,8 +35,8 @@ export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps
       <div
         ref={referenceHandler}
         style={{
-          minHeight: TableMeasures.defaultHeadRowHeight,
-          maxHeight: TableMeasures.defaultHeadRowHeight,
+          minHeight: TableDimensions.defaultHeadRowHeight,
+          maxHeight: TableDimensions.defaultHeadRowHeight,
           minWidth: rowProps?.width,
           maxWidth: rowProps?.width,
           transform: CSS.Transform.toString(transform),

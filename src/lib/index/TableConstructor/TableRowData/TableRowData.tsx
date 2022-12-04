@@ -1,4 +1,4 @@
-import { TableMeasures } from "../../../static/measures";
+import { TableDimensions } from "../../../static/measures";
 import { TableRowDataProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableRowData.css";
@@ -6,8 +6,8 @@ export function TableRowData({ children, className, rowProps, ...props }: TableR
   return (
     <div
       style={{
-        minHeight: TableMeasures.defaultDataRowHeight,
-        maxHeight: TableMeasures.defaultDataRowHeight,
+        minHeight: TableDimensions.defaultDataRowHeight,
+        maxHeight: TableDimensions.defaultDataRowHeight,
         minWidth: rowProps?.width,
         maxWidth: rowProps?.width,
       }}

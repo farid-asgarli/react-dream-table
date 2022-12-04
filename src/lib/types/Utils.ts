@@ -1,5 +1,5 @@
-import React from "react";
-import { ColumnType, ContextLocalization, TablePaginationProps } from "./Table";
+import React, { HTMLAttributes } from "react";
+import { ColumnType, ColumnVisibilityProps, ContextLocalization, TablePaginationProps } from "./Table";
 
 export type ContextMenu = {
   content: React.ReactNode;
@@ -7,11 +7,10 @@ export type ContextMenu = {
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
-export type SettingsMenuProps = {
+export type SettingsMenuProps = HTMLAttributes<HTMLDivElement> & {
   columns: { key: string; title?: string }[];
   visibleColumnKeys: Set<string>;
   handleHeaderVisibility(key: string): Set<string>;
-  // visible: boolean;
 };
 
 export type ContextMenuVisibility<DataType> = {
@@ -38,7 +37,14 @@ export type SelectedFilterType = {
 
 export type FetchedFilterType = Map<string, string[]>;
 
-export type DataFetchingType = "pagination" | "filter-fetch" | "filter-select";
+export type SortFilterType = {
+  key: string;
+  direction: SortDirectionType;
+};
+
+export type SortDirectionType = "ascending" | "descending" | undefined;
+
+export type DataFetchingType = "pagination" | "filter-fetch" | "filter-select" | "sort";
 
 export type ContextMenuProps = {
   elements: (ContextMenu | undefined)[];
@@ -80,6 +86,7 @@ export type PaginationTableProps = {
     defaultPageSize?: number;
   };
   settingsMenuProps: Omit<SettingsMenuProps, "visible">;
+  changeColumnVisibility: ColumnVisibilityProps | boolean | undefined;
 };
 
 export type EllipsisProps = {

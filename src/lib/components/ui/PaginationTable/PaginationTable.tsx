@@ -25,13 +25,12 @@ export function PaginationTable({
   paginationDefaults,
   className,
   settingsMenuProps,
+  changeColumnVisibility,
   ...props
 }: PaginationTableProps & React.HTMLAttributes<HTMLDivElement>) {
-  const DEFAULT_PAGE_SIZES =
-    paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
+  const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
 
-  const [settingsMenuVisible, setSettingsMenuVisible] =
-    useState<boolean>(false);
+  const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
   const renderPaginationNumbers = useMemo(
     () =>
       renderPaginationButtons({
@@ -49,9 +48,7 @@ export function PaginationTable({
         title={localization.paginationPageSize}
         className={"page-size-selector"}
         defaultValue={paginationProps.pageSize}
-        onChange={(e) =>
-          updatePaginationProps({ currentPage: 1, pageSize: +e.target.value })
-        }
+        onChange={(e) => updatePaginationProps({ currentPage: 1, pageSize: +e.target.value })}
       >
         {DEFAULT_PAGE_SIZES.map((op) => (
           <option key={op} value={op}>
@@ -66,9 +63,7 @@ export function PaginationTable({
   const renderDataCount = useMemo(
     () => (
       <>
-        <span className={"title"}>
-          {localization.paginationTotalCount} :&nbsp;
-        </span>
+        <span className={"title"}>{localization.paginationTotalCount} :&nbsp;</span>
         <span className={"data-count"}>{paginationProps.dataCount}</span>
       </>
     ),
@@ -87,7 +82,7 @@ export function PaginationTable({
     (_, key) => setSettingsMenuVisible(false)
   );
 
-  const renderSettinsMenu = useMemo(() => {
+  const renderSettingsMenu = useMemo(() => {
     return (
       <Fade visible={settingsMenuVisible}>
         <SettingsMenu ref={settingsMenuRef} {...settingsMenuProps} />
@@ -100,25 +95,23 @@ export function PaginationTable({
       <Fade>
         <div className={"bottom"}>
           <div className={"pagination-data-count"}>
-            <div className={"settings"}>
-              <button
-                type="button"
-                title="Settings"
-                onClick={() => setSettingsMenuVisible((prev) => !prev)}
-                className={"settings-button"}
-              >
-                <Gear className={"settings-icon"} />
-              </button>
-            </div>
-            {renderSettinsMenu}
+            {changeColumnVisibility && (
+              <div className={"settings"}>
+                <button
+                  type="button"
+                  title="Settings"
+                  onClick={() => setSettingsMenuVisible((prev) => !prev)}
+                  className={"settings-button"}
+                >
+                  <Gear className={"settings-icon"} />
+                </button>
+              </div>
+            )}
+            {changeColumnVisibility && renderSettingsMenu}
             {renderDataCount}
           </div>
-          <div className={"pagination-page-numbers"}>
-            {renderPaginationNumbers}
-          </div>
-          <div className={"pagination-page-size"}>
-            {renderPaginationPageSize}
-          </div>
+          <div className={"pagination-page-numbers"}>{renderPaginationNumbers}</div>
+          <div className={"pagination-page-size"}>{renderPaginationPageSize}</div>
         </div>
       </Fade>
     </div>
@@ -130,14 +123,8 @@ function renderPaginationButtons({
   updatePaginationProps,
   onPaginationChange,
   localization,
-  paginationDefaults,
-}: Omit<PaginationTableProps, "fetching" | "settingsMenuProps">) {
-  function renderButton({
-    navigateTo,
-    component,
-    disabled,
-    title,
-  }: RenderPaginationButtonProps) {
+}: Omit<PaginationTableProps, "fetching" | "settingsMenuProps" | "changeColumnVisibility">) {
+  function renderButton({ navigateTo, component, disabled, title }: RenderPaginationButtonProps) {
     const isActive = paginationProps.currentPage === navigateTo;
 
     function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -166,11 +153,8 @@ function renderPaginationButtons({
 
     const buttons: number[] = [];
 
-    const buttonCount = Math.ceil(
-      paginationProps.dataCount / paginationProps.pageSize
-    );
-    if (paginationProps.currentPage! > buttonCount)
-      updatePaginationProps({ currentPage: buttonCount }, false);
+    const buttonCount = Math.ceil(paginationProps.dataCount / paginationProps.pageSize);
+    if (paginationProps.currentPage! > buttonCount) updatePaginationProps({ currentPage: buttonCount }, false);
 
     const initialPageNumber = 1;
 
@@ -184,10 +168,7 @@ function renderPaginationButtons({
     if (prev2 !== initialPageNumber && prev2 > 0) buttons.push(prev2);
     if (prev1 !== initialPageNumber && prev1 > 0) buttons.push(prev1);
 
-    if (
-      paginationProps.currentPage !== buttonCount &&
-      paginationProps.currentPage !== initialPageNumber
-    )
+    if (paginationProps.currentPage !== buttonCount && paginationProps.currentPage !== initialPageNumber)
       buttons.push(paginationProps.currentPage!);
 
     if (buttonCount > next1) buttons.push(next1);
