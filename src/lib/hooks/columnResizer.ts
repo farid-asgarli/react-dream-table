@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { TableDimensions } from "../static/measures";
+import { DefaultTableDimensions } from "../static/dimensions";
 
 interface ColumnResizerHookProps {
   headerDataRefs: Map<string, HTMLDivElement | null>;
@@ -12,7 +12,7 @@ export function useColumnResizer(
   {
     headerDataRefs,
     handleChangeColumnSize,
-    minColumnResizeWidth = TableDimensions.minColumnResizeWidth,
+    minColumnResizeWidth = DefaultTableDimensions.minColumnResizeWidth,
     maxColumnResizeWidth = Infinity,
   }: ColumnResizerHookProps,
   enabled: boolean = false

@@ -1,5 +1,5 @@
 import React, { HTMLAttributes } from "react";
-import { ColumnType, ColumnVisibilityProps, ContextLocalization, TablePaginationProps } from "./Table";
+import { ColumnType, ColumnVisibilityProps, TablePaginationProps } from "./Table";
 
 export type ContextMenu = {
   content: React.ReactNode;
@@ -8,7 +8,6 @@ export type ContextMenu = {
 };
 
 export type SettingsMenuProps = HTMLAttributes<HTMLDivElement> & {
-  columns: { key: string; title?: string }[];
   visibleColumnKeys: Set<string>;
   handleHeaderVisibility(key: string): Set<string>;
 };
@@ -53,8 +52,11 @@ export type ContextMenuProps = {
 };
 
 export type TableStyleProps = React.CSSProperties & {
-  "--color-background": string;
-  "--color-primary": string;
+  "--color-background": string | undefined;
+  "--color-primary": string | undefined;
+  "--border-radius-lg": string;
+  "--border-radius-md": string;
+  "--border-radius-sm": string;
 };
 
 export type TableRowKeyType = string | number;
@@ -71,15 +73,13 @@ export type FilterMenuProps = {
   selectedFilters?: Set<string>;
   isServerSide?: boolean;
   loading?: boolean;
-  localization: ContextLocalization;
 };
 
-export type PaginationTableProps = {
+export type PaginationContainerProps = {
   paginationProps: TablePaginationProps;
   updatePaginationProps: (valuesToUpdate: TablePaginationProps, shouldTriggerServerUpdate?: boolean) => void;
   onPaginationChange?: (props: TablePaginationProps) => void;
   fetching: Set<DataFetchingType>;
-  localization: ContextLocalization;
   paginationDefaults?: {
     pageSizes?: Array<number>;
     defaultCurrentPage?: number;
@@ -95,10 +95,7 @@ export type EllipsisProps = {
 };
 
 //#region Table constructor
-export type TableElementProps = Pick<
-  React.HTMLAttributes<HTMLDivElement>,
-  "className" | "style" | "children" | "onClick"
->;
+export type TableElementProps = Pick<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children" | "onClick">;
 
 export interface TableHeadDataProps extends TableElementProps {
   columnKey: string;
@@ -115,17 +112,21 @@ export interface TableHeadDataProps extends TableElementProps {
     isResizable?: boolean | undefined;
   };
   toolBoxes?: (JSX.Element | undefined)[];
+  alternateFilterInputProps?: {
+    handleChangeFilterInput?: (key: string, value: string) => void;
+    currentValue?: string;
+  };
 }
 
 export interface TableHeadProps extends TableElementProps {
   items: Array<TableHeadDataProps>;
   setColumnOrder: React.Dispatch<React.SetStateAction<Array<string>>>;
   draggingEnabled?: boolean | undefined;
+  onColumnDragged?: (columnKeys: Array<string>) => void;
 }
 
 export interface TableBodyProps extends TableElementProps {
   loadingVisible: boolean;
-  localization: ContextLocalization;
 }
 
 export interface TableRowProps extends TableElementProps {

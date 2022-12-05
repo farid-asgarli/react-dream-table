@@ -1,9 +1,10 @@
 import {
   ContextMenu,
   EllipsisProps,
-  PaginationTableProps,
+  PaginationContainerProps,
   SelectedFilterType,
   SortDirectionType,
+  SortFilterType,
   TableRowKeyType,
 } from "./Utils";
 
@@ -23,9 +24,10 @@ export type ColumnVisibilityProps = {
 /**
  * Allows the ability to use custom localization.
  */
-export type ContextLocalization = {
+export type TableLocalizationType = {
   dataLoading: string;
-  filterSearchPlaceholder: string;
+  defaultFilterSearchPlaceholder: string;
+  alternativeFilterSearchPlaceholder: string;
   filterReset: string;
   filterLoading: string;
   dataEmpty: string;
@@ -34,11 +36,39 @@ export type ContextLocalization = {
   paginationNext: string;
   paginationPrev: string;
   paginationTotalCount: string;
+  filterButtonTitle: string;
+  ascendingSortTitle: string;
+  descendingSortTitle: string;
+  clearSortTitle: string;
+  rowExpandTitle: string;
+  rowShrinkTitle: string;
+  columnVisibilityTitle: string;
 };
 
-export type TableTheme = {
+export type TableThemeType = {
   backgroundColor: string;
   primaryColor: string;
+  borderRadiusLg: string;
+  borderRadiusMd: string;
+  borderRadiusSm: string;
+};
+
+export type TableDimensionsType = {
+  contextMenuColumnWidth: number;
+  selectionMenuColumnWidth: number;
+  expandedMenuColumnWidth: number;
+  defaultColumnWidth: number;
+  defaultDataRowHeight: number;
+  defaultHeadRowHeight: number;
+  minColumnResizeWidth: number;
+};
+
+export type ElementStylingsCollection = {
+  filterMenu: ElementStyling;
+  tableHead: ElementStyling;
+  tableFoot: ElementStyling;
+  tableBody: ElementStyling;
+  contextMenu: ElementStyling;
 };
 
 type ElementStyling = {
@@ -50,10 +80,12 @@ type ResizableColumnProps = {
   minColumnResizeWidth?: number | undefined;
   maxColumnResizeWidth?: number | undefined;
   columnsToExclude?: Array<string>;
+  onColumnResize?: (collection: Map<string, number>) => void;
 };
 
 type DraggableColumnProps = {
   columnsToExclude?: Array<string>;
+  onColumnDragged?: (columKeys: Array<string>) => void;
 };
 
 type ExpandableRowProps<DataType> = {
@@ -67,14 +99,14 @@ type ClientPaginationProps = {
   /** Fires an event when either page size or current page changes.  */
   onPaginationChange?: (props: TablePaginationProps) => void;
   /** Defaults for table pagination. */
-  defaults?: PaginationTableProps["paginationDefaults"];
+  defaults?: PaginationContainerProps["paginationDefaults"];
 };
 
 type ClientSortingProps<DataType> = {
   onSortingChange?: (key: string, direction: SortDirectionType, sortedData: DataType[]) => void;
 };
 
-type ColumnFilteringProps = {
+export type DefaultFilteringProps = {
   /** Set of default filters to display. Will override automatic filter generation. */
   defaultFilters?: Array<string> | undefined;
   /** Custom rendering of filter values. */
@@ -85,6 +117,11 @@ type ColumnFilteringProps = {
   searchEqualityComparer?: (inputValue: string, valueToCompare: any) => boolean;
 };
 
+export type AlternateFilteringProps = {
+  /** Custom prop rendering for the input element in column search field. */
+  equalityComparer?: (inputValue?: string, dataToCompare?: any) => boolean;
+};
+
 type ColumnSortingProps<DataType> = {
   sortingComparer?: (
     first: DataType[keyof DataType],
@@ -92,6 +129,8 @@ type ColumnSortingProps<DataType> = {
     alg: SortDirectionType
   ) => number;
 };
+
+export type FilterDisplayStrategy = "default" | "alternative";
 
 export type ColumnType<DataType> = {
   /** Unique identifier key of column. Using `key` allows data object to be indexed on per-key basis. */
@@ -108,7 +147,12 @@ export type ColumnType<DataType> = {
   columnRender?: () => React.ReactNode;
   /** Enables filtering of data. */
   filter?: boolean | undefined;
-  filteringProps?: ColumnFilteringProps;
+  alternateFilteringProps?: AlternateFilteringProps | undefined;
+  defaultFilteringProps?: DefaultFilteringProps | undefined;
+  filteringProps?: {
+    default?: DefaultFilteringProps | undefined;
+    alternate?: AlternateFilteringProps | undefined;
+  };
   /** Action to take when overflow of content occurs.
    * @default true
    **/
@@ -129,8 +173,10 @@ export type TableProps<DataType> = {
   isHoverable?: boolean | undefined;
   /** Allows the usage of checkboxes and row selection. */
   selectionMode?: "multiple";
-  /** Allows the ability to use custom localization. */
-  localization?: (currentLocalization: ContextLocalization) => ContextLocalization;
+  /** Allows the ability to customize localization. */
+  localization?: Partial<TableLocalizationType>;
+  /** Allows the ability to customize table dimensions. */
+  tableDimensions?: Partial<TableDimensionsType>;
   /** Display three-dot context menu at the end of the row.  */
   renderContextMenu?: (
     data: DataType | undefined,
@@ -146,6 +192,7 @@ export type TableProps<DataType> = {
     /** Unique key of the row. */
     rowKey: TableRowKeyType
   ) => void;
+  filterDisplayStrategy?: FilterDisplayStrategy | undefined;
   pagination?: ClientPaginationProps | undefined;
   sorting?: ClientSortingProps<DataType> | undefined;
   /** Configurations to allow API based filtering and pagination. */
@@ -154,11 +201,19 @@ export type TableProps<DataType> = {
       dataCount: number;
       onChangeAsync: (paginationProps: TablePaginationProps, filters: SelectedFilterType) => Promise<void>;
     };
-    filters?: {
+    defaultFiltering?: {
       /** Fires an event when input field's value is changed.  */
       onFilterSearchAsync?: (key: string, inputValue?: string) => Promise<string[]>;
       /** Fires an event when filter selection is changed. */
       onFilterSelectAsync?: (filters: SelectedFilterType, paginationProps: TablePaginationProps) => Promise<void>;
+    };
+    alternativeFiltering?: {
+      /** Fires an event when filter selection is changed. */
+      onFilterSearchAsync?: (
+        filters: Record<string, string | undefined>,
+        paginationProps: TablePaginationProps,
+        sortingProps?: SortFilterType | undefined
+      ) => Promise<void>;
     };
     sorting?: {
       /** Fires an event when sorting occures.  */
@@ -171,17 +226,11 @@ export type TableProps<DataType> = {
    */
   tableHeight?: string | number | undefined;
   /** Allows the ability to use custom table styling. */
-  themeProperties?: TableTheme;
+  themeProperties?: Partial<TableThemeType> | undefined;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
   /** Class or style based element styling.  */
-  elementStylings?: {
-    filterMenu?: ElementStyling;
-    tableHead?: ElementStyling;
-    tableFoot?: ElementStyling;
-    tableBody?: ElementStyling;
-    contextMenu?: ElementStyling;
-  };
+  elementStylings?: Partial<ElementStylingsCollection> | undefined;
   /** Allows the ability to resize the columns.
    * @default false
    */

@@ -9,10 +9,10 @@ import type {
 } from "../types/Utils";
 import { useFilterManagement } from "./filterManagement";
 import { concatStyles } from "../utils/ConcatStyles";
-import { ColumnType, TableProps } from "../types/Table";
+import { ColumnType, TableLocalizationType, TableProps } from "../types/Table";
 import { TableRow } from "../index/TableConstructor/TableRow/TableRow";
 import { TableRowData } from "../index/TableConstructor/TableRowData/TableRowData";
-import { TableDimensions } from "../static/measures";
+import { DefaultTableDimensions } from "../static/dimensions";
 import { TableConstans } from "../static/constants";
 import { useColumnResizer } from "./columnResizer";
 import SearchButton from "../components/ui/Buttons/SearchButton/SearchButton";
@@ -20,11 +20,7 @@ import ContextMenuButton from "../components/ui/Buttons/ContextMenuButton/Contex
 import ExpandButton from "../components/ui/Buttons/ExpandButton/ExpandButton";
 import SortButton from "../components/ui/Buttons/SortButton/SortButton";
 
-export function useTableTools<DataType extends Record<string, any>>({
-  tableProps,
-}: {
-  tableProps: TableProps<DataType>;
-}) {
+export function useTableTools<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
     columns,
     data: apiData,
@@ -38,6 +34,8 @@ export function useTableTools<DataType extends Record<string, any>>({
     draggableColumns,
     expandableRows,
     sorting,
+    filterDisplayStrategy,
+    localization,
   } = tableProps;
 
   const {
@@ -53,7 +51,9 @@ export function useTableTools<DataType extends Record<string, any>>({
     fetching,
     sortData,
     sortFilter,
-  } = useFilterManagement<DataType>(columns, apiData, serverSide, pagination?.defaults, sorting);
+    textFilters,
+    updateTextFilterValue,
+  } = useFilterManagement<DataType>(columns, apiData, serverSide, pagination?.defaults, sorting, filterDisplayStrategy);
 
   /** List of checked items in the table. */
   const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(new Set());
@@ -65,7 +65,7 @@ export function useTableTools<DataType extends Record<string, any>>({
   const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(new Set(columns.map((x) => x.key)));
   /** Set of column dimensions (e.g. width). */
   const [columnDimensions, setColumnDimensions] = useState<Map<string, number>>(
-    new Map(columns.map(({ key, width }) => [key, width ?? TableDimensions.defaultColumnWidth]))
+    new Map(columns.map(({ key, width }) => [key, width ?? DefaultTableDimensions.defaultColumnWidth]))
   );
   /** Set of column keys in sorted order. */
   const [columnOrder, setColumnOrder] = useState<Array<string>>(columns.map(({ key }) => key));
@@ -73,7 +73,11 @@ export function useTableTools<DataType extends Record<string, any>>({
   const [expandedRowKeys, setExpandedRowKeys] = useState<Set<TableRowKeyType>>(new Set());
 
   function handleChangeColumnSize(key: string, newWidth: number) {
-    setColumnDimensions((prev) => new Map(prev).set(key, newWidth));
+    setColumnDimensions((prev) => {
+      const newState = new Map(prev).set(key, newWidth);
+      typeof resizableColumns !== "boolean" && resizableColumns?.onColumnResize?.(newState);
+      return newState;
+    });
   }
 
   function handleExpandColumn(key: TableRowKeyType) {
@@ -97,7 +101,7 @@ export function useTableTools<DataType extends Record<string, any>>({
     if (renderContextMenu) {
       columnsCopy.push({
         key: TableConstans.CONTEXT_MENU_KEY,
-        width: TableDimensions.contextMenuColumnWidth,
+        width: DefaultTableDimensions.contextMenuColumnWidth,
       });
     }
 
@@ -105,7 +109,7 @@ export function useTableTools<DataType extends Record<string, any>>({
       columnsCopy = [
         {
           key: TableConstans.EXPANDABLE_KEY,
-          width: TableDimensions.expandedMenuColumnWidth,
+          width: DefaultTableDimensions.expandedMenuColumnWidth,
         },
         ...columnsCopy,
       ];
@@ -115,7 +119,7 @@ export function useTableTools<DataType extends Record<string, any>>({
       columnsCopy = [
         {
           key: TableConstans.SELECTION_KEY,
-          width: TableDimensions.selectionMenuColumnWidth,
+          width: DefaultTableDimensions.selectionMenuColumnWidth,
         },
         ...columnsCopy,
       ];
@@ -238,7 +242,7 @@ export function useTableTools<DataType extends Record<string, any>>({
 
   const handleMapRow = useCallback(
     (data: DataType, isRowActive: boolean) => {
-      const mappedRows = columnsToRender.map((col) => {
+      const mappedRows = columnsToRender.map((col, index) => {
         function conditionalRenderIfNullOrEmpty(data: any) {
           if (col.dataRenderOnNullOrUndefined && (data === null || data === undefined))
             return col.dataRenderOnNullOrUndefined(data);
@@ -248,6 +252,8 @@ export function useTableTools<DataType extends Record<string, any>>({
         const tableRowDataProps = {
           key: col.key,
           rowProps: { width: col.width },
+          tabIndex: index,
+          role: "cell",
         };
 
         switch (col.key) {
@@ -278,13 +284,18 @@ export function useTableTools<DataType extends Record<string, any>>({
                       e.stopPropagation();
                       handleExpandColumn(data[uniqueRowKey]);
                     }}
+                    title={
+                      expandedRowKeys.has(data[uniqueRowKey])
+                        ? localization?.rowShrinkTitle
+                        : localization?.rowExpandTitle
+                    }
                   />
                 )}
               </TableRowData>
             );
           case TableConstans.SELECTION_KEY:
             return (
-              <TableRowData {...tableRowDataProps}>
+              <TableRowData className="select-input-container" {...tableRowDataProps}>
                 <input
                   className={"checkbox"}
                   onChange={(e) => handleUpdateSelection(data[uniqueRowKey])}
@@ -388,15 +399,23 @@ export function useTableTools<DataType extends Record<string, any>>({
               rowProps: {
                 width: columnDimensions.get(col.key),
               },
+              alternateFilterInputProps:
+                col.filter && filterDisplayStrategy === "alternative"
+                  ? {
+                      handleChangeFilterInput: updateTextFilterValue,
+                      currentValue: textFilters[col.key],
+                    }
+                  : undefined,
               toolBoxes: [
                 col.sort ? (
                   <SortButton
                     sortingDirection={sortFilter?.key === col.key ? sortFilter?.direction : undefined}
                     key={`${col.key}_sort`}
                     onClick={() => sortData(col.key)}
+                    localization={localization as TableLocalizationType}
                   />
                 ) : undefined,
-                col.filter ? (
+                col.filter && filterDisplayStrategy !== "alternative" ? (
                   <SearchButton
                     key={`${col.key}_search`}
                     isActive={selectedFilters[col.key]?.size > 0}

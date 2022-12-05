@@ -1,13 +1,14 @@
-import { TableDimensions } from "../../../static/measures";
+import { useTableContext } from "../../../context/TableContext";
 import { TableRowDataProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import "./TableRowData.css";
 export function TableRowData({ children, className, rowProps, ...props }: TableRowDataProps) {
+  const { tableDimensions } = useTableContext();
   return (
     <div
       style={{
-        minHeight: TableDimensions.defaultDataRowHeight,
-        maxHeight: TableDimensions.defaultDataRowHeight,
+        minHeight: tableDimensions.defaultDataRowHeight,
+        maxHeight: tableDimensions.defaultDataRowHeight,
         minWidth: rowProps?.width,
         maxWidth: rowProps?.width,
       }}

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTableContext } from "../../../context/TableContext";
 import CheckMark from "../../../icons/CheckMark";
 import { SettingsMenuProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
@@ -6,12 +7,13 @@ import Fade from "../../animations/Fade/Fade";
 import "./SettingsMenu.css";
 
 export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps>(
-  ({ columns, handleHeaderVisibility, visibleColumnKeys, className, ...props }, ref) => {
+  ({ handleHeaderVisibility, visibleColumnKeys, className, ...props }, ref) => {
+    const { settingsMenuColumns, localization } = useTableContext();
     return (
       <div className={concatStyles("settings-menu-body", className)} ref={ref} {...props}>
         <div className={"columns-list-wrapper"}>
           <ul>
-            {columns.map(({ key, title }) => {
+            {settingsMenuColumns.map(({ key, title }) => {
               const isSelectionActive = visibleColumnKeys.has(key);
               return (
                 <li
@@ -19,16 +21,27 @@ export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps>(
                   onClick={() => handleHeaderVisibility(key)}
                   key={key}
                 >
-                  <button disabled={isSelectionActive && visibleColumnKeys.size === 1} type="button" title={title}>
-                    <span>{title ?? `[${key}]`}</span>
-                    <Fade visible={isSelectionActive} className={"close-icon-wrapper"}>
-                      <CheckMark className={"close-icon"} />
+                  <div
+                    className={concatStyles(
+                      "select-button",
+                      isSelectionActive && visibleColumnKeys.size === 1 && "disabled"
+                    )}
+                    title={title}
+                  >
+                    <span className="content">{title ?? `[${key}]`}</span>
+                    <Fade duration={200} visible={isSelectionActive}>
+                      <div className="check-button">
+                        <CheckMark className="check-icon" />
+                      </div>
                     </Fade>
-                  </button>
+                  </div>
                 </li>
               );
             })}
           </ul>
+        </div>
+        <div className="settings-menu-header">
+          <h4 className="settings-menu-title">{localization.columnVisibilityTitle}</h4>
         </div>
       </div>
     );

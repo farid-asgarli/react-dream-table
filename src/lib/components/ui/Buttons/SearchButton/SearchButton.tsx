@@ -1,6 +1,7 @@
 import SearchIcon from "../../../../icons/Search";
 import React, { ButtonHTMLAttributes } from "react";
 import { concatStyles } from "../../../../utils/ConcatStyles";
+import { useTableContext } from "../../../../context/TableContext";
 
 export default function SearchButton({
   className,
@@ -11,10 +12,11 @@ export default function SearchButton({
   isActive?: boolean;
   isVisible?: boolean;
 }) {
+  const { localization } = useTableContext();
   return (
     <button
       type="button"
-      title="Filter"
+      title={localization.filterButtonTitle}
       className={concatStyles("action-button", isActive && "active", isVisible && "visible", className)}
       {...buttonProps}
     >

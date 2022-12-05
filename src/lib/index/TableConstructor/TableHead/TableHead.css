@@ -9,7 +9,7 @@
   font-weight: 600;
   transition: 0.3s ease-in-out background;
   padding: 0 12px;
-  border-radius: 12px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   position: sticky;
   top: 0;
   z-index: 2;
@@ -22,10 +22,10 @@
 }
 
 .table-head .table-head-data:first-child {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
+  border-top-left-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  border-bottom-left-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
 }
 .table-head .table-head-data:last-child {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
+  border-top-right-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  border-bottom-right-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
 }

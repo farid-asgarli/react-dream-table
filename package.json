@@ -1,6 +1,6 @@
 {
   "name": "react-dream-table",
-  "version": "0.2.1",
+  "version": "0.3.2",
   "keywords": [
     "table",
     "react-table",
@@ -34,6 +34,8 @@
   "devDependencies": {
     "@types/node": "^16.18.3",
     "@types/react": "^18.0.25",
+    "@dnd-kit/core": "^6.0.5",
+    "@dnd-kit/sortable": "^7.0.1",
     "@types/react-dom": "^18.0.8",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",

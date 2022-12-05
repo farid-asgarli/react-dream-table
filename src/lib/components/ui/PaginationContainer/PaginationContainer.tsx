@@ -1,14 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useRef, useState } from "react";
+import { useTableContext } from "../../../context/TableContext";
 import { useDetectOutsideClick } from "../../../hooks/detectOutsideClick";
 import ArrowLeft from "../../../icons/ArrowLeft";
 import ArrowRight from "../../../icons/ArrowRight";
 import Gear from "../../../icons/Gear";
-import type { PaginationTableProps } from "../../../types/Utils";
+import { TableLocalizationType } from "../../../types/Table";
+import type { PaginationContainerProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
 import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
-import "./PaginationTable.css";
+import "./PaginationContainer.css";
 
 interface RenderPaginationButtonProps {
   navigateTo: number;
@@ -17,17 +19,18 @@ interface RenderPaginationButtonProps {
   title?: string;
 }
 
-export function PaginationTable({
+export function PaginationContainer({
   paginationProps,
   updatePaginationProps,
   onPaginationChange,
-  localization,
-  paginationDefaults,
   className,
+  style,
   settingsMenuProps,
   changeColumnVisibility,
   ...props
-}: PaginationTableProps & React.HTMLAttributes<HTMLDivElement>) {
+}: PaginationContainerProps & React.HTMLAttributes<HTMLDivElement>) {
+  const { localization, elementStylings, paginationDefaults } = useTableContext();
+
   const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
 
   const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
@@ -91,7 +94,14 @@ export function PaginationTable({
   }, [settingsMenuProps, settingsMenuVisible]);
 
   return (
-    <div className={concatStyles("pagination-table", className)} {...props}>
+    <div
+      className={concatStyles("pagination-table", elementStylings?.tableFoot?.className, className)}
+      style={{
+        ...style,
+        ...elementStylings?.tableBody?.style,
+      }}
+      {...props}
+    >
       <Fade>
         <div className={"bottom"}>
           <div className={"pagination-data-count"}>
@@ -99,9 +109,9 @@ export function PaginationTable({
               <div className={"settings"}>
                 <button
                   type="button"
-                  title="Settings"
+                  title={localization.columnVisibilityTitle}
                   onClick={() => setSettingsMenuVisible((prev) => !prev)}
-                  className={"settings-button"}
+                  className={concatStyles("settings-button", settingsMenuVisible && "active")}
                 >
                   <Gear className={"settings-icon"} />
                 </button>
@@ -123,7 +133,9 @@ function renderPaginationButtons({
   updatePaginationProps,
   onPaginationChange,
   localization,
-}: Omit<PaginationTableProps, "fetching" | "settingsMenuProps" | "changeColumnVisibility">) {
+}: Omit<PaginationContainerProps, "fetching" | "settingsMenuProps" | "changeColumnVisibility"> & {
+  localization: TableLocalizationType;
+}) {
   function renderButton({ navigateTo, component, disabled, title }: RenderPaginationButtonProps) {
     const isActive = paginationProps.currentPage === navigateTo;
 

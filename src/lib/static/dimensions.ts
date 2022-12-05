@@ -1,4 +1,4 @@
-export const TableDimensions = {
+export const DefaultTableDimensions = {
   contextMenuColumnWidth: 50,
   selectionMenuColumnWidth: 50,
   expandedMenuColumnWidth: 50,

@@ -4,38 +4,57 @@
   padding: 10px;
   background: #fff;
   box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
-  border-radius: 10px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   width: 250px;
-  min-height: 300px;
+  /* min-height: 300px; */
   display: flex;
   flex-direction: column;
   bottom: 50px;
   left: 0;
 }
 
-.settings-menu-body .columns-list-wrapper {
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 20px;
-  background-color: #f1f3f5;
-  border-radius: 0.5rem;
+.settings-menu-body .settings-menu-header .settings-menu-title {
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 5px;
+  margin: 0;
 }
 
 .settings-menu-body .columns-list-wrapper ul {
+  max-height: 200px;
+  overflow-x: hidden;
+  overflow: auto;
+  position: relative;
+  margin-top: 20px;
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
+  background: /* Shadow covers */ linear-gradient(white 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%,
+    /* Shadows */ radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 0 100%;
+  background-repeat: no-repeat;
+  background-color: white;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
   padding: 0 4px;
 }
 
-li.filter-element {
-  transition: 0.3s ease-in-out background;
+.settings-menu-body li.filter-element {
+  transition: 0.2s ease-in-out background, 0.2s ease-in-out border-color;
   list-style: none;
-  border-radius: 6px;
+  background-color: #f9f9f9;
+  border: 2px solid #e8e8e8;
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   overflow: hidden;
-  padding: 2px 2px 2px 15px;
-  margin: 4px 0;
-  font-weight: 400;
+  padding: 2px;
+  margin: 8px 0;
 }
 
-li.filter-element button {
+.settings-menu-body li.filter-element.active {
+  border-color: var(--color-background);
+  background-color: transparent;
+}
+
+.settings-menu-body li.filter-element .select-button {
   all: unset;
   cursor: pointer;
   width: 100%;
@@ -44,12 +63,12 @@ li.filter-element button {
   align-items: center;
 }
 
-li.filter-element button:disabled {
+.settings-menu-body li.filter-element .select-button.disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-li.filter-element button span {
+.settings-menu-body li.filter-element .select-button .content {
   white-space: nowrap;
   text-overflow: ellipsis;
   word-break: keep-all;
@@ -57,41 +76,40 @@ li.filter-element button span {
   overflow-wrap: break-word;
   user-select: none;
   overflow: hidden;
+  padding: 0 4px;
 }
 
-li.filter-element .close-icon-wrapper {
+.settings-menu-body li.filter-element .check-button {
+  all: unset;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
   margin-left: auto;
   display: flex;
   align-items: center;
 }
-li.filter-element button .close-icon {
+
+.settings-menu-body li.filter-element .check-button .check-icon {
   width: 20px;
   fill: var(--color-primary);
 }
 
-li.filter-element:hover {
-  background: var(--color-background);
+.settings-menu-body .columns-list-wrapper ul::-webkit-scrollbar {
+  width: 10px;
 }
 
-li.filter-element.active {
-  background: var(--color-background);
-  font-weight: 500;
-}
-.columns-list-wrapper::-webkit-scrollbar {
-  width: 20px;
-}
-
-.columns-list-wrapper::-webkit-scrollbar-track {
+.settings-menu-body .columns-list-wrapper ul::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-.columns-list-wrapper::-webkit-scrollbar-thumb {
+.settings-menu-body .columns-list-wrapper ul::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
-  border-radius: 5px;
-  border: 6px solid transparent;
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
+  border: 3px solid transparent;
   background-clip: content-box;
 }
 
-.columns-list-wrapper::-webkit-scrollbar-thumb:hover {
+.settings-menu-body .columns-list-wrapper ul::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }

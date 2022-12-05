@@ -1,6 +1,7 @@
-export const TableLocalization = {
+export const DefaultTableLocalization = {
   dataLoading: "Loading",
-  filterSearchPlaceholder: "Type here to search",
+  defaultFilterSearchPlaceholder: "Type here to search",
+  alternativeFilterSearchPlaceholder: "Search",
   filterReset: "Reset filter",
   filterLoading: "Loading",
   dataEmpty: "No Data",
@@ -9,4 +10,11 @@ export const TableLocalization = {
   paginationNext: "Next",
   paginationPrev: "Previous",
   paginationTotalCount: "Total",
+  filterButtonTitle: "Filter",
+  ascendingSortTitle: "Ascending sort",
+  descendingSortTitle: "Descending sort",
+  clearSortTitle: "Clear",
+  rowExpandTitle: "Expand",
+  rowShrinkTitle: "Shrink",
+  columnVisibilityTitle: "Column visibility",
 };

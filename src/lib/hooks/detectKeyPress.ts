@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 
 export function useDetectKeyPress(callback: (key: string, event: KeyboardEvent) => void) {

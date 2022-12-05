@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTableContext } from "../../../context/TableContext";
 import { StringExtensions } from "../../../extensions/String";
 import Close from "../../../icons/Close";
 import NoResult from "../../../icons/NoResult";
@@ -21,14 +22,18 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
       selectedFilters,
       isServerSide,
       loading,
-      localization,
       className,
       currentColumn,
+      style,
       ...props
     },
     ref
   ) => {
+    const { localization, elementStylings } = useTableContext();
+
     const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(value ?? StringExtensions.Empty);
+
+    const columnFilteringProps = currentColumn?.filteringProps?.default;
 
     const inputRef = useRef<HTMLInputElement>(null);
     const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -61,12 +66,14 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
       if (!selectedFilters) return [];
       return Array.from(selectedFilters).map((x) => (
         <li className={"filter-element active"} onClick={() => updateSelectedFilters(columnKey, `${x}`)} key={x}>
-          <button type="button" title={x}>
-            <span>{currentColumn?.filteringProps?.render ? currentColumn.filteringProps?.render(x) : x}</span>
-            <Fade className={"close-icon-wrapper"}>
+          <div className="select-button" title={x}>
+            <div className="content">
+              <span>{columnFilteringProps?.render ? columnFilteringProps?.render(x) : x}</span>
+            </div>
+            <button className="remove-button">
               <Close className={"close-icon"} />
-            </Fade>
-          </button>
+            </button>
+          </div>
         </li>
       ));
     }, [selectedFilters]);
@@ -87,8 +94,8 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
           if (selectedFilters?.has(x)) return false;
           if (isServerSide || !value) return true;
 
-          if (currentColumn?.filteringProps?.searchEqualityComparer) {
-            return currentColumn.filteringProps?.searchEqualityComparer(value, x);
+          if (columnFilteringProps?.searchEqualityComparer) {
+            return columnFilteringProps?.searchEqualityComparer(value, x);
           } else {
             let inputValue = `${value}`.toLocaleLowerCase();
             return x.toLowerCase().includes(inputValue);
@@ -107,9 +114,9 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 
         return filters?.map((x) => (
           <li className={concatStyles("filter-element")} key={x}>
-            <button onClick={() => updateSelectedFilters(columnKey, `${x}`)} type="button" title={x}>
-              {currentColumn?.filteringProps?.render ? currentColumn.filteringProps?.render(x) : x}
-            </button>
+            <div className="select-button" onClick={() => updateSelectedFilters(columnKey, `${x}`)} title={x}>
+              <span className="content"> {columnFilteringProps?.render ? columnFilteringProps?.render(x) : x}</span>
+            </div>
           </li>
         ));
       },
@@ -120,21 +127,25 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 
     return (
       <Fade onAnimationFinish={onHide} className={"context-animator"} visible={visible}>
-        <div ref={ref} className={concatStyles("search-wrapper", className)} {...props}>
+        <div
+          ref={ref}
+          className={concatStyles("search-wrapper", className)}
+          style={{ ...style, ...elementStylings?.filterMenu?.style }}
+          {...props}
+        >
           <div className={"search-input-wrapper"}>
             <input
               key={columnKey}
-              placeholder={localization.filterSearchPlaceholder}
+              placeholder={localization.defaultFilterSearchPlaceholder}
               onChange={handleInputChange}
               value={currentInputValue}
               ref={inputRef}
-              {...currentColumn?.filteringProps?.searchInputProps?.(columnKey)}
+              {...columnFilteringProps?.searchInputProps?.(columnKey)}
             />
-
             <button
               type="button"
-              onClick={clearInput}
               className={"clear-button"}
+              onClick={clearInput}
               disabled={!(currentInputValue && currentInputValue.length > 0)}
             >
               <Close className={"clear-icon"} />

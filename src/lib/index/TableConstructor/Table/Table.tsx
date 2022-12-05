@@ -1,8 +1,8 @@
 import { TableBody } from "../TableBody/TableBody";
 import { TableHead } from "../TableHead/TableHead";
-import { ContextLocalization, TableProps } from "../../../types/Table";
-import { DefaultTheme } from "../../../theme/default";
-import { TableLocalization } from "../../../localization/default";
+import { TableProps } from "../../../types/Table";
+import { DefaultTableTheme } from "../../../theme/default";
+import { DefaultTableLocalization } from "../../../localization/default";
 import { useMemo, useRef } from "react";
 import { useTableTools } from "../../../hooks/tableTools";
 import { ContextMenuOverlay } from "../../../components/ui/ContextMenu/ContextMenu";
@@ -10,11 +10,12 @@ import { FilterMenu } from "../../../components/ui/FilterMenu/FilterMenu";
 import { useDetectOutsideClick } from "../../../hooks/detectOutsideClick";
 import { useDetectKeyPress } from "../../../hooks/detectKeyPress";
 import { TableStyleProps } from "../../../types/Utils";
-import LoadingTable from "../../../components/ui/LoadingTable/LoadingTable";
-import EmptyTable from "../../../components/ui/EmptyTable/EmptyTable";
-import { PaginationTable } from "../../../components/ui/PaginationTable/PaginationTable";
+import { PaginationContainer } from "../../../components/ui/PaginationContainer/PaginationContainer";
 import { concatStyles } from "../../../utils/ConcatStyles";
-import { TableDimensions } from "../../../static/measures";
+import { DefaultTableDimensions } from "../../../static/dimensions";
+import LoadingSkeleton from "../../../components/ui/LoadingSkeleton/LoadingSkeleton";
+import EmptyTable from "../../../components/ui/EmptyTable/EmptyTable";
+import { TableContext } from "../../../context/TableContext";
 import "./Table.css";
 
 export function Table<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
@@ -23,9 +24,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     renderContextMenu,
     loading,
     serverSide,
-    localization,
     tableHeight = "100%",
-    themeProperties = DefaultTheme,
     pagination,
     className,
     style,
@@ -33,10 +32,27 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     columns,
     draggableColumns,
     changeColumnVisibility,
+    selectionMode,
+    expandableRows,
+    filterDisplayStrategy,
   } = tableProps;
 
-  const localizationRef = useRef<ContextLocalization>(TableLocalization);
-  localizationRef.current = localization ? localization(TableLocalization) : TableLocalization;
+  const tableDimensions = useMemo(
+    () => ({
+      ...DefaultTableDimensions,
+      defaultHeadRowHeight: filterDisplayStrategy === "alternative" ? 72 : DefaultTableDimensions.defaultHeadRowHeight,
+      ...tableProps.tableDimensions,
+    }),
+    [filterDisplayStrategy, tableProps.tableDimensions]
+  );
+  const tableLocalization = useMemo(
+    () => ({ ...DefaultTableLocalization, ...tableProps.localization }),
+    [tableProps.localization]
+  );
+  const tableTheme = useMemo(
+    () => ({ ...DefaultTableTheme, ...tableProps.themeProperties }),
+    [tableProps.themeProperties]
+  );
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
@@ -62,8 +78,9 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     updateSelectedFilters,
     updatePaginationProps,
     setColumnOrder,
-  } = useTableTools({
-    tableProps,
+  } = useTableTools<DataType>({
+    ...tableProps,
+    localization: tableLocalization,
   });
 
   const contextMenuElement = renderContextMenu && contextMenu && (
@@ -73,9 +90,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       style={{
         left: contextMenu.position?.xAxis,
         top: contextMenu.position?.yAxis,
-        ...elementStylings?.contextMenu?.style,
       }}
-      className={elementStylings?.contextMenu?.className}
       visible={contextMenu.visible === true}
       onHide={(visible) => {
         !visible && handleDisplayContextMenu(undefined, "destroy-on-close");
@@ -97,24 +112,16 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           value={inputValue?.[filterMenu.key]}
           ref={filterMenuRef}
           selectedFilters={selectedFilters[filterMenu.key]}
-          isServerSide={!!serverSide?.filters?.onFilterSearchAsync}
+          isServerSide={!!serverSide?.defaultFiltering?.onFilterSearchAsync}
           loading={fetching.has("filter-fetch")}
-          localization={localizationRef.current}
-          className={elementStylings?.filterMenu?.className}
           currentColumn={currentColumn}
           style={{
             left: filterMenu.position?.xAxis,
             top: filterMenu.position?.yAxis,
-            ...elementStylings?.filterMenu?.style,
           }}
         />
       );
     }
-  };
-
-  const defaultStyling: TableStyleProps = {
-    "--color-background": themeProperties.backgroundColor,
-    "--color-primary": themeProperties.primaryColor,
   };
 
   useDetectOutsideClick(
@@ -141,19 +148,22 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     }
   });
 
-  const calculateTableWidth = useMemo(() => {
-    const tableSelectionWidth = tableProps.selectionMode === "multiple" ? TableDimensions.selectionMenuColumnWidth : 0;
-    const tableExpandedRowWidth = tableProps.expandableRows ? TableDimensions.expandedMenuColumnWidth : 0;
+  const totalTableWidth = useMemo(() => {
+    const selectionColumnWidth = selectionMode === "multiple" ? tableDimensions.selectionMenuColumnWidth : 0;
+    const expansionColumnWidth = expandableRows ? tableDimensions.expandedMenuColumnWidth : 0;
+    const contextMenuColumnWidth = renderContextMenu ? tableDimensions.contextMenuColumnWidth : 0;
+
+    let totalDataColumnsWidth = 0;
+
+    columnDimensions.forEach((val, key) => {
+      if (visibleHeaders.has(key)) totalDataColumnsWidth += val;
+    });
+
     return (
-      Array.from(columnDimensions).reduce((partialSum, a) => {
-        const key = a[0];
-        const value = a[1];
-        if (!visibleHeaders.has(key)) return partialSum;
-        return partialSum + value;
-      }, 0) +
-      tableSelectionWidth +
-      tableExpandedRowWidth +
-      TableDimensions.contextMenuColumnWidth +
+      totalDataColumnsWidth +
+      selectionColumnWidth +
+      expansionColumnWidth +
+      contextMenuColumnWidth +
       /**scrollbar width */
       20 +
       /**scrollbar border */
@@ -161,64 +171,87 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       /**padding */
       18
     );
-  }, [columnDimensions, tableProps.expandableRows, tableProps.selectionMode, visibleHeaders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnDimensions, expandableRows, renderContextMenu, selectionMode, visibleHeaders]);
 
   const dataTable = (
     <div className="table-container">
-      <TableHead draggingEnabled={!!draggableColumns} setColumnOrder={setColumnOrder} items={handleMapTableHead} />
+      <TableHead
+        onColumnDragged={
+          typeof tableProps.draggableColumns !== "boolean" ? tableProps.draggableColumns?.onColumnDragged : undefined
+        }
+        draggingEnabled={!!draggableColumns}
+        setColumnOrder={setColumnOrder}
+        items={handleMapTableHead}
+      />
       {loading ? (
-        <LoadingTable style={{ height: tableHeight }} />
+        <LoadingSkeleton />
       ) : data && data.length > 0 ? (
         <TableBody
           loadingVisible={fetching.has("filter-select") || fetching.has("pagination") || fetching.has("sort")}
-          localization={localizationRef.current}
           style={{
-            height: tableHeight,
-            width: calculateTableWidth,
+            width: totalTableWidth,
           }}
         >
           {handleMapData}
         </TableBody>
       ) : (
-        <EmptyTable style={{ height: tableHeight }} localization={localizationRef.current} />
+        <EmptyTable />
       )}
     </div>
   );
 
+  const defaultStyling: TableStyleProps = {
+    "--color-background": tableTheme.backgroundColor,
+    "--color-primary": tableTheme.primaryColor,
+    "--border-radius-lg": tableTheme.borderRadiusLg,
+    "--border-radius-md": tableTheme.borderRadiusMd,
+    "--border-radius-sm": tableTheme.borderRadiusSm,
+  };
+
   return (
-    <div style={{ ...defaultStyling, ...style }} className={concatStyles(className, "table-wrapper")}>
-      {contextMenuElement}
-      {filterMenuElement()}
-      <div
-        className={concatStyles(
-          "table-main clickable",
-          isHoverable && "hoverable",
-          elementStylings?.tableBody?.className
-        )}
-      >
-        {dataTable}
-        {data && (
-          <PaginationTable
-            changeColumnVisibility={changeColumnVisibility}
-            paginationProps={paginationProps}
-            updatePaginationProps={updatePaginationProps}
-            onPaginationChange={pagination?.onPaginationChange}
-            fetching={fetching}
-            localization={localizationRef.current}
-            paginationDefaults={pagination?.defaults}
-            className={elementStylings?.tableFoot?.className}
-            style={elementStylings?.tableFoot?.style}
-            settingsMenuProps={{
-              columns:
-                typeof changeColumnVisibility !== "boolean" && changeColumnVisibility?.defaultValues
-                  ? changeColumnVisibility?.defaultValues
-                  : columns,
-              handleHeaderVisibility,
-              visibleColumnKeys: visibleHeaders,
-            }}
-          />
-        )}
+    <TableContext.Provider
+      value={{
+        localization: tableLocalization,
+        tableDimensions: tableDimensions,
+        themeProperties: tableTheme,
+        tableHeight: tableHeight,
+        settingsMenuColumns:
+          typeof changeColumnVisibility !== "boolean" && changeColumnVisibility?.defaultValues
+            ? changeColumnVisibility.defaultValues
+            : columns,
+        filterDisplayStrategy: filterDisplayStrategy ?? "default",
+        elementStylings,
+        paginationDefaults: pagination?.defaults,
+      }}
+    >
+      <div style={{ ...defaultStyling, ...style }} className={concatStyles(className, "table-wrapper")}>
+        {contextMenuElement}
+        {filterMenuElement()}
+        <div
+          className={concatStyles(
+            "table-main",
+            isHoverable && "hoverable",
+            selectionMode === "multiple" && "clickable",
+            elementStylings?.tableBody?.className
+          )}
+        >
+          {dataTable}
+          {data && (
+            <PaginationContainer
+              changeColumnVisibility={changeColumnVisibility}
+              paginationProps={paginationProps}
+              updatePaginationProps={updatePaginationProps}
+              onPaginationChange={pagination?.onPaginationChange}
+              fetching={fetching}
+              settingsMenuProps={{
+                handleHeaderVisibility,
+                visibleColumnKeys: visibleHeaders,
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </TableContext.Provider>
   );
 }

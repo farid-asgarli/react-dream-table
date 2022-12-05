@@ -4,14 +4,22 @@ const Spinner: React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
     size?: number;
   }
-> = ({ className, children, size = 32, ...props }) => {
+> = ({ className, children, size = 32, style, ...props }) => {
   const dimensions: React.CSSProperties = {
     width: size,
     height: size,
   };
 
   return (
-    <div className={concatStyles("spinner-body", className)} {...props}>
+    <div
+      className={concatStyles("spinner-body", className)}
+      style={{
+        ...style,
+        minWidth: size,
+        maxWidth: size,
+      }}
+      {...props}
+    >
       <div
         className={"spinner"}
         style={{

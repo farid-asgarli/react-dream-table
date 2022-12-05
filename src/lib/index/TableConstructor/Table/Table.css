@@ -1,3 +1,7 @@
+:root {
+  --box-shadow-primary: 0 4px 14px 0 var(--color-background);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -35,7 +39,7 @@
 .table-container::-webkit-scrollbar-thumb,
 .table-body-inner::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
-  border-radius: 20px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
   border: 6px solid transparent;
   background-clip: content-box;
 }
@@ -49,11 +53,12 @@
   box-shadow: 0 12px 20px 6px rgb(104 112 118 / 8%);
   display: flex;
   flex-direction: column;
-  border-radius: 18px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
   height: 100%;
   padding: 10px;
   width: 100%;
 }
+
 .table-main.clickable .table-row {
   cursor: pointer;
 }
@@ -73,11 +78,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 5px;
   position: relative;
-  width: 15px;
-  height: 25px;
-  border-radius: 10px;
+  min-width: 20px;
+  max-width: 20px;
+  min-height: 20px;
+  max-height: 20px;
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   cursor: pointer;
   transition: 0.3s ease-in-out background;
 }
@@ -85,10 +91,12 @@
 .table-main .expand-button .expand-icon {
   transition: 0.2s ease-in-out transform;
   fill: #7e868c;
+  font-size: 20px;
 }
 
 .table-main .expand-button.expanded .expand-icon {
   transform: rotate(45deg);
+  fill: var(--color-primary);
 }
 
 .table-main .context-menu-button:hover,
@@ -100,6 +108,10 @@
 .table-container,
 .table-body {
   height: 100%;
+}
+
+.table-main .context-menu-button .context-menu-icon {
+  fill: #7e868c;
 }
 
 .table-main .context-menu-button:active .context-menu-icon {
@@ -123,6 +135,6 @@
   word-break: keep-all;
   position: relative;
   overflow-wrap: break-word;
-  user-select: none;
+  /* user-select: none; */
   overflow: hidden;
 }

@@ -2,8 +2,7 @@
   display: flex;
   flex-direction: row;
   padding: 0 12px;
-  border-radius: 12px;
-  cursor: pointer;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   transition: background 0.2s ease-in-out;
   width: fit-content;
   break-inside: avoid;
@@ -22,13 +21,3 @@
 .table-row-expansion {
   padding: 10px 12px;
 }
-
-/* .table-row .table-row-data:first-child {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-}
-
-.table-row .table-row-data:last-child {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-} */

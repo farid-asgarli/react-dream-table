@@ -4,8 +4,14 @@
   justify-content: flex-start;
   -webkit-tap-highlight-color: transparent;
   padding: 0px 10px;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.2s ease-in-out, outline-color 0.2s ease-in-out;
   border-bottom: 1px solid rgb(224, 224, 224);
+  outline: 2px solid transparent;
+}
+
+.table-row-data:not(.context-menu-container):not(.expandable-container):not(.select-input-container):focus {
+  outline: 2px solid var(--color-primary);
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
 }
 
 .table-row-data.ellipsis > div {
