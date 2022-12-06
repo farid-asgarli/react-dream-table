@@ -134,15 +134,14 @@ table.pagination-table {
   position: relative;
   overflow-wrap: break-word;
   user-select: none;
-  /* overflow: hidden; */
 }
 
 .pagination-table .bottom .pagination-data-count .title {
-  font-weight: 500;
   font-size: 14px;
 }
+
 .pagination-table .bottom .pagination-data-count .data-count {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 14px;
 }
 

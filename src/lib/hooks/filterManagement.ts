@@ -24,7 +24,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
   /**
    * Indicates if data is being fetched.
    */
-  const [fetching, setFetching] = useState<Set<DataFetchingType>>(new Set());
+  const [progressReporters, setProgressReporters] = useState<Set<DataFetchingType>>(new Set());
 
   /**
    * Collection of already fetched filters.
@@ -56,7 +56,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
   sortFilterRef.current = sortFilter;
   textFilterRef.current = textFilters;
 
-  const pipeSorting = useCallback((data?: DataType[], filters?: SortFilterType) => {
+  const pipeSorting = (data?: DataType[], filters?: SortFilterType) => {
     if (!data || data.length === 0) return;
     let sortedData = [...data];
 
@@ -76,9 +76,9 @@ export function useFilterManagement<DataType extends Record<string, any>>(
         }
     }
     return sortedData;
-  }, []);
+  };
   // Only valid if `filterDisplayStrategy` is `alternative`.
-  const pipeSearchInputText = useCallback((data?: DataType[], filters?: typeof textFilters) => {
+  const pipeSearchInputText = (data?: DataType[], filters?: typeof textFilters) => {
     if (!data || data.length === 0) return;
     let filteredData: DataType[] = [...data];
     if (filters) {
@@ -92,10 +92,10 @@ export function useFilterManagement<DataType extends Record<string, any>>(
       }
     }
     return filteredData;
-  }, []);
+  };
 
   // Only valid if `filterDisplayStrategy` is `default`.
-  const pipeFilters = useCallback((data?: DataType[], filters?: SelectedFilterType) => {
+  const pipeFilters = (data?: DataType[], filters?: SelectedFilterType) => {
     if (!data || data.length === 0) return;
     let filteredData: DataType[] = [...data];
     if (filters) {
@@ -122,7 +122,7 @@ export function useFilterManagement<DataType extends Record<string, any>>(
       }
     }
     return filteredData;
-  }, []);
+  };
 
   const filteredData = useMemo(() => {
     if (serverSide?.defaultFiltering?.onFilterSelectAsync) return data;
@@ -186,17 +186,14 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     setSelectedFilters(filtersToDisplay);
   }
 
-  const pipePagination = useCallback(
-    (data?: DataType[], pagination?: TablePaginationProps) => {
-      return serverSide?.pagination
-        ? data
-        : data?.slice(
-            pagination?.pageSize! * (pagination?.currentPage! - 1),
-            pagination?.pageSize! * pagination?.currentPage!
-          );
-    },
-    [data, paginationProps]
-  );
+  const pipePagination = useCallback((data?: DataType[], pagination?: TablePaginationProps) => {
+    return serverSide?.pagination
+      ? data
+      : data?.slice(
+          pagination?.pageSize! * (pagination?.currentPage! - 1),
+          pagination?.pageSize! * pagination?.currentPage!
+        );
+  }, []);
 
   async function pipeFetchedFilters(key: string) {
     if (!fetchedFilterRef.current.has(key)) {
@@ -234,11 +231,11 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     });
   }
   function startFetching(value: DataFetchingType) {
-    setFetching((prev) => new Set(prev).add(value));
+    setProgressReporters((prev) => new Set(prev).add(value));
   }
 
   function stopFetching(value: DataFetchingType) {
-    setFetching((prev) => {
+    setProgressReporters((prev) => {
       const stateCopy = new Set(prev);
       stateCopy.delete(value);
       return stateCopy;
@@ -302,6 +299,8 @@ export function useFilterManagement<DataType extends Record<string, any>>(
     });
   }
 
+  const isFetching = useMemo(() => progressReporters.size !== 0, [progressReporters]);
+
   useEffect(() => {
     if (filteredData && filteredData.length > 0)
       setPaginationProps((prev) => ({
@@ -332,20 +331,22 @@ export function useFilterManagement<DataType extends Record<string, any>>(
   }, [sortFilter]);
 
   return {
+    isFetching,
+    inputValue,
+    sortFilter,
+    textFilters,
     fetchedFilters,
     selectedFilters,
-    inputValue,
-    updateInputValue,
-    updateSelectedFilters,
     paginationProps,
-    updatePaginationProps,
+    progressReporters,
+    sortData,
+    updateInputValue,
     pipeFetchedFilters,
     resetFetchedFilters,
-    fetching,
-    data: pipePagination(sortedData, paginationProps),
-    sortData,
-    sortFilter,
     updateTextFilterValue,
-    textFilters,
+    updateSelectedFilters,
+    updatePaginationProps,
+    data: pipePagination(sortedData, paginationProps),
+    dataWithoutPagination: sortedData,
   };
 }

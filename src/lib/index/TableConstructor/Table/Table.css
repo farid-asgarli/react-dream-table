@@ -16,7 +16,6 @@
 }
 
 .table-container {
-  position: relative;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -66,10 +65,6 @@
 .table-main .table-row.active {
   color: var(--color-primary);
   font-weight: 500;
-}
-
-.table-main .checkbox {
-  cursor: pointer;
 }
 
 .table-main .context-menu-button,

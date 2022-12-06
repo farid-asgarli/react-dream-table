@@ -19,13 +19,14 @@ import SearchButton from "../components/ui/Buttons/SearchButton/SearchButton";
 import ContextMenuButton from "../components/ui/Buttons/ContextMenuButton/ContextMenuButton";
 import ExpandButton from "../components/ui/Buttons/ExpandButton/ExpandButton";
 import SortButton from "../components/ui/Buttons/SortButton/SortButton";
+import Checkbox from "../components/ui/Checkbox/Checkbox";
 
 export function useTableTools<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
     columns,
     data: apiData,
     selectionMode,
-    renderContextMenu,
+    contextMenu: contextMenuProps,
     onRowClick,
     uniqueRowKey,
     serverSide,
@@ -36,6 +37,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     sorting,
     filterDisplayStrategy,
     localization,
+    changeColumnVisibility,
   } = tableProps;
 
   const {
@@ -48,11 +50,12 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     fetchedFilters,
     pipeFetchedFilters,
     updateSelectedFilters,
-    fetching,
+    progressReporters,
     sortData,
     sortFilter,
     textFilters,
     updateTextFilterValue,
+    dataWithoutPagination,
   } = useFilterManagement<DataType>(columns, apiData, serverSide, pagination?.defaults, sorting, filterDisplayStrategy);
 
   /** List of checked items in the table. */
@@ -62,13 +65,21 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
   /** Context menu visibility props. */
   const [contextMenu, setContextMenu] = useState<ContextMenuVisibility<DataType>>();
   /** Set of visible column headers. */
-  const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(new Set(columns.map((x) => x.key)));
+  const [visibleHeaders, setVisibleHeaders] = useState<Set<string>>(
+    typeof changeColumnVisibility !== "boolean" && changeColumnVisibility?.defaultVisibleHeaders
+      ? changeColumnVisibility?.defaultVisibleHeaders
+      : new Set(columns.map((x) => x.key))
+  );
   /** Set of column dimensions (e.g. width). */
   const [columnDimensions, setColumnDimensions] = useState<Map<string, number>>(
     new Map(columns.map(({ key, width }) => [key, width ?? DefaultTableDimensions.defaultColumnWidth]))
   );
   /** Set of column keys in sorted order. */
-  const [columnOrder, setColumnOrder] = useState<Array<string>>(columns.map(({ key }) => key));
+  const [columnOrder, setColumnOrder] = useState<Array<string>>(
+    typeof draggableColumns !== "boolean" && draggableColumns?.defaultColumnOrder
+      ? draggableColumns?.defaultColumnOrder
+      : columns.map(({ key }) => key)
+  );
   /** Set of expanded row keys. */
   const [expandedRowKeys, setExpandedRowKeys] = useState<Set<TableRowKeyType>>(new Set());
 
@@ -98,7 +109,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
 
   const columnsToRender = useMemo(() => {
     let columnsCopy = [...columns].sort((a, b) => columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key));
-    if (renderContextMenu) {
+    if (contextMenuProps?.render) {
       columnsCopy.push({
         key: TableConstans.CONTEXT_MENU_KEY,
         width: DefaultTableDimensions.contextMenuColumnWidth,
@@ -208,7 +219,8 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
           position: ContextMenuVisibility<DataType>["position"];
         }
       | undefined,
-    visibility: "visible" | "hidden" | "destroy-on-close" = "visible"
+    visibility: "visible" | "hidden" | "destroy-on-close" = "visible",
+    overridePreviousPosition: boolean = false
   ) {
     if (prop && visibility === "visible") {
       const { data, position } = prop;
@@ -219,7 +231,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
           return {
             data,
             position:
-              prevId === currentId
+              !overridePreviousPosition && prevId === currentId
                 ? prev?.position
                 : {
                     xAxis: position.xAxis,
@@ -296,12 +308,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
           case TableConstans.SELECTION_KEY:
             return (
               <TableRowData className="select-input-container" {...tableRowDataProps}>
-                <input
-                  className={"checkbox"}
-                  onChange={(e) => handleUpdateSelection(data[uniqueRowKey])}
-                  checked={isRowActive}
-                  type={"checkbox"}
-                />
+                <Checkbox checked={isRowActive} />
               </TableRowData>
             );
           default:
@@ -324,7 +331,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
 
     [
       columnsToRender,
-      renderContextMenu,
+      contextMenuProps,
       selectedRows,
       selectionMode,
       contextMenu,
@@ -362,13 +369,14 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
               ...tableHeadProps,
               className: "select-header",
               children: (
-                <input
-                  className={"checkbox"}
+                <Checkbox
                   onChange={(e) =>
-                    setSelectedRows(!e.target.checked ? new Set() : new Set(data!.map((x) => x[uniqueRowKey])))
+                    setSelectedRows(
+                      !e.target.checked ? new Set() : new Set(dataWithoutPagination!.map((x) => x[uniqueRowKey]))
+                    )
                   }
-                  checked={data?.length === selectedRows.size}
-                  type={"checkbox"}
+                  // checked={dataWithoutPagination?.length !== 0 && dataWithoutPagination?.length === selectedRows.size}
+                  checked={paginationProps.dataCount !== 0 && paginationProps.dataCount === selectedRows.size}
                 />
               ),
             };
@@ -441,9 +449,8 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
 
   const handleRowClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>, rowKey: TableRowKeyType) => {
-      if (selectionMode === "multiple") {
-        handleUpdateSelection(rowKey);
-      }
+      e.stopPropagation();
+      if (selectionMode === "multiple") handleUpdateSelection(rowKey);
       onRowClick?.(e, rowKey);
     },
     [selectionMode, onRowClick]
@@ -458,6 +465,24 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
           <TableRow
             className={concatStyles(isRowActive && "active")}
             onClick={(e) => handleRowClick(e, x[uniqueRowKey])}
+            onContextMenu={
+              contextMenuProps?.displayOnRightClick === false
+                ? undefined
+                : (e) => {
+                    e.preventDefault();
+                    handleDisplayContextMenu(
+                      {
+                        data: x,
+                        position: {
+                          xAxis: e.clientX,
+                          yAxis: e.clientY,
+                        },
+                      },
+                      undefined,
+                      true
+                    );
+                  }
+            }
             expandedProps={{
               isRowExpanded: isRowExpanded,
               children: expandableRows?.render?.(x),
@@ -509,12 +534,14 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     updatePaginationProps,
     fetchedFilters,
     inputValue,
-    fetching,
+    progressReporters,
     data,
     visibleHeaders,
     handleChangeColumnSize,
     columnDimensions,
     headerDataRefs,
     setColumnOrder,
+    columnsToRender,
+    dataWithoutPagination,
   };
 }

@@ -9,6 +9,7 @@ export type ContextMenu = {
 
 export type SettingsMenuProps = HTMLAttributes<HTMLDivElement> & {
   visibleColumnKeys: Set<string>;
+  visible: boolean;
   handleHeaderVisibility(key: string): Set<string>;
 };
 
@@ -79,7 +80,7 @@ export type PaginationContainerProps = {
   paginationProps: TablePaginationProps;
   updatePaginationProps: (valuesToUpdate: TablePaginationProps, shouldTriggerServerUpdate?: boolean) => void;
   onPaginationChange?: (props: TablePaginationProps) => void;
-  fetching: Set<DataFetchingType>;
+  progressReporters: Set<DataFetchingType>;
   paginationDefaults?: {
     pageSizes?: Array<number>;
     defaultCurrentPage?: number;
@@ -95,7 +96,10 @@ export type EllipsisProps = {
 };
 
 //#region Table constructor
-export type TableElementProps = Pick<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children" | "onClick">;
+export type TableElementProps = Pick<
+  React.HTMLAttributes<HTMLDivElement>,
+  "className" | "style" | "children" | "onClick" | "onContextMenu"
+>;
 
 export interface TableHeadDataProps extends TableElementProps {
   columnKey: string;
@@ -125,9 +129,7 @@ export interface TableHeadProps extends TableElementProps {
   onColumnDragged?: (columnKeys: Array<string>) => void;
 }
 
-export interface TableBodyProps extends TableElementProps {
-  loadingVisible: boolean;
-}
+export interface TableBodyProps extends TableElementProps {}
 
 export interface TableRowProps extends TableElementProps {
   expandedProps?: {

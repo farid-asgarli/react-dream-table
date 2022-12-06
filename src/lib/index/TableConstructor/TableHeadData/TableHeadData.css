@@ -129,6 +129,11 @@
   align-items: center;
 }
 
+.table-head-data-wrapper .table-head-toolboxes .action-button:focus {
+  opacity: 1 !important;
+  /* outline: 2px solid var(--color-primary); */
+}
+
 .table-head-toolboxes .action-button:not(.active):not(.visible) {
   opacity: 0;
 }

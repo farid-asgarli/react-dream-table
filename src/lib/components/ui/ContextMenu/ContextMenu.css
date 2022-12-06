@@ -1,14 +1,18 @@
 .context-menu-overlay {
   box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
   z-index: 99;
-  width: 120px;
+  min-width: 120px;
   display: flex;
   flex-direction: column;
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   overflow: hidden;
   background-color: #fff;
-  padding: 10px;
+  padding: 10px 4px;
   position: fixed;
+}
+
+.context-menu-overlay .button-wrapper {
+  display: flex;
 }
 
 .context-menu-overlay button {
@@ -17,14 +21,11 @@
   align-items: center;
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   width: 100%;
-  padding: 5px 0;
+  padding: 5px 10px;
   cursor: pointer;
   transition: 0.2s ease-in-out background-color;
 }
 
-.context-menu-overlay button > span {
-  margin-left: 10px;
-}
 .context-menu-overlay button:hover {
   background-color: #f1f3f5;
 }

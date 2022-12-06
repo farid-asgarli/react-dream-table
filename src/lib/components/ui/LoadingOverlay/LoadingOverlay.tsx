@@ -11,8 +11,8 @@ export default function LoadingOverlay({
 }) {
   const { localization } = useTableContext();
   return (
-    <Fade visible={visible} {...props}>
-      <div className="loading-overlay">
+    <Fade visible={visible}>
+      <div className="loading-overlay" {...props}>
         <div className={"content"}>
           <Spinner />
           <span className={"title"}>{localization.dataLoading}</span>

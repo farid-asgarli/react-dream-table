@@ -26,6 +26,7 @@ export function PaginationContainer({
   className,
   style,
   settingsMenuProps,
+  progressReporters,
   changeColumnVisibility,
   ...props
 }: PaginationContainerProps & React.HTMLAttributes<HTMLDivElement>) {
@@ -65,10 +66,10 @@ export function PaginationContainer({
 
   const renderDataCount = useMemo(
     () => (
-      <>
-        <span className={"title"}>{localization.paginationTotalCount} :&nbsp;</span>
-        <span className={"data-count"}>{paginationProps.dataCount}</span>
-      </>
+      <div>
+        <span className={"data-count"}>{paginationProps.dataCount}&nbsp;</span>
+        <span className={"title"}>{localization.paginationTotalCount}</span>
+      </div>
     ),
     [paginationProps.dataCount]
   );
@@ -84,14 +85,6 @@ export function PaginationContainer({
     ],
     (_, key) => setSettingsMenuVisible(false)
   );
-
-  const renderSettingsMenu = useMemo(() => {
-    return (
-      <Fade visible={settingsMenuVisible}>
-        <SettingsMenu ref={settingsMenuRef} {...settingsMenuProps} />
-      </Fade>
-    );
-  }, [settingsMenuProps, settingsMenuVisible]);
 
   return (
     <div
@@ -117,7 +110,9 @@ export function PaginationContainer({
                 </button>
               </div>
             )}
-            {changeColumnVisibility && renderSettingsMenu}
+            {changeColumnVisibility && (
+              <SettingsMenu ref={settingsMenuRef} visible={settingsMenuVisible} {...settingsMenuProps} />
+            )}
             {renderDataCount}
           </div>
           <div className={"pagination-page-numbers"}>{renderPaginationNumbers}</div>
@@ -133,7 +128,7 @@ function renderPaginationButtons({
   updatePaginationProps,
   onPaginationChange,
   localization,
-}: Omit<PaginationContainerProps, "fetching" | "settingsMenuProps" | "changeColumnVisibility"> & {
+}: Omit<PaginationContainerProps, "progressReporters" | "settingsMenuProps" | "changeColumnVisibility"> & {
   localization: TableLocalizationType;
 }) {
   function renderButton({ navigateTo, component, disabled, title }: RenderPaginationButtonProps) {

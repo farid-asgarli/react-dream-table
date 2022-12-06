@@ -17,10 +17,6 @@ export type TablePaginationProps = {
   dataCount?: number;
 };
 
-export type ColumnVisibilityProps = {
-  defaultValues: Array<{ key: string; title: string }>;
-};
-
 /**
  * Allows the ability to use custom localization.
  */
@@ -76,6 +72,11 @@ type ElementStyling = {
   style?: React.CSSProperties | undefined;
 };
 
+export type ColumnVisibilityProps = {
+  defaultValues: Array<{ key: string; title: string }>;
+  defaultVisibleHeaders?: Set<string>;
+};
+
 type ResizableColumnProps = {
   minColumnResizeWidth?: number | undefined;
   maxColumnResizeWidth?: number | undefined;
@@ -84,8 +85,9 @@ type ResizableColumnProps = {
 };
 
 type DraggableColumnProps = {
-  columnsToExclude?: Array<string>;
+  columnsToExclude?: Array<string> | undefined;
   onColumnDragged?: (columKeys: Array<string>) => void;
+  defaultColumnOrder?: Array<string> | undefined;
 };
 
 type ExpandableRowProps<DataType> = {
@@ -131,6 +133,11 @@ type ColumnSortingProps<DataType> = {
 };
 
 export type FilterDisplayStrategy = "default" | "alternative";
+
+export type TableReference<DataType> = {
+  getCurrentData: () => DataType[] | undefined;
+  getCurrentColumns: () => ColumnType<DataType>[];
+};
 
 export type ColumnType<DataType> = {
   /** Unique identifier key of column. Using `key` allows data object to be indexed on per-key basis. */
@@ -178,12 +185,19 @@ export type TableProps<DataType> = {
   /** Allows the ability to customize table dimensions. */
   tableDimensions?: Partial<TableDimensionsType>;
   /** Display three-dot context menu at the end of the row.  */
-  renderContextMenu?: (
-    data: DataType | undefined,
-    selectedRows: Set<TableRowKeyType>,
-    paginationProps: TablePaginationProps,
-    selectedFilters: SelectedFilterType
-  ) => (ContextMenu | undefined)[];
+  contextMenu?: {
+    render?: (
+      data: DataType | undefined,
+      selectedRows: Set<TableRowKeyType>,
+      paginationProps: TablePaginationProps,
+      selectedFilters: SelectedFilterType,
+      closeMenu: () => void
+    ) => (ContextMenu | undefined)[];
+    /** Displays context menu on right click.
+     * @default true
+     */
+    displayOnRightClick?: boolean;
+  };
   /** Displays loading-skeleton if activated. */
   loading?: boolean;
   /** Callback function to execute on row click. */
@@ -241,6 +255,7 @@ export type TableProps<DataType> = {
   expandableRows?: ExpandableRowProps<DataType> | undefined;
   /** Allows the ability to alter column visibility. */
   changeColumnVisibility?: ColumnVisibilityProps | boolean | undefined;
+  tableRef?: React.MutableRefObject<TableReference<DataType> | null>;
 };
 // pinnedColumns?: {
 //   left?: Array<string>;

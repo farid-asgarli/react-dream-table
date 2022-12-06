@@ -3,7 +3,7 @@ import { TableHead } from "../TableHead/TableHead";
 import { TableProps } from "../../../types/Table";
 import { DefaultTableTheme } from "../../../theme/default";
 import { DefaultTableLocalization } from "../../../localization/default";
-import { useMemo, useRef } from "react";
+import { useImperativeHandle, useMemo, useRef } from "react";
 import { useTableTools } from "../../../hooks/tableTools";
 import { ContextMenuOverlay } from "../../../components/ui/ContextMenu/ContextMenu";
 import { FilterMenu } from "../../../components/ui/FilterMenu/FilterMenu";
@@ -16,25 +16,27 @@ import { DefaultTableDimensions } from "../../../static/dimensions";
 import LoadingSkeleton from "../../../components/ui/LoadingSkeleton/LoadingSkeleton";
 import EmptyTable from "../../../components/ui/EmptyTable/EmptyTable";
 import { TableContext } from "../../../context/TableContext";
+import LoadingOverlay from "../../../components/ui/LoadingOverlay/LoadingOverlay";
 import "./Table.css";
 
 export function Table<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
-    isHoverable,
-    renderContextMenu,
-    loading,
-    serverSide,
+    contextMenu: contextMenuProps,
+    changeColumnVisibility,
+    filterDisplayStrategy,
     tableHeight = "100%",
+    draggableColumns,
+    elementStylings,
+    expandableRows,
+    selectionMode,
+    isHoverable,
+    serverSide,
     pagination,
     className,
-    style,
-    elementStylings,
+    tableRef,
+    loading,
     columns,
-    draggableColumns,
-    changeColumnVisibility,
-    selectionMode,
-    expandableRows,
-    filterDisplayStrategy,
+    style,
   } = tableProps;
 
   const tableDimensions = useMemo(
@@ -56,37 +58,43 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const tableHeadRef = useRef<HTMLDivElement>(null);
 
   const {
-    handleHeaderVisibility,
     handleDisplayContextMenu,
     handleDisplayFilterMenu,
-    handleMapData,
+    handleHeaderVisibility,
+    updatePaginationProps,
+    updateSelectedFilters,
+    updateInputValue,
+    setColumnOrder,
     handleMapTableHead,
-    contextMenu,
-    filterMenu,
+    columnDimensions,
     paginationProps,
     selectedFilters,
-    selectedRows,
+    columnsToRender,
     fetchedFilters,
-    fetching,
-    inputValue,
-    data,
     visibleHeaders,
-    columnDimensions,
-    updateInputValue,
-    updateSelectedFilters,
-    updatePaginationProps,
-    setColumnOrder,
+    handleMapData,
+    selectedRows,
+    contextMenu,
+    filterMenu,
+    inputValue,
+    progressReporters,
+    data,
+    dataWithoutPagination,
   } = useTableTools<DataType>({
     ...tableProps,
     localization: tableLocalization,
   });
 
-  const contextMenuElement = renderContextMenu && contextMenu && (
+  const contextMenuElement = contextMenuProps?.render && contextMenu && (
     <ContextMenuOverlay
       ref={contextMenuRef}
-      elements={renderContextMenu(contextMenu.data, selectedRows, paginationProps, selectedFilters)}
+      elements={contextMenuProps.render(contextMenu.data, selectedRows, paginationProps, selectedFilters, () =>
+        handleDisplayContextMenu(undefined, "hidden")
+      )}
       style={{
         left: contextMenu.position?.xAxis,
         top: contextMenu.position?.yAxis,
@@ -113,7 +121,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           ref={filterMenuRef}
           selectedFilters={selectedFilters[filterMenu.key]}
           isServerSide={!!serverSide?.defaultFiltering?.onFilterSearchAsync}
-          loading={fetching.has("filter-fetch")}
+          loading={progressReporters.has("filter-fetch")}
           currentColumn={currentColumn}
           style={{
             left: filterMenu.position?.xAxis,
@@ -148,10 +156,20 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     }
   });
 
+  useImperativeHandle(
+    tableRef,
+    () => ({
+      getCurrentData: () => dataWithoutPagination,
+      getCurrentColumns: () => columnsToRender,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [columnsToRender, data]
+  );
+
   const totalTableWidth = useMemo(() => {
     const selectionColumnWidth = selectionMode === "multiple" ? tableDimensions.selectionMenuColumnWidth : 0;
     const expansionColumnWidth = expandableRows ? tableDimensions.expandedMenuColumnWidth : 0;
-    const contextMenuColumnWidth = renderContextMenu ? tableDimensions.contextMenuColumnWidth : 0;
+    const contextMenuColumnWidth = contextMenuProps?.render ? tableDimensions.contextMenuColumnWidth : 0;
 
     let totalDataColumnsWidth = 0;
 
@@ -172,10 +190,22 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
       18
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnDimensions, expandableRows, renderContextMenu, selectionMode, visibleHeaders]);
+  }, [columnDimensions, expandableRows, contextMenuProps?.render, selectionMode, visibleHeaders]);
 
   const dataTable = (
-    <div className="table-container">
+    <div ref={tableContainerRef} className="table-container">
+      <LoadingOverlay
+        style={{
+          height:
+            tableContainerRef.current && tableHeadRef.current
+              ? tableContainerRef.current.clientHeight + 20 - tableHeadRef.current.clientHeight
+              : "100%",
+          top: (tableHeadRef.current?.clientHeight ?? 0) + 10,
+        }}
+        visible={
+          progressReporters.has("filter-select") || progressReporters.has("pagination") || progressReporters.has("sort")
+        }
+      />
       <TableHead
         onColumnDragged={
           typeof tableProps.draggableColumns !== "boolean" ? tableProps.draggableColumns?.onColumnDragged : undefined
@@ -183,12 +213,12 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         draggingEnabled={!!draggableColumns}
         setColumnOrder={setColumnOrder}
         items={handleMapTableHead}
+        ref={tableHeadRef}
       />
       {loading ? (
         <LoadingSkeleton />
       ) : data && data.length > 0 ? (
         <TableBody
-          loadingVisible={fetching.has("filter-select") || fetching.has("pagination") || fetching.has("sort")}
           style={{
             width: totalTableWidth,
           }}
@@ -243,7 +273,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
               paginationProps={paginationProps}
               updatePaginationProps={updatePaginationProps}
               onPaginationChange={pagination?.onPaginationChange}
-              fetching={fetching}
+              progressReporters={progressReporters}
               settingsMenuProps={{
                 handleHeaderVisibility,
                 visibleColumnKeys: visibleHeaders,

@@ -9,7 +9,7 @@ export const DefaultTableLocalization = {
   paginationPageSize: "Page size",
   paginationNext: "Next",
   paginationPrev: "Previous",
-  paginationTotalCount: "Total",
+  paginationTotalCount: "result(s)",
   filterButtonTitle: "Filter",
   ascendingSortTitle: "Ascending sort",
   descendingSortTitle: "Descending sort",

@@ -2,8 +2,6 @@
   position: absolute;
   z-index: 9;
   left: 0;
-  /* top: 52px; */
-  top: 0;
   width: 100%;
   height: 100%;
   backdrop-filter: saturate(180%) blur(10px);
@@ -12,6 +10,7 @@
   justify-content: center;
   align-items: center;
   cursor: wait;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
 }
 .loading-overlay .content {
   display: flex;
