@@ -1,0 +1,77 @@
+.select-wrapper {
+  position: relative;
+  font-size: 14px;
+}
+
+.select-wrapper .select-header {
+  min-width: 80px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  position: relative;
+  background-color: #f1f3f5;
+  border: 2px solid #d9d9d9;
+  padding: 2px 5px;
+  padding-left: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  transition: 0.2s ease-in-out border-color;
+}
+
+.select-wrapper .select-header.active {
+  border-color: var(--color-primary);
+}
+
+.select-wrapper .select-list-wrapper {
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  padding: 5px 3px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 5px;
+  position: absolute;
+  width: 100%;
+}
+
+.select-wrapper .select-option {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 5px;
+  padding-left: 10px;
+  transition: 0.2s ease-in-out background-color;
+  display: flex;
+  align-items: center;
+}
+
+.select-wrapper .select-option:hover {
+  background-color: var(--color-background);
+}
+
+.select-wrapper .select-option .select-option-icon,
+.select-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+}
+
+.select-wrapper .select-option .select-option-check-icon {
+  width: 14px;
+  fill: #7e868c;
+}
+
+.select-wrapper .select-option.selected,
+.select-wrapper .select-option:active {
+  background-color: var(--color-background);
+}
+
+.select-icon-wrapper .select-icon {
+  width: 18px;
+  fill: #7e868c;
+}

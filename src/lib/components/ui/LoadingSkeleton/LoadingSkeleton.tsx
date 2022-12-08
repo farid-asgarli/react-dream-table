@@ -5,11 +5,21 @@ import { concatStyles } from "../../../utils/ConcatStyles";
 import Skeleton from "../Skeleton/Skeleton";
 import "./LoadingSkeleton.css";
 
-export default function LoadingTable({ className, style, ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
+export default function LoadingSkeleton({
+  className,
+  style,
+  rowCount = 10,
+  overrideTotalHeight,
+  ...props
+}: React.TableHTMLAttributes<HTMLTableElement> & { rowCount?: number; overrideTotalHeight?: boolean | undefined }) {
   const { tableHeight } = useTableContext();
   return (
-    <div className={concatStyles("skeleton-table", className)} style={{ ...style, height: tableHeight }} {...props}>
-      {[...Array(10)].map((_, i) => (
+    <div
+      className={concatStyles("skeleton-table", className)}
+      style={{ ...style, height: overrideTotalHeight ? tableHeight : undefined }}
+      {...props}
+    >
+      {[...Array(rowCount)].map((_, i) => (
         <TableRow className="table-row-skeleton" key={i}>
           <Skeleton />
         </TableRow>

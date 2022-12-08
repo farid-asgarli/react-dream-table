@@ -17,4 +17,5 @@ export const DefaultTableLocalization = {
   rowExpandTitle: "Expand",
   rowShrinkTitle: "Shrink",
   columnVisibilityTitle: "Column visibility",
+  rowsSelectedTitle: "rows selected",
 };

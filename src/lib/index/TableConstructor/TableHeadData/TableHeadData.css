@@ -24,8 +24,8 @@
   background-color: var(--color-background);
 }
 
-.table-head-data.column-dragging .table-head-data-inner {
-  cursor: grabbing;
+.table-head-data.draggable.column-dragging .table-head-data-inner {
+  cursor: move;
 }
 
 .table-head-data.draggable .table-head-data-inner {

@@ -4,7 +4,7 @@ export default function Checkbox(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="checkbox-wrapper">
       <label>
-        <input type="checkbox" readOnly checked {...props} />
+        <input type="checkbox" checked {...props} />
       </label>
     </div>
   );

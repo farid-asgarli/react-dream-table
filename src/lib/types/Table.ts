@@ -2,10 +2,11 @@ import {
   ContextMenu,
   EllipsisProps,
   PaginationContainerProps,
-  SelectedFilterType,
+  ISelectedFilter,
   SortDirectionType,
-  SortFilterType,
+  ISortingFilter,
   TableRowKeyType,
+  IFilterInputCollection,
 } from "./Utils";
 
 export type TablePaginationProps = {
@@ -39,6 +40,7 @@ export type TableLocalizationType = {
   rowExpandTitle: string;
   rowShrinkTitle: string;
   columnVisibilityTitle: string;
+  rowsSelectedTitle: string;
 };
 
 export type TableThemeType = {
@@ -57,6 +59,7 @@ export type TableDimensionsType = {
   defaultDataRowHeight: number;
   defaultHeadRowHeight: number;
   minColumnResizeWidth: number;
+  maxColumnResizeWidth: number;
 };
 
 export type ElementStylingsCollection = {
@@ -78,8 +81,6 @@ export type ColumnVisibilityProps = {
 };
 
 type ResizableColumnProps = {
-  minColumnResizeWidth?: number | undefined;
-  maxColumnResizeWidth?: number | undefined;
   columnsToExclude?: Array<string>;
   onColumnResize?: (collection: Map<string, number>) => void;
 };
@@ -154,17 +155,16 @@ export type ColumnType<DataType> = {
   columnRender?: () => React.ReactNode;
   /** Enables filtering of data. */
   filter?: boolean | undefined;
-  alternateFilteringProps?: AlternateFilteringProps | undefined;
-  defaultFilteringProps?: DefaultFilteringProps | undefined;
   filteringProps?: {
     default?: DefaultFilteringProps | undefined;
     alternate?: AlternateFilteringProps | undefined;
   };
+  /** Enables sorting of data. */
+  sort?: boolean | undefined;
+  sortingProps?: ColumnSortingProps<DataType> | undefined;
   /** Action to take when overflow of content occurs.
    * @default true
    **/
-  sort?: boolean;
-  sortingProps?: ColumnSortingProps<DataType> | undefined;
   ellipsis?: EllipsisProps | boolean | undefined;
 };
 
@@ -179,7 +179,7 @@ export type TableProps<DataType> = {
   /** Allows the user to hover over the rows. */
   isHoverable?: boolean | undefined;
   /** Allows the usage of checkboxes and row selection. */
-  selectionMode?: "multiple";
+  selectionMode?: "default" | "onRowClick" | undefined;
   /** Allows the ability to customize localization. */
   localization?: Partial<TableLocalizationType>;
   /** Allows the ability to customize table dimensions. */
@@ -190,7 +190,7 @@ export type TableProps<DataType> = {
       data: DataType | undefined,
       selectedRows: Set<TableRowKeyType>,
       paginationProps: TablePaginationProps,
-      selectedFilters: SelectedFilterType,
+      selectedFilters: ISelectedFilter,
       closeMenu: () => void
     ) => (ContextMenu | undefined)[];
     /** Displays context menu on right click.
@@ -199,7 +199,7 @@ export type TableProps<DataType> = {
     displayOnRightClick?: boolean;
   };
   /** Displays loading-skeleton if activated. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Callback function to execute on row click. */
   onRowClick?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -213,25 +213,34 @@ export type TableProps<DataType> = {
   serverSide?: {
     pagination?: {
       dataCount: number;
-      onChangeAsync: (paginationProps: TablePaginationProps, filters: SelectedFilterType) => Promise<void>;
+      onChangeAsync: (paginationProps: TablePaginationProps, filters: ISelectedFilter) => Promise<void>;
     };
     defaultFiltering?: {
       /** Fires an event when input field's value is changed.  */
       onFilterSearchAsync?: (key: string, inputValue?: string) => Promise<string[]>;
       /** Fires an event when filter selection is changed. */
-      onFilterSelectAsync?: (filters: SelectedFilterType, paginationProps: TablePaginationProps) => Promise<void>;
+      onFilterSelectAsync?: (
+        filters: ISelectedFilter,
+        paginationProps: TablePaginationProps,
+        sortingProps: ISortingFilter | undefined
+      ) => Promise<void>;
     };
     alternativeFiltering?: {
       /** Fires an event when filter selection is changed. */
       onFilterSearchAsync?: (
-        filters: Record<string, string | undefined>,
+        filters: IFilterInputCollection,
         paginationProps: TablePaginationProps,
-        sortingProps?: SortFilterType | undefined
+        sortingProps: ISortingFilter | undefined
       ) => Promise<void>;
     };
     sorting?: {
       /** Fires an event when sorting occures.  */
-      onSortingChangeAsync?: (key: string, direction: SortDirectionType) => Promise<void>;
+      onSortingChangeAsync?: (
+        key: string,
+        filters: ISelectedFilter | IFilterInputCollection,
+        paginationProps: TablePaginationProps,
+        direction: SortDirectionType
+      ) => Promise<void>;
     };
   };
   /**
@@ -241,8 +250,7 @@ export type TableProps<DataType> = {
   tableHeight?: string | number | undefined;
   /** Allows the ability to use custom table styling. */
   themeProperties?: Partial<TableThemeType> | undefined;
-  className?: string | undefined;
-  style?: React.CSSProperties | undefined;
+
   /** Class or style based element styling.  */
   elementStylings?: Partial<ElementStylingsCollection> | undefined;
   /** Allows the ability to resize the columns.
@@ -256,8 +264,6 @@ export type TableProps<DataType> = {
   /** Allows the ability to alter column visibility. */
   changeColumnVisibility?: ColumnVisibilityProps | boolean | undefined;
   tableRef?: React.MutableRefObject<TableReference<DataType> | null>;
+  className?: string | undefined;
+  style?: React.CSSProperties | undefined;
 };
-// pinnedColumns?: {
-//   left?: Array<string>;
-//   right?: Array<string>;
-// };

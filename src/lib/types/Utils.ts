@@ -31,13 +31,10 @@ export type FilterMenuVisibility = {
   visible: boolean;
 };
 
-export type SelectedFilterType = {
-  [key: string]: Set<string>;
-};
-
-export type FetchedFilterType = Map<string, string[]>;
-
-export type SortFilterType = {
+export type ISelectedFilter = Record<string, Set<string>>;
+export type IPrefetchedFilter = Record<string, string[]>;
+export type IFilterInputCollection = Record<string, string | undefined>;
+export type ISortingFilter = {
   key: string;
   direction: SortDirectionType;
 };
@@ -64,9 +61,9 @@ export type TableRowKeyType = string | number;
 
 export type FilterMenuProps = {
   visible: boolean;
-  fetchedFilter: Map<string, string[]>;
-  updateSelectedFilters(key?: string | undefined, value?: string | string[] | undefined): Promise<void>;
-  updateInputValue: (key?: string | undefined, value?: string | undefined) => Promise<void>;
+  fetchedFilter: Record<string, string[]>;
+  updateSelectedFilters(key: string, value?: string | string[]): Promise<ISelectedFilter>;
+  updateInputValue: ((key: string, value: string) => Promise<IFilterInputCollection>) | ((key: string, value: string) => Promise<void>);
   value: string | undefined;
   columnKey: string;
   currentColumn?: ColumnType<any>;
@@ -88,6 +85,8 @@ export type PaginationContainerProps = {
   };
   settingsMenuProps: Omit<SettingsMenuProps, "visible">;
   changeColumnVisibility: ColumnVisibilityProps | boolean | undefined;
+  selectedRows: Set<TableRowKeyType>;
+  loading?: boolean | undefined;
 };
 
 export type EllipsisProps = {
@@ -96,10 +95,7 @@ export type EllipsisProps = {
 };
 
 //#region Table constructor
-export type TableElementProps = Pick<
-  React.HTMLAttributes<HTMLDivElement>,
-  "className" | "style" | "children" | "onClick" | "onContextMenu"
->;
+export type TableElementProps = Pick<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children" | "onClick" | "onContextMenu">;
 
 export interface TableHeadDataProps extends TableElementProps {
   columnKey: string;

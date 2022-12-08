@@ -58,7 +58,7 @@ button.pagination-button:not(:disabled):active {
   transform: scale(0.97);
 }
 
-.pagination-table .bottom .pagination-data-count button.settings-button.active .settings-icon {
+.pagination-container .bottom .pagination-data-count button.settings-button.active .settings-icon {
   fill: var(--color-primary);
 }
 
@@ -66,19 +66,21 @@ button.pagination-button .arrow-icon {
   width: 15px;
 }
 
-table.pagination-table {
+.pagination-container {
   padding: 0.75rem;
   margin-top: auto;
+  /* overflow-x: auto; */
 }
 
-.pagination-table .bottom {
-  display: flex;
+.pagination-container .bottom {
+  display: grid;
   align-items: center;
   padding: 0 20px;
   gap: 20px;
+  grid-template-columns: 1fr 2fr 1fr;
 }
 
-.pagination-table .bottom .pagination-page-numbers {
+.pagination-container .bottom .pagination-page-numbers {
   margin: 0px;
   padding: 0px;
   display: flex;
@@ -89,10 +91,10 @@ table.pagination-table {
   width: 100%;
 }
 
-.pagination-table .bottom .pagination-page-size {
+.pagination-container .bottom .pagination-page-size {
   margin-left: auto;
 }
-.pagination-table .bottom .pagination-page-size .page-size-selector {
+.pagination-container .bottom .pagination-page-size .page-size-selector {
   border: none;
   outline: none;
   cursor: pointer;
@@ -107,23 +109,23 @@ table.pagination-table {
   transition: 0.3s ease-in-out opacity;
 }
 
-.pagination-table .bottom .pagination-page-size .page-size-selector:active {
+.pagination-container .bottom .pagination-page-size .page-size-selector:active {
   opacity: 0.7;
 }
 
-.pagination-table .bottom .pagination-page-numbers button {
+.pagination-container .bottom .pagination-page-numbers button {
   margin: 0 3px;
 }
 
-.pagination-table .bottom .pagination-page-numbers button:first-child {
+.pagination-container .bottom .pagination-page-numbers button:first-child {
   margin-right: 15px;
 }
 
-.pagination-table .bottom .pagination-page-numbers button:last-child {
+.pagination-container .bottom .pagination-page-numbers button:last-child {
   margin-left: 15px;
 }
 
-.pagination-table .bottom .pagination-data-count {
+.pagination-container .bottom .pagination-data-count {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -136,20 +138,25 @@ table.pagination-table {
   user-select: none;
 }
 
-.pagination-table .bottom .pagination-data-count .title {
+.pagination-container .bottom .pagination-data-count .title {
   font-size: 14px;
 }
 
-.pagination-table .bottom .pagination-data-count .data-count {
+.pagination-container .bottom .pagination-data-count .data-count {
   font-weight: 500;
   font-size: 14px;
 }
 
-.pagination-table .bottom .pagination-data-count .settings {
+.pagination-container .bottom .pagination-data-count .settings {
   position: relative;
 }
-.pagination-table .bottom .pagination-data-count .settings-button .settings-icon {
+.pagination-container .bottom .pagination-data-count .settings-button .settings-icon {
   fill: gray;
   width: 20px;
   transition: 0.2s ease-in-out fill;
+}
+
+.pagination-container .pagination-skeleton {
+  width: 100%;
+  padding: unset;
 }

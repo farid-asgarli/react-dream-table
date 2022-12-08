@@ -74,7 +74,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     paginationProps,
     selectedFilters,
     columnsToRender,
-    fetchedFilters,
+    prefetchedFilters,
     visibleHeaders,
     handleMapData,
     selectedRows,
@@ -87,6 +87,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
   } = useTableTools<DataType>({
     ...tableProps,
     localization: tableLocalization,
+    tableDimensions: tableDimensions,
   });
 
   const contextMenuElement = contextMenuProps?.render && contextMenu && (
@@ -114,10 +115,10 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           key={filterMenu.key}
           columnKey={filterMenu.key}
           visible={filterMenu.visible === true}
-          fetchedFilter={fetchedFilters}
+          fetchedFilter={prefetchedFilters}
           updateSelectedFilters={updateSelectedFilters}
           updateInputValue={updateInputValue}
-          value={inputValue?.[filterMenu.key]}
+          value={inputValue[filterMenu.key]}
           ref={filterMenuRef}
           selectedFilters={selectedFilters[filterMenu.key]}
           isServerSide={!!serverSide?.defaultFiltering?.onFilterSearchAsync}
@@ -167,7 +168,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
   );
 
   const totalTableWidth = useMemo(() => {
-    const selectionColumnWidth = selectionMode === "multiple" ? tableDimensions.selectionMenuColumnWidth : 0;
+    const selectionColumnWidth = selectionMode ? tableDimensions.selectionMenuColumnWidth : 0;
     const expansionColumnWidth = expandableRows ? tableDimensions.expandedMenuColumnWidth : 0;
     const contextMenuColumnWidth = contextMenuProps?.render ? tableDimensions.contextMenuColumnWidth : 0;
 
@@ -216,7 +217,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         ref={tableHeadRef}
       />
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSkeleton rowCount={paginationProps.pageSize} overrideTotalHeight />
       ) : data && data.length > 0 ? (
         <TableBody
           style={{
@@ -262,7 +263,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
           className={concatStyles(
             "table-main",
             isHoverable && "hoverable",
-            selectionMode === "multiple" && "clickable",
+            selectionMode === "onRowClick" && "clickable",
             elementStylings?.tableBody?.className
           )}
         >
@@ -278,6 +279,8 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
                 handleHeaderVisibility,
                 visibleColumnKeys: visibleHeaders,
               }}
+              selectedRows={selectedRows}
+              loading={loading}
             />
           )}
         </div>

@@ -90,7 +90,7 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
             </Fade>
           );
 
-        const filters = fetchedFilter.get(columnKey)?.filter((x) => {
+        const filters = fetchedFilter[columnKey]?.filter((x) => {
           if (selectedFilters?.has(x)) return false;
           if (isServerSide || !value) return true;
 
@@ -127,7 +127,12 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 
     return (
       <Fade onAnimationFinish={onHide} duration={200} visible={visible}>
-        <div ref={ref} className={concatStyles("search-wrapper", className)} style={{ ...style, ...elementStylings?.filterMenu?.style }} {...props}>
+        <div
+          ref={ref}
+          className={concatStyles("search-wrapper", className)}
+          style={{ ...style, ...elementStylings?.filterMenu?.style }}
+          {...props}
+        >
           <div className={"search-input-wrapper"}>
             <input
               key={columnKey}
@@ -137,7 +142,12 @@ export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
               ref={inputRef}
               {...columnFilteringProps?.searchInputProps?.(columnKey)}
             />
-            <button type="button" className={"clear-button"} onClick={clearInput} disabled={!(currentInputValue && currentInputValue.length > 0)}>
+            <button
+              type="button"
+              className={"clear-button"}
+              onClick={clearInput}
+              disabled={!(currentInputValue && currentInputValue.length > 0)}
+            >
               <Close className={"clear-icon"} />
             </button>
           </div>

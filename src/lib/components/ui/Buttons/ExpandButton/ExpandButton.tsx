@@ -9,7 +9,7 @@ export default function ExpandButton({
   isExpanded?: boolean;
 }) {
   return (
-    <button className={concatStyles("expand-button", isExpanded && "expanded")} {...props}>
+    <button className={concatStyles("expand-button", isExpanded && "active")} {...props}>
       <PlusIcon className="expand-icon" />
     </button>
   );

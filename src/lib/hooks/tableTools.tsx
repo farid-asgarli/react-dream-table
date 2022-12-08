@@ -7,7 +7,6 @@ import type {
   TableHeadDataProps,
   TableRowKeyType,
 } from "../types/Utils";
-import { useFilterManagement } from "./filterManagement";
 import { concatStyles } from "../utils/ConcatStyles";
 import { ColumnType, TableLocalizationType, TableProps } from "../types/Table";
 import { TableRow } from "../index/TableConstructor/TableRow/TableRow";
@@ -20,6 +19,7 @@ import ContextMenuButton from "../components/ui/Buttons/ContextMenuButton/Contex
 import ExpandButton from "../components/ui/Buttons/ExpandButton/ExpandButton";
 import SortButton from "../components/ui/Buttons/SortButton/SortButton";
 import Checkbox from "../components/ui/Checkbox/Checkbox";
+import { useDataManagement } from "../logic/dataManagement";
 
 export function useTableTools<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
@@ -47,16 +47,24 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     paginationProps,
     updatePaginationProps,
     selectedFilters,
-    fetchedFilters,
+    prefetchedFilters,
     pipeFetchedFilters,
     updateSelectedFilters,
     progressReporters,
     sortData,
-    sortFilter,
+    currentSortFilter,
     textFilters,
     updateTextFilterValue,
     dataWithoutPagination,
-  } = useFilterManagement<DataType>(columns, apiData, serverSide, pagination?.defaults, sorting, filterDisplayStrategy);
+  } = useDataManagement<DataType>(serverSide !== undefined ? "server" : "client", {
+    columns,
+    data: apiData,
+    filterDisplayStrategy: filterDisplayStrategy ?? "default",
+    dataCount: serverSide?.pagination?.dataCount,
+    paginationDefaults: pagination?.defaults,
+    serverSide,
+    sortingProps: sorting,
+  });
 
   /** List of checked items in the table. */
   const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(new Set());
@@ -126,7 +134,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
       ];
     }
 
-    if (selectionMode === "multiple") {
+    if (selectionMode) {
       columnsCopy = [
         {
           key: TableConstans.SELECTION_KEY,
@@ -308,7 +316,11 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
           case TableConstans.SELECTION_KEY:
             return (
               <TableRowData className="select-input-container" {...tableRowDataProps}>
-                <Checkbox checked={isRowActive} />
+                <Checkbox
+                  onChange={selectionMode === "default" ? (e) => handleUpdateSelection(data[uniqueRowKey]) : undefined}
+                  readOnly={selectionMode === "onRowClick"}
+                  checked={isRowActive}
+                />
               </TableRowData>
             );
           default:
@@ -347,8 +359,8 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     {
       headerDataRefs: headerDataRefs.current,
       handleChangeColumnSize,
-      minColumnResizeWidth: typeof resizableColumns === "boolean" ? undefined : resizableColumns?.minColumnResizeWidth,
-      maxColumnResizeWidth: typeof resizableColumns === "boolean" ? undefined : resizableColumns?.maxColumnResizeWidth,
+      minColumnResizeWidth: tableProps.tableDimensions?.minColumnResizeWidth,
+      maxColumnResizeWidth: tableProps.tableDimensions?.maxColumnResizeWidth,
     },
     // Enable column resizing if only 'true' or 'props' are passed as an arg.
     !!resizableColumns
@@ -417,7 +429,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
               toolBoxes: [
                 col.sort ? (
                   <SortButton
-                    sortingDirection={sortFilter?.key === col.key ? sortFilter?.direction : undefined}
+                    sortingDirection={currentSortFilter?.key === col.key ? currentSortFilter?.direction : undefined}
                     key={`${col.key}_sort`}
                     onClick={() => sortData(col.key)}
                     localization={localization as TableLocalizationType}
@@ -426,7 +438,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
                 col.filter && filterDisplayStrategy !== "alternative" ? (
                   <SearchButton
                     key={`${col.key}_search`}
-                    isActive={selectedFilters[col.key]?.size > 0}
+                    isActive={selectedFilters[col.key] && selectedFilters[col.key]!.size > 0}
                     isVisible={filterMenu?.key === col.key && filterMenu.visible}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -444,13 +456,13 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
             };
         }
       }),
-    [data, selectedRows, sortFilter, columnsToRender, columnDimensions]
+    [data, selectedRows, currentSortFilter, columnsToRender, columnDimensions]
   );
 
   const handleRowClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>, rowKey: TableRowKeyType) => {
       e.stopPropagation();
-      if (selectionMode === "multiple") handleUpdateSelection(rowKey);
+      if (selectionMode === "onRowClick") handleUpdateSelection(rowKey);
       onRowClick?.(e, rowKey);
     },
     [selectionMode, onRowClick]
@@ -532,7 +544,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     updateInputValue,
     updateSelectedFilters,
     updatePaginationProps,
-    fetchedFilters,
+    prefetchedFilters,
     inputValue,
     progressReporters,
     data,

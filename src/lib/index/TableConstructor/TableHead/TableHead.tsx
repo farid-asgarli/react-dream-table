@@ -37,7 +37,11 @@ export const TableHead = React.forwardRef<HTMLDivElement, TableHeadProps>(
         onDragCancel={() => setActive(null)}
         autoScroll
       >
-        <SortableContext disabled={!draggingEnabled} items={items.map((x) => ({ id: x.columnKey }))} strategy={horizontalListSortingStrategy}>
+        <SortableContext
+          disabled={!draggingEnabled}
+          items={items.map((x) => ({ id: x.columnKey }))}
+          strategy={horizontalListSortingStrategy}
+        >
           <div ref={headRef} className={concatStyles("table-head", className)} {...props}>
             {items.map((dat) => (
               <TableHeadData

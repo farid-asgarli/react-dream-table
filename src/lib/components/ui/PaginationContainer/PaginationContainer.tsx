@@ -9,6 +9,7 @@ import { TableLocalizationType } from "../../../types/Table";
 import type { PaginationContainerProps } from "../../../types/Utils";
 import { concatStyles } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
+import { Select } from "../Select/Select";
 import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
 import "./PaginationContainer.css";
 
@@ -28,6 +29,8 @@ export function PaginationContainer({
   settingsMenuProps,
   progressReporters,
   changeColumnVisibility,
+  selectedRows,
+  loading,
   ...props
 }: PaginationContainerProps & React.HTMLAttributes<HTMLDivElement>) {
   const { localization, elementStylings, paginationDefaults } = useTableContext();
@@ -46,32 +49,39 @@ export function PaginationContainer({
 
     [paginationProps, updatePaginationProps]
   );
+
   const renderPaginationPageSize = useMemo(
     () => (
-      <select
-        title={localization.paginationPageSize}
-        className={"page-size-selector"}
-        defaultValue={paginationProps.pageSize}
-        onChange={(e) => updatePaginationProps({ currentPage: 1, pageSize: +e.target.value })}
-      >
-        {DEFAULT_PAGE_SIZES.map((op) => (
-          <option key={op} value={op}>
-            {op}
-          </option>
-        ))}
-      </select>
+      <Select
+        onChange={(e) => updatePaginationProps({ currentPage: 1, pageSize: e })}
+        options={DEFAULT_PAGE_SIZES.map((op) => ({
+          children: op,
+          value: op,
+        }))}
+        value={paginationProps.pageSize}
+      />
     ),
     [paginationProps.pageSize]
   );
 
   const renderDataCount = useMemo(
-    () => (
-      <div>
-        <span className={"data-count"}>{paginationProps.dataCount}&nbsp;</span>
-        <span className={"title"}>{localization.paginationTotalCount}</span>
-      </div>
-    ),
-    [paginationProps.dataCount]
+    () =>
+      selectedRows.size > 0 ? (
+        <div className="selected-data-count">
+          <Fade key={selectedRows.size}>
+            <span className="data-count">{selectedRows.size}&nbsp;</span>
+          </Fade>
+          <span className="title">{localization.rowsSelectedTitle}</span>
+        </div>
+      ) : (
+        <div className="total-data-count">
+          <Fade key={paginationProps.dataCount}>
+            <span className="data-count">{paginationProps.dataCount}&nbsp;</span>
+          </Fade>
+          <span className="title">{localization.paginationTotalCount}</span>
+        </div>
+      ),
+    [paginationProps.dataCount, selectedRows]
   );
 
   const settingsMenuRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +98,7 @@ export function PaginationContainer({
 
   return (
     <div
-      className={concatStyles("pagination-table", elementStylings?.tableFoot?.className, className)}
+      className={concatStyles("pagination-container", elementStylings?.tableFoot?.className, className)}
       style={{
         ...style,
         ...elementStylings?.tableBody?.style,
@@ -128,7 +138,10 @@ function renderPaginationButtons({
   updatePaginationProps,
   onPaginationChange,
   localization,
-}: Omit<PaginationContainerProps, "progressReporters" | "settingsMenuProps" | "changeColumnVisibility"> & {
+}: {
+  paginationProps: PaginationContainerProps["paginationProps"];
+  updatePaginationProps: PaginationContainerProps["updatePaginationProps"];
+  onPaginationChange: PaginationContainerProps["onPaginationChange"];
   localization: TableLocalizationType;
 }) {
   function renderButton({ navigateTo, component, disabled, title }: RenderPaginationButtonProps) {
@@ -166,20 +179,16 @@ function renderPaginationButtons({
     const initialPageNumber = 1;
 
     const prev1 = paginationProps.currentPage! - 1;
-    const prev2 = paginationProps.currentPage! - 2;
 
     const next1 = paginationProps.currentPage! + 1;
-    const next2 = paginationProps.currentPage! + 2;
 
     buttons.push(initialPageNumber);
-    if (prev2 !== initialPageNumber && prev2 > 0) buttons.push(prev2);
     if (prev1 !== initialPageNumber && prev1 > 0) buttons.push(prev1);
 
     if (paginationProps.currentPage !== buttonCount && paginationProps.currentPage !== initialPageNumber)
       buttons.push(paginationProps.currentPage!);
 
     if (buttonCount > next1) buttons.push(next1);
-    if (buttonCount > next2) buttons.push(next2);
 
     buttonCount !== initialPageNumber && buttons.push(buttonCount);
 

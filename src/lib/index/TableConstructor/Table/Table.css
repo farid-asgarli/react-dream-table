@@ -25,17 +25,20 @@
 }
 
 .table-container::-webkit-scrollbar,
+.pagination-container::-webkit-scrollbar,
 .table-body-inner::-webkit-scrollbar {
   width: 20px;
   height: 20px;
 }
 
 .table-container::-webkit-scrollbar-track,
+.pagination-container::-webkit-scrollbar-track,
 .table-body-inner::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
 .table-container::-webkit-scrollbar-thumb,
+.pagination-container::-webkit-scrollbar-thumb,
 .table-body-inner::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
@@ -44,6 +47,7 @@
 }
 
 .table-container::-webkit-scrollbar-thumb:hover,
+.pagination-container::-webkit-scrollbar-thumb:hover,
 .table-body-inner::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }
@@ -89,13 +93,15 @@
   font-size: 20px;
 }
 
-.table-main .expand-button.expanded .expand-icon {
+.table-main .expand-button.active .expand-icon {
   transform: rotate(45deg);
   fill: var(--color-primary);
 }
 
 .table-main .context-menu-button:hover,
-.table-main .expand-button:hover {
+.table-main .context-menu-button.active,
+.table-main .expand-button:hover,
+.table-main .expand-button.active {
   background: var(--color-background);
 }
 
