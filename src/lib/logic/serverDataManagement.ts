@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { TablePaginationProps, TableProps } from "../types/Table";
 import {
   DataFetchingType,
-  IFilterInputCollection,
+  IAbstractInputCollection,
   IPrefetchedFilter,
   ISelectedFilter,
   ISortingFilter,
@@ -39,13 +39,13 @@ export function useServerDataManagement<DataType extends Record<string, any>>({
   const paginationPropsRef = useRef<TablePaginationProps>({});
   const currentSortfilterRef = useRef<ISortingFilter>();
   const prefetchedFilterRef = useRef<IPrefetchedFilter>({});
-  const textFilterRef = useRef<IFilterInputCollection>({});
+  const textFilterRef = useRef<IAbstractInputCollection>({});
 
   selectedFilterRef.current = clientTools.selectedFilters;
   paginationPropsRef.current = clientTools.paginationProps;
   currentSortfilterRef.current = clientTools.currentSortFilter;
   prefetchedFilterRef.current = clientTools.prefetchedFilters;
-  textFilterRef.current = clientTools.textFilters;
+  textFilterRef.current = clientTools.abstractFilters;
 
   function startFetching(value: DataFetchingType) {
     clientTools.setProgressReporters((prev) => new Set(prev).add(value));
@@ -82,7 +82,7 @@ export function useServerDataManagement<DataType extends Record<string, any>>({
     });
   }
 
-  function updateTextFilterValue(key: string, value: string) {
+  function updateTextFilterValue(key: string, value: string | Set<string>) {
     clientTools.updateTextFilterValue(key, value).then((newState) => {
       if (serverSide?.alternativeFiltering?.onFilterSearchAsync) {
         startFetching("filter-select");
@@ -97,7 +97,13 @@ export function useServerDataManagement<DataType extends Record<string, any>>({
 
   async function pipeFetchedFilters(key: string) {
     if (!clientTools.prefetchedFilters[key]) startFetching("filter-fetch");
-    await clientTools.pipeFetchedFilters(key, serverSide?.defaultFiltering?.onFilterSearchAsync);
+    if (serverSide?.alternativeFiltering?.onDefaultFilterFetchAsync) {
+      await clientTools.pipeFetchedFilters(key, serverSide?.alternativeFiltering?.onDefaultFilterFetchAsync);
+    } else if (serverSide?.defaultFiltering?.onFilterSearchAsync) {
+      await clientTools.pipeFetchedFilters(key, serverSide?.defaultFiltering?.onFilterSearchAsync);
+    } else {
+      await clientTools.pipeFetchedFilters(key);
+    }
     stopFetching("filter-fetch");
   }
 

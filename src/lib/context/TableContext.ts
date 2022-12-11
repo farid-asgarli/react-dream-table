@@ -2,7 +2,13 @@ import React, { useContext } from "react";
 import { DefaultTableLocalization } from "../localization/default";
 import { DefaultTableDimensions } from "../static/dimensions";
 import { DefaultTableTheme } from "../theme/default";
-import { FilterDisplayStrategy, TableDimensionsType, TableLocalizationType, TableProps, TableThemeType } from "../types/Table";
+import {
+  FilterDisplayStrategy,
+  TableDimensionsType,
+  TableLocalizationType,
+  TableProps,
+  TableThemeType,
+} from "../types/Table";
 import { PaginationContainerProps } from "../types/Utils";
 type TableContextType = {
   localization: TableLocalizationType;
@@ -13,6 +19,7 @@ type TableContextType = {
   elementStylings?: TableProps<any>["elementStylings"];
   filterDisplayStrategy: FilterDisplayStrategy;
   paginationDefaults: PaginationContainerProps["paginationDefaults"];
+  striped: boolean;
 };
 
 export const TableContext = React.createContext<TableContextType>({
@@ -23,6 +30,7 @@ export const TableContext = React.createContext<TableContextType>({
   settingsMenuColumns: [],
   filterDisplayStrategy: "default",
   paginationDefaults: undefined,
+  striped: false,
 });
 
 export function useTableContext() {

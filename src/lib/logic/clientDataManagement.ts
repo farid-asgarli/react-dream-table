@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnType, FilterDisplayStrategy, TablePaginationProps, TableProps } from "../types/Table";
 import {
   DataFetchingType,
+  IAbstractInputCollection,
   IFilterInputCollection,
   IPrefetchedFilter,
   ISelectedFilter,
@@ -40,7 +41,7 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   /** Search input value in filter menu. */
   const [inputValue, setInputValue] = useState<IFilterInputCollection>({});
 
-  const [textFilters, setTextFilters] = useState<IFilterInputCollection>({});
+  const [abstractFilters, setAbstractFilters] = useState<IAbstractInputCollection>({});
 
   /** Sorting that is currently in use. */
   const [currentSortFilter, setCurrentSortFilter] = useState<ISortingFilter | undefined>(undefined);
@@ -76,16 +77,35 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   };
 
   // Only valid if `filterDisplayStrategy` is `alternative`.
-  const pipeSearchInputText = (data?: DataType[], filters?: typeof textFilters) => {
+  const pipeAbstractSearch = (data?: DataType[], filters?: IAbstractInputCollection) => {
     if (!data || data.length === 0) return;
     let filteredData: DataType[] = [...data];
     if (filters) {
       for (const key in filters) {
-        const equalityFilter = columns.find((x) => x.key === key)?.filteringProps?.alternate?.equalityComparer;
+        const equalityFilter = columns.find((x) => x.key === key)?.filteringProps?.alternate;
         filteredData = filteredData.filter((item) => {
-          if (!filters[key] || filters[key]?.length === 0) return true;
-          else if (equalityFilter) return equalityFilter(filters[key], item[key]);
-          return `${item[key]}`?.toLowerCase().includes(`${filters[key]}`.toLowerCase());
+          const assignedFilters = filters[key];
+          if (!assignedFilters || (assignedFilters as any)?.length === 0 || (assignedFilters as any)?.size === 0)
+            return true;
+          switch (equalityFilter?.type) {
+            case "select":
+              if (equalityFilter.multipleSelection) {
+                for (const f of (filters?.[key] as Set<string>)?.keys()) {
+                  if (
+                    (equalityFilter.equalityComparer && equalityFilter.equalityComparer?.(item[key], f)) ||
+                    (!equalityFilter.equalityComparer && f?.toLowerCase() === `${item[key]}`?.toLowerCase())
+                  )
+                    return true;
+                }
+                return false;
+              }
+              return `${item[key]}`?.toLowerCase() === `${filters[key]}`.toLowerCase();
+            default:
+              if (equalityFilter?.equalityComparer) {
+                return equalityFilter.equalityComparer(assignedFilters as string, item[key]);
+              }
+              return `${item[key]}`?.toLowerCase().includes(`${filters[key]}`.toLowerCase());
+          }
         });
       }
     }
@@ -126,20 +146,29 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     asyncFetchCallback?: ((key: string, inputValue?: string | undefined) => Promise<string[]>) | undefined
   ) {
     if (!prefetchedFilters[key]) {
+      console.log("entered");
       let mappedFilters: string[] | undefined;
 
       const column = columns.find((x) => x.key === key);
 
       if (column?.filteringProps?.default?.defaultFilters) {
         mappedFilters = column.filteringProps.default.defaultFilters;
+      } else if (
+        column?.filteringProps?.alternate?.type === "select" &&
+        column?.filteringProps?.alternate?.defaultFilters
+      ) {
+        mappedFilters = column.filteringProps.alternate.defaultFilters;
       } else {
         if (asyncFetchCallback) {
           mappedFilters = await asyncFetchCallback?.(key);
         } else mappedFilters = data?.flatMap((x) => `${x[key]}`);
       }
 
-      // Eliminate duplicate values.
-      updatePrefetchedFilters(key, Array.from(new Set(mappedFilters)));
+      updatePrefetchedFilters(
+        key,
+        // Eliminate duplicate values.
+        Array.from(new Set(mappedFilters))
+      );
     }
   }
 
@@ -153,11 +182,11 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   const filteredData = useMemo(() => {
     switch (filterDisplayStrategy) {
       case "alternative":
-        return pipeSearchInputText(data, textFilters);
+        return pipeAbstractSearch(data, abstractFilters);
       default:
         return pipeFilters(data, selectedFilters);
     }
-  }, [data, selectedFilters, textFilters]);
+  }, [data, selectedFilters, abstractFilters]);
 
   const sortedData = useMemo(() => pipeSorting(filteredData, currentSortFilter), [filteredData, currentSortFilter]);
 
@@ -227,9 +256,9 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     return Promise.resolve(filtersToDisplay);
   }
 
-  function updateTextFilterValue(key: string, value: string) {
-    return new Promise<IFilterInputCollection>((res) => {
-      setTextFilters((prev) => {
+  function updateTextFilterValue(key: string, value: string | Set<string>) {
+    return new Promise<IAbstractInputCollection>((res) => {
+      setAbstractFilters((prev) => {
         const updatedState = { ...prev, [key]: value };
         res(updatedState);
         return updatedState;
@@ -304,7 +333,7 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   return {
     inputValue,
     currentSortFilter,
-    textFilters,
+    abstractFilters,
     prefetchedFilters,
     selectedFilters,
     paginationProps,

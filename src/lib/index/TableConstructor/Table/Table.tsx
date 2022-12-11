@@ -3,10 +3,10 @@ import { TableHead } from "../TableHead/TableHead";
 import { TableProps } from "../../../types/Table";
 import { DefaultTableTheme } from "../../../theme/default";
 import { DefaultTableLocalization } from "../../../localization/default";
-import { useImperativeHandle, useMemo, useRef } from "react";
-import { useTableTools } from "../../../hooks/tableTools";
+import { useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { useTableTools } from "../../../logic/tableTools";
 import { ContextMenuOverlay } from "../../../components/ui/ContextMenu/ContextMenu";
-import { FilterMenu } from "../../../components/ui/FilterMenu/FilterMenu";
+import { DefaultFilterMenu } from "../../../components/ui/FilterMenu/Default/DefaultFilterMenu";
 import { useDetectOutsideClick } from "../../../hooks/detectOutsideClick";
 import { useDetectKeyPress } from "../../../hooks/detectKeyPress";
 import { TableStyleProps } from "../../../types/Utils";
@@ -21,6 +21,7 @@ import "./Table.css";
 
 export function Table<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
+    autoAdjustColWidthOnInitialRender,
     contextMenu: contextMenuProps,
     changeColumnVisibility,
     filterDisplayStrategy,
@@ -37,12 +38,13 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     loading,
     columns,
     style,
+    striped,
   } = tableProps;
 
   const tableDimensions = useMemo(
     () => ({
       ...DefaultTableDimensions,
-      defaultHeadRowHeight: filterDisplayStrategy === "alternative" ? 72 : DefaultTableDimensions.defaultHeadRowHeight,
+      defaultHeadRowHeight: filterDisplayStrategy === "alternative" ? 115 : DefaultTableDimensions.defaultHeadRowHeight,
       ...tableProps.tableDimensions,
     }),
     [filterDisplayStrategy, tableProps.tableDimensions]
@@ -69,6 +71,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     updateSelectedFilters,
     updateInputValue,
     setColumnOrder,
+    setColumnDimensions,
     handleMapTableHead,
     columnDimensions,
     paginationProps,
@@ -111,7 +114,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     if (filterMenu?.key) {
       const currentColumn = columns.find((x) => x.key === filterMenu?.key);
       return (
-        <FilterMenu
+        <DefaultFilterMenu
           key={filterMenu.key}
           columnKey={filterMenu.key}
           visible={filterMenu.visible === true}
@@ -193,6 +196,43 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnDimensions, expandableRows, contextMenuProps?.render, selectionMode, visibleHeaders]);
 
+  function autoAssignTableDimensions() {
+    if (tableContainerRef.current?.clientWidth && autoAdjustColWidthOnInitialRender) {
+      const selectionColumnWidth = selectionMode ? tableDimensions.selectionMenuColumnWidth : 0;
+      const expansionColumnWidth = expandableRows ? tableDimensions.expandedMenuColumnWidth : 0;
+      const contextMenuColumnWidth = contextMenuProps?.render ? tableDimensions.contextMenuColumnWidth : 0;
+
+      let totalDataColumnsWidth =
+        selectionColumnWidth +
+        expansionColumnWidth +
+        contextMenuColumnWidth +
+        /**scrollbar width */
+        20 +
+        /**scrollbar border */
+        6 * 2 +
+        /**padding */
+        18;
+
+      columnsToRender.forEach((val) => {
+        if (visibleHeaders.has(val.key)) totalDataColumnsWidth += val.width!;
+      });
+
+      if (totalDataColumnsWidth < tableContainerRef.current.clientWidth) {
+        const distributedWidth = (tableContainerRef.current.clientWidth - totalDataColumnsWidth) / columns.length;
+        setColumnDimensions(
+          new Map(
+            columns.map(({ key, width }) => [key, (width ?? tableDimensions?.defaultColumnWidth!) + distributedWidth])
+          )
+        );
+      }
+    }
+  }
+
+  useEffect(() => {
+    autoAssignTableDimensions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, tableContainerRef.current?.clientWidth]);
+
   const dataTable = (
     <div ref={tableContainerRef} className="table-container">
       <LoadingOverlay
@@ -217,7 +257,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         ref={tableHeadRef}
       />
       {loading ? (
-        <LoadingSkeleton rowCount={paginationProps.pageSize} overrideTotalHeight />
+        <LoadingSkeleton rowCount={10} overrideTotalHeight />
       ) : data && data.length > 0 ? (
         <TableBody
           style={{
@@ -254,6 +294,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
         filterDisplayStrategy: filterDisplayStrategy ?? "default",
         elementStylings,
         paginationDefaults: pagination?.defaults,
+        striped: striped ?? false,
       }}
     >
       <div style={{ ...defaultStyling, ...style }} className={concatStyles(className, "table-wrapper")}>
@@ -264,6 +305,7 @@ export function Table<DataType extends Record<string, any>>(tableProps: TablePro
             "table-main",
             isHoverable && "hoverable",
             selectionMode === "onRowClick" && "clickable",
+            striped && "striped",
             elementStylings?.tableBody?.className
           )}
         >

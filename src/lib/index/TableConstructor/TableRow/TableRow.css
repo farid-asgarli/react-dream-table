@@ -8,16 +8,33 @@
   break-inside: avoid;
 }
 
-/* .table-main.hoverable .table-row:not(.active):hover .table-row-data, */
-.table-main.hoverable .table-row:not(.active):hover {
-  background-color: #f1f3f5;
+.table-main.striped .table-row-wrapper:nth-child(even) {
+  background-color: #fafafa;
 }
 
-/* .table-row.active .table-row-data, */
+/* .table-main.hoverable .table-row:not(.active):hover .table-row-data, */
+.table-main.hoverable .table-row:not(.active):hover {
+  background-color: var(--color-background);
+}
+
 .table-row.active {
   background-color: var(--color-background);
 }
 
 .table-row-expansion {
   padding: 10px 12px;
+  position: relative;
+}
+
+.table-row-expansion.show-seperator .table-row-expansion-wrapper {
+  padding-left: 20px;
+}
+
+.table-row-expansion.show-seperator::before {
+  content: "";
+  height: 95%;
+  width: 5px;
+  background-color: var(--color-background);
+  position: absolute;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
 }

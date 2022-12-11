@@ -137,5 +137,9 @@
   position: relative;
   overflow-wrap: break-word;
   /* user-select: none; */
-  overflow: hidden;
+  overflow-x: hidden;
+}
+
+.table-scroll-main {
+  height: 100%;
 }

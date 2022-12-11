@@ -11,7 +11,9 @@ export function TableRow({ children, className, expandedProps, ...props }: Table
       </div>
       {expandedProps?.children !== undefined && (
         <Fade duration={200} visible={expandedProps?.isRowExpanded}>
-          <div className="table-row-expansion">{expandedProps?.children}</div>
+          <div className={concatStyles("table-row-expansion", expandedProps?.showSeperatorLine && "show-seperator")}>
+            <div className="table-row-expansion-wrapper">{expandedProps?.children}</div>
+          </div>
         </Fade>
       )}
     </div>

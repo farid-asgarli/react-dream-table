@@ -1,15 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useTableContext } from "../../../context/TableContext";
-import { StringExtensions } from "../../../extensions/String";
-import Close from "../../../icons/Close";
-import NoResult from "../../../icons/NoResult";
-import { FilterMenuProps } from "../../../types/Utils";
-import { concatStyles } from "../../../utils/ConcatStyles";
-import Fade from "../../animations/Fade/Fade";
-import Spinner from "../Spinner/Spinner";
-import "./FilterMenu.css";
-export const FilterMenu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & FilterMenuProps>(
+import { useTableContext } from "../../../../context/TableContext";
+import { StringExtensions } from "../../../../extensions/String";
+import Close from "../../../../icons/Close";
+import NoResult from "../../../../icons/NoResult";
+import { FilterMenuProps } from "../../../../types/Utils";
+import { concatStyles } from "../../../../utils/ConcatStyles";
+import Fade from "../../../animations/Fade/Fade";
+import Spinner from "../../Spinner/Spinner";
+import "./DefaultFilterMenu.css";
+export const DefaultFilterMenu = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & FilterMenuProps
+>(
   (
     {
       visible,

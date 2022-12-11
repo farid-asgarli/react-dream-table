@@ -34,6 +34,7 @@ export type FilterMenuVisibility = {
 export type ISelectedFilter = Record<string, Set<string>>;
 export type IPrefetchedFilter = Record<string, string[]>;
 export type IFilterInputCollection = Record<string, string | undefined>;
+export type IAbstractInputCollection = Record<string, Set<string> | string | undefined>;
 export type ISortingFilter = {
   key: string;
   direction: SortDirectionType;
@@ -63,7 +64,9 @@ export type FilterMenuProps = {
   visible: boolean;
   fetchedFilter: Record<string, string[]>;
   updateSelectedFilters(key: string, value?: string | string[]): Promise<ISelectedFilter>;
-  updateInputValue: ((key: string, value: string) => Promise<IFilterInputCollection>) | ((key: string, value: string) => Promise<void>);
+  updateInputValue:
+    | ((key: string, value: string) => Promise<IFilterInputCollection>)
+    | ((key: string, value: string) => Promise<void>);
   value: string | undefined;
   columnKey: string;
   currentColumn?: ColumnType<any>;
@@ -95,7 +98,10 @@ export type EllipsisProps = {
 };
 
 //#region Table constructor
-export type TableElementProps = Pick<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children" | "onClick" | "onContextMenu">;
+export type TableElementProps = Pick<
+  React.HTMLAttributes<HTMLDivElement>,
+  "className" | "style" | "children" | "onClick" | "onContextMenu"
+>;
 
 export interface TableHeadDataProps extends TableElementProps {
   columnKey: string;
@@ -113,8 +119,16 @@ export interface TableHeadDataProps extends TableElementProps {
   };
   toolBoxes?: (JSX.Element | undefined)[];
   alternateFilterInputProps?: {
-    handleChangeFilterInput?: (key: string, value: string) => void;
-    currentValue?: string;
+    handleChangeFilterInput?: (key: string, value: string | Set<string>) => void;
+    currentValue?: string | Set<string>;
+    fetchFilters?: (key: string) => Promise<void>;
+    prefetchedFilters?: Record<string, string[]>;
+    type?: "input" | "select";
+    render?: (text: string) => React.ReactNode;
+    multiple?: boolean | undefined;
+    progressReporters: Set<DataFetchingType>;
+    searchInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;
+    renderCustomInput?: (handleChange: (key: string, value: any | Set<any>) => void, value: any) => React.ReactNode;
   };
 }
 
@@ -131,6 +145,7 @@ export interface TableRowProps extends TableElementProps {
   expandedProps?: {
     children: React.ReactNode;
     isRowExpanded: boolean;
+    showSeperatorLine: boolean;
   };
 }
 

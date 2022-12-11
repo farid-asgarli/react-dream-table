@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: row;
   cursor: default;
-  background: #f1f3f5;
+  background: #fafafa;
   color: #7e868c;
   font-size: 0.8rem;
   /* text-transform: uppercase; */
@@ -28,4 +28,10 @@
 .table-head .table-head-data:last-child {
   border-top-right-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   border-bottom-right-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+}
+
+/* Pinning */
+
+.table-head-wrapper {
+  display: flex;
 }

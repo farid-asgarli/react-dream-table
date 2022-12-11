@@ -5,8 +5,11 @@
   -webkit-tap-highlight-color: transparent;
   padding: 0px 10px;
   transition: background 0.2s ease-in-out, outline-color 0.2s ease-in-out;
-  border-bottom: 1px solid rgb(224, 224, 224);
   outline: 2px solid transparent;
+}
+
+.table-main:not(.striped) .table-row-data {
+  border-bottom: 1px solid rgb(224, 224, 224);
 }
 
 .table-main:not(.clickable)

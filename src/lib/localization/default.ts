@@ -1,4 +1,6 @@
-export const DefaultTableLocalization = {
+import { TableLocalizationType } from "../types/Table";
+
+export const DefaultTableLocalization: TableLocalizationType = {
   dataLoading: "Loading",
   defaultFilterSearchPlaceholder: "Type here to search",
   alternativeFilterSearchPlaceholder: "Search",
@@ -18,4 +20,5 @@ export const DefaultTableLocalization = {
   rowShrinkTitle: "Shrink",
   columnVisibilityTitle: "Column visibility",
   rowsSelectedTitle: "rows selected",
+  selectOptionsLoading: "Loading options",
 };

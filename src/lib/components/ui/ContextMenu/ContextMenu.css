@@ -1,6 +1,6 @@
 .context-menu-overlay {
   box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
-  z-index: 99;
+  z-index: 999;
   min-width: 120px;
   display: flex;
   flex-direction: column;

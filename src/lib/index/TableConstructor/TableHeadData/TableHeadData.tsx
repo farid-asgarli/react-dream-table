@@ -1,13 +1,12 @@
 import { useSortable } from "@dnd-kit/sortable";
-import React, { useRef, useState } from "react";
 import { concatStyles } from "../../../utils/ConcatStyles";
-import { CSS } from "@dnd-kit/utilities";
 import { TableHeadDataProps } from "../../../types/Utils";
-import "./TableHeadData.css";
 import { TableConstans } from "../../../static/constants";
-import Close from "../../../icons/Close";
-import { StringExtensions } from "../../../extensions/String";
 import { useTableContext } from "../../../context/TableContext";
+import { CSS } from "@dnd-kit/utilities";
+import React from "react";
+import "./TableHeadData.css";
+import AlternativeFilterMenu from "../../../components/ui/FilterMenu/Alternative/AlternativeFilterMenu";
 
 export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps>(
   (
@@ -28,9 +27,6 @@ export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps
     const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({
       id: columnKey,
     });
-    const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(
-      alternateFilterInputProps?.currentValue ?? StringExtensions.Empty
-    );
 
     const draggableProps = draggingProps?.isDraggable
       ? {
@@ -48,27 +44,8 @@ export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps
       }
       setNodeRef(ref);
     }
-    const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    function clearUpdateTimeout() {
-      if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
-      inputUpdateTimeout.current = null;
-    }
-
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-      setCurrentInputValue(e.target.value);
-      clearUpdateTimeout();
-      inputUpdateTimeout.current = setTimeout(async () => {
-        alternateFilterInputProps?.handleChangeFilterInput?.(columnKey, e.target.value);
-      }, 600);
-    }
-
-    function clearInput() {
-      setCurrentInputValue(StringExtensions.Empty);
-      alternateFilterInputProps?.handleChangeFilterInput?.(columnKey, StringExtensions.Empty);
-    }
-
-    const { tableDimensions, localization } = useTableContext();
+    const { tableDimensions } = useTableContext();
 
     return (
       <div
@@ -101,27 +78,16 @@ export const TableHeadData = React.forwardRef<HTMLDivElement, TableHeadDataProps
             columnKey !== TableConstans.CONTEXT_MENU_KEY &&
             columnKey !== TableConstans.EXPANDABLE_KEY &&
             columnKey !== TableConstans.SELECTION_KEY && (
-              <div className="table-head-search">
-                <input
-                  onChange={handleInputChange}
-                  value={currentInputValue}
-                  className="search-input"
-                  placeholder={localization.alternativeFilterSearchPlaceholder}
-                />
-                <button
-                  type="button"
-                  onClick={clearInput}
-                  className="clear-button"
-                  disabled={!(currentInputValue && currentInputValue.length > 0)}
-                >
-                  <Close className="clear-icon" />
-                </button>
-              </div>
+              <AlternativeFilterMenu
+                progressReporters={alternateFilterInputProps.progressReporters}
+                columnKey={columnKey}
+                filterInputProps={alternateFilterInputProps}
+              />
             )}
         </div>
         {resizingProps?.isResizable && (
           <div
-            onMouseDown={(e) => resizingProps?.onMouseDown(columnKey)}
+            onMouseDown={() => resizingProps?.onMouseDown(columnKey)}
             className={`resize-handle ${resizingProps?.activeIndex === columnKey ? "active" : "idle"}`}
           />
         )}

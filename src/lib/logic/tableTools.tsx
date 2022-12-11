@@ -8,18 +8,24 @@ import type {
   TableRowKeyType,
 } from "../types/Utils";
 import { concatStyles } from "../utils/ConcatStyles";
-import { ColumnType, TableLocalizationType, TableProps } from "../types/Table";
+import {
+  ColumnType,
+  InputAlternateFiltering,
+  SelectAlternateFiltering,
+  TableLocalizationType,
+  TableProps,
+} from "../types/Table";
 import { TableRow } from "../index/TableConstructor/TableRow/TableRow";
 import { TableRowData } from "../index/TableConstructor/TableRowData/TableRowData";
 import { DefaultTableDimensions } from "../static/dimensions";
 import { TableConstans } from "../static/constants";
-import { useColumnResizer } from "./columnResizer";
+import { useColumnResizer } from "../hooks/columnResizer";
+import { useDataManagement } from "./dataManagement";
 import SearchButton from "../components/ui/Buttons/SearchButton/SearchButton";
 import ContextMenuButton from "../components/ui/Buttons/ContextMenuButton/ContextMenuButton";
 import ExpandButton from "../components/ui/Buttons/ExpandButton/ExpandButton";
 import SortButton from "../components/ui/Buttons/SortButton/SortButton";
 import Checkbox from "../components/ui/Checkbox/Checkbox";
-import { useDataManagement } from "../logic/dataManagement";
 
 export function useTableTools<DataType extends Record<string, any>>(tableProps: TableProps<DataType>) {
   const {
@@ -38,6 +44,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     filterDisplayStrategy,
     localization,
     changeColumnVisibility,
+    tableDimensions,
   } = tableProps;
 
   const {
@@ -53,7 +60,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     progressReporters,
     sortData,
     currentSortFilter,
-    textFilters,
+    abstractFilters,
     updateTextFilterValue,
     dataWithoutPagination,
   } = useDataManagement<DataType>(serverSide !== undefined ? "server" : "client", {
@@ -80,7 +87,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
   );
   /** Set of column dimensions (e.g. width). */
   const [columnDimensions, setColumnDimensions] = useState<Map<string, number>>(
-    new Map(columns.map(({ key, width }) => [key, width ?? DefaultTableDimensions.defaultColumnWidth]))
+    new Map(columns.map(({ key, width }) => [key, width ?? tableDimensions?.defaultColumnWidth!]))
   );
   /** Set of column keys in sorted order. */
   const [columnOrder, setColumnOrder] = useState<Array<string>>(
@@ -359,8 +366,8 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     {
       headerDataRefs: headerDataRefs.current,
       handleChangeColumnSize,
-      minColumnResizeWidth: tableProps.tableDimensions?.minColumnResizeWidth,
-      maxColumnResizeWidth: tableProps.tableDimensions?.maxColumnResizeWidth,
+      minColumnResizeWidth: tableDimensions?.minColumnResizeWidth,
+      maxColumnResizeWidth: tableDimensions?.maxColumnResizeWidth,
     },
     // Enable column resizing if only 'true' or 'props' are passed as an arg.
     !!resizableColumns
@@ -377,7 +384,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
         };
         switch (col.key) {
           case TableConstans.SELECTION_KEY:
-            return {
+            const selectionHeadProps: TableHeadDataProps = {
               ...tableHeadProps,
               className: "select-header",
               children: (
@@ -392,12 +399,19 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
                 />
               ),
             };
+            return selectionHeadProps;
           case TableConstans.CONTEXT_MENU_KEY:
-            return { ...tableHeadProps, className: "context-header" };
+            const contextHeadProps: TableHeadDataProps = {
+              ...tableHeadProps,
+              className: "context-header",
+            };
+
+            return contextHeadProps;
           case TableConstans.EXPANDABLE_KEY:
-            return { ...tableHeadProps, className: "expandable-header" };
+            const expandableProps: TableHeadDataProps = { ...tableHeadProps, className: "expandable-header" };
+            return expandableProps;
           default:
-            return {
+            const dataProps: TableHeadDataProps & React.RefAttributes<HTMLDivElement> = {
               ...tableHeadProps,
               className: concatStyles(determineEllipsis(col, "columnHead") && "ellipsis", "filter-header"),
               children: (
@@ -423,7 +437,15 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
                 col.filter && filterDisplayStrategy === "alternative"
                   ? {
                       handleChangeFilterInput: updateTextFilterValue,
-                      currentValue: textFilters[col.key],
+                      currentValue: abstractFilters[col.key],
+                      fetchFilters: pipeFetchedFilters,
+                      prefetchedFilters: prefetchedFilters,
+                      type: col.filteringProps?.alternate?.type,
+                      render: (col.filteringProps?.alternate as SelectAlternateFiltering)?.render,
+                      multiple: (col.filteringProps?.alternate as SelectAlternateFiltering)?.multipleSelection,
+                      progressReporters: progressReporters,
+                      searchInputProps: (col.filteringProps?.alternate as InputAlternateFiltering)?.searchInputProps,
+                      renderCustomInput: (col.filteringProps?.alternate as InputAlternateFiltering)?.renderCustomInput,
                     }
                   : undefined,
               toolBoxes: [
@@ -454,9 +476,10 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
                 ) : undefined,
               ],
             };
+            return dataProps;
         }
       }),
-    [data, selectedRows, currentSortFilter, columnsToRender, columnDimensions]
+    [data, selectedRows, currentSortFilter, columnsToRender, columnDimensions, prefetchedFilters, progressReporters]
   );
 
   const handleRowClick = useCallback(
@@ -498,6 +521,7 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
             expandedProps={{
               isRowExpanded: isRowExpanded,
               children: expandableRows?.render?.(x),
+              showSeperatorLine: !expandableRows?.showSeperatorLine || expandableRows?.showSeperatorLine === true,
             }}
             key={i}
           >
@@ -555,5 +579,6 @@ export function useTableTools<DataType extends Record<string, any>>(tableProps: 
     setColumnOrder,
     columnsToRender,
     dataWithoutPagination,
+    setColumnDimensions,
   };
 }
