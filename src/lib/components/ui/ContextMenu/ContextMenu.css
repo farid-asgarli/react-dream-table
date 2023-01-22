@@ -1,5 +1,5 @@
 .context-menu-overlay {
-  box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   z-index: 999;
   min-width: 120px;
   display: flex;
@@ -11,6 +11,13 @@
   position: fixed;
 }
 
+.context-menu-overlay .divider {
+  width: 90%;
+  height: 0.5px;
+  background-color: var(--color-line);
+  margin: 5px auto;
+}
+
 .context-menu-overlay .button-wrapper {
   display: flex;
 }
@@ -19,7 +26,7 @@
   all: unset;
   display: flex;
   align-items: center;
-  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   width: 100%;
   padding: 5px 10px;
   cursor: pointer;
@@ -27,5 +34,5 @@
 }
 
 .context-menu-overlay button:hover {
-  background-color: #f1f3f5;
+  background-color: var(--color-hover);
 }

@@ -1,6 +1,6 @@
 {
   "name": "react-dream-table",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "keywords": [
     "table",
     "react-table",
@@ -31,12 +31,17 @@
     "not dead",
     "not op_mini all"
   ],
+  "dependencies": {
+    "@dnd-kit/core": "^6.0.5",
+    "@dnd-kit/sortable": "^7.0.1",
+    "@dnd-kit/utilities": "3.2.1",
+    "lodash": "^4.17.21"
+  },
   "devDependencies": {
     "@types/node": "^16.18.3",
     "@types/react": "^18.0.25",
-    "@dnd-kit/core": "^6.0.5",
-    "@dnd-kit/sortable": "^7.0.1",
     "@types/react-dom": "^18.0.8",
+    "@types/lodash": "^4.14.191",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
     "react-scripts": "5.0.1",

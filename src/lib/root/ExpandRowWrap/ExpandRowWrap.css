@@ -1,0 +1,28 @@
+.expand-row-wrap {
+  position: absolute;
+  width: 100%;
+}
+
+.expand-row-wrap .expand-row-wrap-inner {
+  width: 100%;
+  height: 100%;
+  padding-left: 10px;
+  overflow: hidden;
+}
+.expand-row-wrap .expand-row-wrap-inner .content {
+  height: 100%;
+  width: 100%;
+  padding-left: 20px;
+}
+
+.expand-row-wrap.show-seperator .expand-row-wrap-inner::before {
+  content: "";
+  /* subtract table row padding */
+  height: calc(100% - 20px);
+  width: 5px;
+  background-color: var(--color-hover);
+  position: absolute;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
+  top: 50%;
+  transform: translateY(-50%);
+}

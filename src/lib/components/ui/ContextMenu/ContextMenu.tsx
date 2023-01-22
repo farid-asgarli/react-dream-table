@@ -2,31 +2,29 @@ import React from "react";
 import Fade from "../../animations/Fade/Fade";
 import type { ContextMenuProps } from "../../../types/Utils";
 import "./ContextMenu.css";
-import { concatStyles } from "../../../utils/ConcatStyles";
-import { useTableContext } from "../../../context/TableContext";
+import { cs } from "../../../utils/ConcatStyles";
 
 export const ContextMenuOverlay = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & ContextMenuProps
->(({ elements, visible, onHide, className, style, ...props }, ref) => {
-  const { elementStylings } = useTableContext();
+>(({ elements, visible, onHide, className, ...props }, ref) => {
   return (
     <Fade onAnimationFinish={onHide} duration={200} visible={visible}>
-      <div
-        ref={ref}
-        style={{ ...style, ...elementStylings?.contextMenu?.style }}
-        className={concatStyles("context-menu-overlay", className, elementStylings?.contextMenu?.className)}
-        {...props}
-      >
+      <div ref={ref} className={cs("context-menu-overlay", className)} {...props}>
         {elements
           .filter((x) => x !== undefined)
-          .map((elem) => (
-            <div className="button-wrapper" key={elem?.key}>
-              <button key={elem?.key} onClick={elem?.onClick}>
-                <span>{elem?.content}</span>
-              </button>
-            </div>
-          ))}
+          .map((elem, i) => {
+            if (Object.keys(elem!).length === 0) {
+              return <div key={i + "_context_divider"} className="divider" />;
+            }
+            return (
+              <div className="button-wrapper" key={elem?.key}>
+                <button key={elem?.key} onClick={elem?.onClick}>
+                  <span>{elem?.content}</span>
+                </button>
+              </div>
+            );
+          })}
       </div>
     </Fade>
   );

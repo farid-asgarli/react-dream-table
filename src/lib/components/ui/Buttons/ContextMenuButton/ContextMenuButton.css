@@ -1,0 +1,46 @@
+.data-grid .context-menu-button,
+.data-grid .expand-button {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-width: 25px;
+  max-width: 25px;
+  min-height: 25px;
+  max-height: 25px;
+  border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
+  cursor: pointer;
+  transition: 0.3s ease-in-out background;
+}
+
+.data-grid .context-menu-button:focus,
+.data-grid .expand-button:focus {
+  outline: 2px solid var(--color-hover);
+}
+
+.data-grid .expand-button .expand-icon {
+  transition: 0.2s ease-in-out transform;
+  fill: var(--color-icon);
+  font-size: 24px;
+}
+
+.data-grid .expand-button.active .expand-icon {
+  transform: rotate(-180deg);
+  fill: var(--color-primary);
+}
+
+.data-grid .context-menu-button:hover,
+.data-grid .context-menu-button.active,
+.data-grid .expand-button:hover,
+.data-grid .expand-button.active {
+  background: var(--color-hover);
+}
+
+.data-grid .context-menu-button .context-menu-icon {
+  fill: var(--color-icon);
+}
+
+.data-grid .context-menu-button:active .context-menu-icon {
+  scale: 0.8;
+}

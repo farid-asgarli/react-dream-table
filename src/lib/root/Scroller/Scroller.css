@@ -1,0 +1,49 @@
+.scroller {
+  display: block;
+  position: absolute;
+  inset: 0px;
+  overflow: auto;
+  overscroll-behavior: auto;
+  backface-visibility: hidden;
+}
+
+.empty-spacer {
+  position: absolute;
+  contain: strict;
+  left: 0px;
+  height: 1px;
+  top: 0px;
+  pointer-events: none;
+}
+
+/* .sticky-scroller {
+  position: sticky;
+  top: 0px;
+  left: 0px;
+  min-height: 100%;
+  max-width: 100%;
+} */
+
+.ReactVirtualized__Grid.ReactVirtualized__List::-webkit-scrollbar {
+  display: none;
+}
+
+.scroller::-webkit-scrollbar {
+  width: 20px;
+  height: 20px;
+}
+
+.scroller::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.scroller::-webkit-scrollbar-thumb {
+  background-color: #d6dee1;
+  border-radius: 12px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
+
+.scroller::-webkit-scrollbar-thumb:hover {
+  background-color: #a8bbbf;
+}

@@ -1,7 +1,24 @@
 .skeleton-table {
-  padding: 1rem 0.75rem;
+  padding: 10px 0.75rem;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.skeleton-table .table-row-skeleton {
+.skeleton-table .row-skeleton {
   width: 100%;
+}
+
+.skeleton-table .row-skeleton .skeleton-line {
+  height: calc(100% - 10px);
+}
+
+.data-grid.striped .skeleton-table .row-skeleton:nth-child(even) .skeleton-line {
+  background: #f7f7f7;
+}
+.data-grid.striped .skeleton-table .row-skeleton:nth-child(even) .skeleton-line::before {
+  background-image: linear-gradient(to right, #f0ecec 0%, rgba(0, 0, 0, 0.07) 20%, #f0ecec 40%, #f0ecec 100%);
 }

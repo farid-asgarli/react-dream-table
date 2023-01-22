@@ -1,29 +1,26 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ColumnType, FilterDisplayStrategy, TablePaginationProps, TableProps } from "../types/Table";
+import { ColumnType, KeyLiteralType, TablePaginationProps, TableProps } from "../types/Table";
 import {
   DataFetchingType,
-  IAbstractInputCollection,
+  ICurrentFilterCollection,
   IFilterInputCollection,
   IPrefetchedFilter,
-  ISelectedFilter,
-  ISortingFilter,
-  PaginationContainerProps,
+  ICurrentSorting,
+  FooterProps,
   SortDirectionType,
 } from "../types/Utils";
 
 export interface IClientDataManagement<DataType> {
   columns: Array<ColumnType<DataType>>;
-  filterDisplayStrategy: FilterDisplayStrategy;
   data?: Array<DataType> | undefined;
-  paginationDefaults?: PaginationContainerProps["paginationDefaults"];
+  paginationDefaults?: FooterProps<DataType>["paginationDefaults"];
   dataCount?: number;
   sortingProps?: TableProps<DataType>["sorting"];
 }
 
-export function useClientDataManagement<DataType extends Record<string, any>>({
+export function useClientDataManagement<DataType>({
   columns,
-  filterDisplayStrategy,
   data,
   paginationDefaults,
   dataCount,
@@ -33,28 +30,36 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   const PAGINATION_PAGE_SIZE = paginationDefaults?.defaultPageSize ?? 10;
 
   /** Collection of already fetched filters. */
-  const [prefetchedFilters, setPrefetchedFilters] = useState<IPrefetchedFilter>({});
-
-  /** Collection of user selected filters. */
-  const [selectedFilters, setSelectedFilters] = useState<ISelectedFilter>({});
+  const [prefetchedFilters, setPrefetchedFilters] = useState<IPrefetchedFilter<DataType>>(
+    {} as IPrefetchedFilter<DataType>
+  );
 
   /** Search input value in filter menu. */
-  const [inputValue, setInputValue] = useState<IFilterInputCollection>({});
+  const [inputValue, setInputValue] = useState<IFilterInputCollection<DataType>>(
+    {} as IFilterInputCollection<DataType>
+  );
 
-  const [abstractFilters, setAbstractFilters] = useState<IAbstractInputCollection>({});
+  /** Filters that are currently in use. */
+  const [currentFilters, setCurrentFilters] = useState<ICurrentFilterCollection<DataType>>(
+    {} as ICurrentFilterCollection<DataType>
+  );
 
   /** Sorting that is currently in use. */
-  const [currentSortFilter, setCurrentSortFilter] = useState<ISortingFilter | undefined>(undefined);
+  const [currentSorting, setCurrentSorting] = useState<ICurrentSorting<DataType> | undefined>(undefined);
 
+  /** Data fetching indicators. */
   const [progressReporters, setProgressReporters] = useState<Set<DataFetchingType>>(new Set());
 
-  const currentSortFilterRef = useRef<ISortingFilter>();
-  currentSortFilterRef.current = currentSortFilter;
+  /** Table key to reset filters. */
+  const [filterResetKey, setFilterResetKey] = useState(0);
 
-  const prefetchedFilterRef = useRef<IPrefetchedFilter>({});
+  const currentSortingRef = useRef<ICurrentSorting<DataType>>();
+  currentSortingRef.current = currentSorting;
+
+  const prefetchedFilterRef = useRef<IPrefetchedFilter<DataType>>({} as IPrefetchedFilter<DataType>);
   prefetchedFilterRef.current = prefetchedFilters;
 
-  const pipeSorting = (data?: DataType[], filters?: ISortingFilter) => {
+  const pipeSorting = (data?: DataType[], filters?: ICurrentSorting<DataType>) => {
     if (!data || data.length === 0) return;
     let sortedData = [...data];
 
@@ -62,14 +67,17 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
       const customSortingAlg = columns.find((x) => x.key === filters.key)?.sortingProps?.sortingComparer;
 
       const { key, direction } = filters;
-      if (customSortingAlg) sortedData = sortedData.sort((a, b) => customSortingAlg(a[key], b[key], direction));
+      if (customSortingAlg)
+        sortedData = sortedData.sort(
+          (a, b) => customSortingAlg(a[key as keyof DataType], b[key as keyof DataType], direction) as number
+        );
       else
         switch (direction) {
           case "ascending":
-            sortedData = sortedData.sort((a, b) => (a[key] > b[key] ? -1 : 1));
+            sortedData = sortedData.sort((a, b) => (a[key as keyof DataType] > b[key as keyof DataType] ? -1 : 1));
             break;
           case "descending":
-            sortedData = sortedData.sort((a, b) => (a[key] < b[key] ? -1 : 1));
+            sortedData = sortedData.sort((a, b) => (a[key as keyof DataType] < b[key as keyof DataType] ? -1 : 1));
             break;
         }
     }
@@ -77,12 +85,12 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   };
 
   // Only valid if `filterDisplayStrategy` is `alternative`.
-  const pipeAbstractSearch = (data?: DataType[], filters?: IAbstractInputCollection) => {
+  const pipeFilterSearch = (data?: DataType[], filters?: ICurrentFilterCollection<DataType>) => {
     if (!data || data.length === 0) return;
     let filteredData: DataType[] = [...data];
     if (filters) {
       for (const key in filters) {
-        const equalityFilter = columns.find((x) => x.key === key)?.filteringProps?.alternate;
+        const equalityFilter = columns.find((x) => x.key === key)?.filteringProps;
         filteredData = filteredData.filter((item) => {
           const assignedFilters = filters[key];
           if (!assignedFilters || (assignedFilters as any)?.length === 0 || (assignedFilters as any)?.size === 0)
@@ -92,19 +100,21 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
               if (equalityFilter.multipleSelection) {
                 for (const f of (filters?.[key] as Set<string>)?.keys()) {
                   if (
-                    (equalityFilter.equalityComparer && equalityFilter.equalityComparer?.(item[key], f)) ||
-                    (!equalityFilter.equalityComparer && f?.toLowerCase() === `${item[key]}`?.toLowerCase())
+                    (equalityFilter.equalityComparer &&
+                      equalityFilter.equalityComparer?.(item[key as keyof DataType], f)) ||
+                    (!equalityFilter.equalityComparer &&
+                      f?.toLowerCase() === `${item[key as keyof DataType]}`?.toLowerCase())
                   )
                     return true;
                 }
                 return false;
               }
-              return `${item[key]}`?.toLowerCase() === `${filters[key]}`.toLowerCase();
+              return `${item[key as keyof DataType]}`?.toLowerCase() === `${filters[key]}`.toLowerCase();
             default:
               if (equalityFilter?.equalityComparer) {
-                return equalityFilter.equalityComparer(assignedFilters as string, item[key]);
+                return equalityFilter.equalityComparer(assignedFilters as string, item[key as keyof DataType]);
               }
-              return `${item[key]}`?.toLowerCase().includes(`${filters[key]}`.toLowerCase());
+              return `${item[key as keyof DataType]}`?.toLowerCase().includes(`${filters[key]}`.toLowerCase());
           }
         });
       }
@@ -112,56 +122,23 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     return filteredData;
   };
 
-  // Only valid if `filterDisplayStrategy` is `default`.
-  const pipeFilters = (data?: DataType[], filters?: ISelectedFilter) => {
-    if (!data || data.length === 0) return;
-    let filteredData: DataType[] = [...data];
-    if (filters) {
-      function assignFilter(item: DataType, key: string) {
-        const equalityComparer = columns.find((x) => x.key === key)?.filteringProps?.default?.equalityComparer;
-        const currentItemFilters = filters![key];
-        // If filter array contains no items, stop execution.
-        if (!currentItemFilters || currentItemFilters.size === 0) return true;
-
-        // Convert object to string and compare.
-
-        for (const f of currentItemFilters.keys()) {
-          if (
-            (equalityComparer && equalityComparer?.(item[key], f)) ||
-            (!equalityComparer && f?.toLowerCase() === `${item[key]}`?.toLowerCase())
-          )
-            return true;
-        }
-
-        return false;
-      }
-
-      for (const key in filters) filteredData = filteredData.filter((item) => assignFilter(item, key));
-    }
-    return filteredData;
-  };
-
   async function pipeFetchedFilters(
-    key: string,
-    asyncFetchCallback?: ((key: string, inputValue?: string | undefined) => Promise<string[]>) | undefined
+    key: KeyLiteralType<DataType>,
+    asyncFetchCallback?:
+      | ((key: KeyLiteralType<DataType>, inputValue?: string | undefined) => Promise<string[]>)
+      | undefined
   ) {
     if (!prefetchedFilters[key]) {
-      console.log("entered");
       let mappedFilters: string[] | undefined;
 
       const column = columns.find((x) => x.key === key);
 
-      if (column?.filteringProps?.default?.defaultFilters) {
-        mappedFilters = column.filteringProps.default.defaultFilters;
-      } else if (
-        column?.filteringProps?.alternate?.type === "select" &&
-        column?.filteringProps?.alternate?.defaultFilters
-      ) {
-        mappedFilters = column.filteringProps.alternate.defaultFilters;
+      if (column?.filteringProps?.type === "select" && column?.filteringProps?.defaultFilters) {
+        mappedFilters = column.filteringProps.defaultFilters;
       } else {
         if (asyncFetchCallback) {
           mappedFilters = await asyncFetchCallback?.(key);
-        } else mappedFilters = data?.flatMap((x) => `${x[key]}`);
+        } else mappedFilters = data?.flatMap((x) => `${x[key as keyof DataType]}`);
       }
 
       updatePrefetchedFilters(
@@ -179,16 +156,9 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     );
   }, []);
 
-  const filteredData = useMemo(() => {
-    switch (filterDisplayStrategy) {
-      case "alternative":
-        return pipeAbstractSearch(data, abstractFilters);
-      default:
-        return pipeFilters(data, selectedFilters);
-    }
-  }, [data, selectedFilters, abstractFilters]);
+  const filteredData = useMemo(() => pipeFilterSearch(data, currentFilters), [data, currentFilters]);
 
-  const sortedData = useMemo(() => pipeSorting(filteredData, currentSortFilter), [filteredData, currentSortFilter]);
+  const sortedData = useMemo(() => pipeSorting(filteredData, currentSorting), [filteredData, currentSorting]);
 
   const [paginationProps, setPaginationProps] = useState<TablePaginationProps>({
     currentPage: PAGINATION_CURRENT_PAGE,
@@ -197,7 +167,7 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   });
 
   function updateInputValue(key: string, value: string) {
-    return new Promise<IFilterInputCollection>((res) =>
+    return new Promise<IFilterInputCollection<DataType>>((res) =>
       setInputValue((prev) => {
         const updatedState = { ...prev, [key]: value };
         res(updatedState);
@@ -206,8 +176,8 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     );
   }
 
-  function updatePrefetchedFilters(key: string, value: string[]) {
-    return new Promise<IPrefetchedFilter>((res) =>
+  function updatePrefetchedFilters(key: KeyLiteralType<DataType>, value: string[]) {
+    return new Promise<IPrefetchedFilter<DataType>>((res) =>
       setPrefetchedFilters((prev) => {
         const updatedState = { ...prev, [key]: value };
         res(updatedState);
@@ -226,43 +196,23 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
     });
   }
 
-  function updateSelectedFilters(key: string, value?: string | string[]) {
-    let filtersToDisplay: ISelectedFilter;
-
-    //Reset pagination's current page to one on filters' change
-    if (paginationProps.currentPage !== 1) updatePaginationProps({ currentPage: 1 });
-
-    if (!value) {
-      filtersToDisplay = { ...selectedFilters, [key]: new Set() };
-      setSelectedFilters(filtersToDisplay);
-      return Promise.resolve(filtersToDisplay);
-    }
-    if (Array.isArray(value)) {
-      filtersToDisplay = { ...selectedFilters, [key]: new Set(value) };
-    } else {
-      const prevFiltersOfSameKey = new Set(selectedFilters?.[key]);
-
-      if (prevFiltersOfSameKey.has(value)) prevFiltersOfSameKey.delete(value);
-      else prevFiltersOfSameKey.add(value);
-
-      filtersToDisplay = {
-        ...selectedFilters,
-        [key]: prevFiltersOfSameKey,
-      };
-    }
-
-    setSelectedFilters(filtersToDisplay);
-
-    return Promise.resolve(filtersToDisplay);
-  }
-
-  function updateTextFilterValue(key: string, value: string | Set<string>) {
-    return new Promise<IAbstractInputCollection>((res) => {
-      setAbstractFilters((prev) => {
+  function updateCurrentFilterValue(key: string, value: string | Set<string>) {
+    return new Promise<ICurrentFilterCollection<DataType>>((res) => {
+      setCurrentFilters((prev) => {
         const updatedState = { ...prev, [key]: value };
         res(updatedState);
         return updatedState;
       });
+    });
+  }
+
+  function resetCurrentFilters() {
+    return new Promise<ICurrentFilterCollection<DataType>>((res) => {
+      const emptyState = {} as ICurrentFilterCollection<DataType>;
+      setCurrentFilters(emptyState);
+      setInputValue(emptyState as IFilterInputCollection<DataType>);
+      setFilterResetKey(Date.now());
+      res(emptyState);
     });
   }
 
@@ -276,12 +226,12 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
         key,
         direction: alg,
       };
-      setCurrentSortFilter(updatedState);
+      setCurrentSorting(updatedState);
       return Promise.resolve(updatedState);
     }
-    return new Promise<ISortingFilter>((res) => {
-      setCurrentSortFilter((prev) => {
-        let updatedState: ISortingFilter;
+    return new Promise<ICurrentSorting<DataType>>((res) => {
+      setCurrentSorting((prev) => {
+        let updatedState: ICurrentSorting<DataType>;
         if (prev?.key && prev.key === key) {
           let sortType: SortDirectionType;
           switch (prev.direction) {
@@ -321,33 +271,34 @@ export function useClientDataManagement<DataType extends Record<string, any>>({
   }, [dataCount, filteredData]);
 
   useEffect(() => {
-    if (currentSortFilter) {
+    if (currentSorting) {
       sortingProps?.onSortingChange?.(
-        currentSortFilterRef.current!.key,
-        currentSortFilterRef.current?.direction,
+        currentSortingRef.current!.key,
+        currentSortingRef.current?.direction,
         sortedData!
       );
     }
-  }, [currentSortFilter]);
+  }, [currentSorting]);
 
   return {
     inputValue,
-    currentSortFilter,
-    abstractFilters,
+    currentSorting,
+    currentFilters,
     prefetchedFilters,
-    selectedFilters,
     paginationProps,
     sortData,
     updateInputValue,
     pipeFetchedFilters,
+    resetCurrentFilters,
     resetFetchedFilters,
-    updateTextFilterValue,
-    updateSelectedFilters,
+    updateCurrentFilterValue,
     updatePaginationProps,
     updatePrefetchedFilters,
     data: pipePagination(sortedData, paginationProps),
     dataWithoutPagination: sortedData,
     progressReporters,
     setProgressReporters,
+    setPaginationProps,
+    filterResetKey,
   };
 }

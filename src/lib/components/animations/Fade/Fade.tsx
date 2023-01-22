@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { HTMLAttributes, useEffect, useState } from "react";
-import { concatStyles } from "../../../utils/ConcatStyles";
+import { cs } from "../../../utils/ConcatStyles";
 import "./Fade.css";
 const Fade: React.FC<
   HTMLAttributes<HTMLDivElement> & {
@@ -37,7 +37,12 @@ const Fade: React.FC<
   }, [visible]);
 
   const elementToDisplay = React.Children.map(children as any, (item) => {
-    const newClassName = concatStyles(className, item.props.className, visible ? "fade-in" : "fade-out", !shouldShow && "disabled");
+    const newClassName = cs(
+      className,
+      item.props.className,
+      visible ? "fade-in" : "fade-out",
+      !shouldShow && "disabled"
+    );
     const props = {
       ...item.props,
       className: newClassName,

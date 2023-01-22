@@ -1,28 +1,37 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTableContext } from "../../../context/TableContext";
-import { TableRow } from "../../../index/TableConstructor/TableRow/TableRow";
-import { concatStyles } from "../../../utils/ConcatStyles";
+import Row from "../../../root/Row/Row";
+import { cs } from "../../../utils/ConcatStyles";
 import Skeleton from "../Skeleton/Skeleton";
+// import VirtualTableRow from "../../../Table/TableRow/VirtualTableRow";
+// import Skeleton from "../Skeleton/Skeleton";
 import "./LoadingSkeleton.css";
 
 export default function LoadingSkeleton({
   className,
   style,
-  rowCount = 10,
-  overrideTotalHeight,
+  containerHeight,
   ...props
-}: React.TableHTMLAttributes<HTMLTableElement> & { rowCount?: number; overrideTotalHeight?: boolean | undefined }) {
-  const { tableHeight } = useTableContext();
+}: React.TableHTMLAttributes<HTMLTableElement> & { containerHeight: number }) {
+  const { dimensions } = useTableContext();
+
+  const rowsToRender = useMemo(
+    () => Math.floor(containerHeight / dimensions.defaultDataRowHeight),
+    [containerHeight, dimensions.defaultDataRowHeight]
+  );
+
   return (
     <div
-      className={concatStyles("skeleton-table", className)}
-      style={{ ...style, height: overrideTotalHeight ? tableHeight : undefined }}
+      className={cs("skeleton-table", className)}
+      style={{
+        ...style,
+      }}
       {...props}
     >
-      {[...Array(rowCount)].map((_, i) => (
-        <TableRow className="table-row-skeleton" key={i}>
+      {[...Array(rowsToRender)].map((_, i) => (
+        <Row totalColumnsWidth="100%" className="row-skeleton" key={i}>
           <Skeleton />
-        </TableRow>
+        </Row>
       ))}
     </div>
   );

@@ -1,0 +1,8 @@
+.header-wrapper {
+  box-sizing: border-box;
+  line-height: 1.6;
+  display: flex;
+  flex-flow: row;
+  align-items: stretch;
+  flex-wrap: nowrap;
+}

@@ -14,13 +14,18 @@
   overflow: hidden;
   cursor: pointer;
 }
+
+.checkbox-wrapper input:focus {
+  outline: 2px solid var(--color-hover);
+}
+
 .checkbox-wrapper input:before {
   content: "";
   display: block;
   box-sizing: content-box;
   width: 16px;
   height: 16px;
-  border: 2px solid #ccc;
+  border: 2px solid var(--color-icon);
   transition: 0.2s border-color ease;
 }
 .checkbox-wrapper input:checked:before {

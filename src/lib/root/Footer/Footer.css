@@ -1,0 +1,194 @@
+button.pagination-button.active {
+  font-weight: 600;
+  cursor: default;
+  box-shadow: var(--box-shadow-primary);
+  background: var(--color-primary);
+}
+
+button.pagination-button.active span {
+  color: #fff;
+}
+
+button.pagination-button span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  top: 0px;
+  left: 0px;
+}
+
+button.pagination-button,
+button.settings-button {
+  border: none;
+  position: relative;
+  display: inline-flex;
+  margin: 0 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0px;
+  box-sizing: border-box;
+  text-transform: capitalize;
+  user-select: none;
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+  box-shadow: none;
+  outline: none;
+  height: 2rem;
+  min-width: 2rem;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  color: #11181c;
+  background: #f1f3f5;
+  transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, 0.3s ease-in-out transform;
+  outline: none;
+}
+
+button.pagination-button:focus,
+button.settings-button:focus {
+  outline: 2px solid var(--color-hover);
+}
+
+button.settings-button:hover,
+button.pagination-button:not(.active):hover {
+  background: #eceef0;
+}
+
+button.pagination-button:disabled {
+  cursor: not-allowed;
+}
+
+button.settings-button:hover:active,
+button.pagination-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.data-grid .footer .bottom .pagination-data-count button.settings-button.active .settings-icon {
+  fill: var(--color-primary);
+}
+
+button.pagination-button .btn-icon {
+  width: 15px;
+}
+button.pagination-button .ff-swap {
+  display: none;
+}
+button.pagination-button.ff-left span:not(.ff-swap) .btn-icon,
+button.pagination-button.ff-right span:not(.ff-swap) .btn-icon {
+  fill: #7e868c;
+}
+
+button.pagination-button.ff-left .ff-swap {
+  transform: rotate(-180deg);
+}
+
+button.pagination-button.ff-left:hover .content,
+button.pagination-button.ff-right:hover .content {
+  display: none;
+}
+
+button.pagination-button.ff-left:hover .ff-swap,
+button.pagination-button.ff-right:hover .ff-swap {
+  display: flex;
+}
+
+.data-grid .footer {
+  padding: 0 0.75rem;
+  height: 96px;
+  margin-top: 1px;
+  border-top: 1px solid rgb(224, 224, 224);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.data-grid .footer .bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 20px;
+  width: 100%;
+}
+
+.data-grid .footer .bottom .pagination-page-numbers {
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  font-variant: tabular-nums;
+  margin-left: auto;
+  width: 100%;
+}
+
+.data-grid .footer .bottom .pagination-page-size {
+  margin-left: auto;
+}
+.data-grid .footer .bottom .pagination-page-size .page-size-selector {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 14px;
+  background: #f1f3f5;
+  color: var(--color-primary);
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+  transition: 0.3s ease-in-out opacity;
+}
+
+.data-grid .footer .bottom .pagination-page-size .page-size-selector:active {
+  opacity: 0.7;
+}
+
+.data-grid .footer .bottom .pagination-page-numbers button {
+  margin: 0 3px;
+}
+
+.data-grid .footer .bottom .pagination-page-numbers button:first-child {
+  margin-right: 15px;
+}
+
+.data-grid .footer .bottom .pagination-page-numbers button:last-child {
+  margin-left: 15px;
+}
+
+.data-grid .footer .bottom .pagination-data-count {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+  position: relative;
+  overflow-wrap: break-word;
+  user-select: none;
+}
+
+.data-grid .footer .bottom .pagination-data-count .title {
+  font-size: 14px;
+}
+
+.data-grid .footer .bottom .pagination-data-count .data-count {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.data-grid .footer .bottom .pagination-data-count .settings {
+  position: relative;
+}
+.data-grid .footer .bottom .pagination-data-count .settings-button .settings-icon {
+  fill: gray;
+  width: 20px;
+  transition: 0.2s ease-in-out fill;
+}
+
+.data-grid .footer .pagination-skeleton {
+  width: 100%;
+  padding: unset;
+}

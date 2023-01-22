@@ -1,0 +1,7 @@
+.column-header-filter-wrapper {
+  display: flex;
+  flex-flow: row;
+  align-items: stretch;
+  /* border: 0; */
+  padding: 4px 8px;
+}

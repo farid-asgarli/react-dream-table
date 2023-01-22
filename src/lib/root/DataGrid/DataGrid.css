@@ -1,0 +1,16 @@
+.data-grid * {
+  box-sizing: border-box;
+}
+
+.data-grid {
+  width: 100%;
+  height: calc(100% - 24px);
+  flex: 1 1 0%;
+  z-index: 1;
+  position: relative;
+  min-height: 200px;
+  text-align: start;
+  outline: none;
+  font-size: 16px;
+  border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
+}

@@ -1,0 +1,50 @@
+.data-grid .cell {
+  position: relative;
+  padding: 8px;
+  display: inline-flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  transition: 0.1s background ease-in-out;
+}
+
+.data-grid .cell.tools {
+  justify-content: center;
+}
+
+.data-grid .cell.align-middle {
+  text-align: center;
+  justify-content: center;
+}
+
+.data-grid .cell.align-middle .cell-content {
+  flex: unset;
+  width: 100%;
+}
+
+.data-grid .cell.align-left {
+  text-align: left;
+}
+
+.data-grid .cell.align-right {
+  text-align: right;
+}
+
+.data-grid .locked-start-wrapper .cell:last-child::after,
+.data-grid .locked-end-wrapper .cell:first-child::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 3px;
+}
+
+.data-grid .locked-start-wrapper .cell:last-child::after {
+  right: -1px;
+}
+
+.data-grid .locked-end-wrapper .cell:first-child::before {
+  left: -1px;
+}

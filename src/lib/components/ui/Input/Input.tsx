@@ -1,14 +1,14 @@
 import { ChangeEvent, InputHTMLAttributes, useRef, useState } from "react";
+import { useTableContext } from "../../../context/TableContext";
 import { StringExtensions } from "../../../extensions/String";
-import SearchIcon from "../../../icons/Search";
-import { concatStyles } from "../../../utils/ConcatStyles";
+import { cs } from "../../../utils/ConcatStyles";
 import "./Input.css";
 
 export default function Input({
   onChange,
   ...props
-}: InputHTMLAttributes<HTMLInputElement> & {
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
+  onChange?: (value: ChangeEvent<HTMLInputElement>["target"]["value"]) => void;
 }) {
   const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(
     (props.defaultValue as string) ?? StringExtensions.Empty
@@ -21,6 +21,8 @@ export default function Input({
 
   const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const { icons } = useTableContext();
+
   function clearUpdateTimeout() {
     if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
     inputUpdateTimeout.current = null;
@@ -30,11 +32,11 @@ export default function Input({
     setCurrentInputValue(e.target.value);
     clearUpdateTimeout();
     inputUpdateTimeout.current = setTimeout(async () => {
-      onChange?.(e);
+      onChange?.(e.target.value);
     }, 600);
   }
   return (
-    <div className={concatStyles("table-text-input", focused && "focused")}>
+    <div className={cs("table-text-input", focused && "focused")}>
       {/* <button
         type="button"
         // onClick={clearInput}
@@ -44,10 +46,10 @@ export default function Input({
         <SearchIcon className="search-icon" />
       </button> */}
       <div className="search-icon-wrapper">
-        <SearchIcon className="search-icon" />
+        <icons.Search className="search-icon" />
       </div>
       <input
-        onFocus={() => setFocused(true)}
+        onFocus={(e) => setFocused(true)}
         onBlur={() => setFocused(false)}
         onChange={handleInputChange}
         value={currentInputValue}

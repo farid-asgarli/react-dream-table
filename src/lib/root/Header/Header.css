@@ -1,0 +1,9 @@
+.data-grid .header {
+  position: relative;
+  display: flex;
+  flex-flow: row nowrap;
+  box-sizing: initial;
+  font-weight: inherit;
+  z-index: 100;
+  will-change: transform;
+}

@@ -1,16 +1,14 @@
 .settings-menu-body {
-  z-index: 999;
-  position: absolute;
+  z-index: 100;
+  position: fixed;
   padding: 10px;
   background: #fff;
-  box-shadow: 0 12px 20px 6px rgb(104 112 118 / 0.08);
+  box-shadow: var(--box-shadow-main);
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   width: 250px;
   /* min-height: 300px; */
   display: flex;
   flex-direction: column;
-  bottom: 50px;
-  left: 0;
 }
 
 .settings-menu-body .settings-menu-header .settings-menu-title {
@@ -50,7 +48,7 @@
 }
 
 .settings-menu-body li.filter-element.active {
-  border-color: var(--color-background);
+  border-color: var(--color-hover);
   background-color: transparent;
 }
 

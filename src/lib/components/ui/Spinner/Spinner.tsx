@@ -1,4 +1,4 @@
-import { concatStyles } from "../../../utils/ConcatStyles";
+import { cs } from "../../../utils/ConcatStyles";
 import "./Spinner.css";
 const Spinner: React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
@@ -12,7 +12,7 @@ const Spinner: React.FC<
 
   return (
     <div
-      className={concatStyles("spinner-body", className)}
+      className={cs("spinner-body", className)}
       style={{
         ...style,
         minWidth: size,

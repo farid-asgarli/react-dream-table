@@ -1,0 +1,7 @@
+.row-cell-wrap {
+  display: flex;
+  flex-flow: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  transition: background 0.2s ease-in-out;
+}

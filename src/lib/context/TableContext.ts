@@ -1,38 +1,40 @@
 import React, { useContext } from "react";
-import { DefaultTableLocalization } from "../localization/default";
 import { DefaultTableDimensions } from "../static/dimensions";
-import { DefaultTableTheme } from "../theme/default";
+import { DefaultTableIcons } from "../static/icons";
+import { DefaultTableLocalization } from "../static/localization";
+import { DefaultTableTheme } from "../static/theme";
 import {
-  FilterDisplayStrategy,
+  KeyLiteralType,
   TableDimensionsType,
+  TableIconsType,
   TableLocalizationType,
-  TableProps,
   TableThemeType,
 } from "../types/Table";
-import { PaginationContainerProps } from "../types/Utils";
-type TableContextType = {
+import { FooterProps } from "../types/Utils";
+type TableContextType<DataType> = {
   localization: TableLocalizationType;
-  tableDimensions: TableDimensionsType;
-  themeProperties: TableThemeType;
-  tableHeight: string | number;
-  settingsMenuColumns: { key: string; title?: string }[];
-  elementStylings?: TableProps<any>["elementStylings"];
-  filterDisplayStrategy: FilterDisplayStrategy;
-  paginationDefaults: PaginationContainerProps["paginationDefaults"];
+  dimensions: TableDimensionsType;
+  theming: TableThemeType;
+  icons: TableIconsType;
+  settingsMenuColumns: { key: KeyLiteralType<DataType>; title?: string }[];
+  paginationDefaults: FooterProps<DataType>["paginationDefaults"];
   striped: boolean;
+  isAnyColumnPinned: boolean;
 };
 
-export const TableContext = React.createContext<TableContextType>({
+const TableContext = React.createContext<TableContextType<any>>({
   localization: DefaultTableLocalization,
-  tableDimensions: DefaultTableDimensions,
-  themeProperties: DefaultTableTheme,
-  tableHeight: "100%",
+  dimensions: DefaultTableDimensions,
+  theming: DefaultTableTheme,
+  icons: DefaultTableIcons,
   settingsMenuColumns: [],
-  filterDisplayStrategy: "default",
   paginationDefaults: undefined,
   striped: false,
+  isAnyColumnPinned: false,
 });
 
 export function useTableContext() {
   return useContext(TableContext);
 }
+
+export default TableContext;

@@ -1,17 +1,16 @@
 @keyframes shimmer {
   0% {
-    background-position: -50vw 0;
+    background-position: -100vw 0;
   }
   100% {
-    background-position: 50vw 0;
+    background-position: 100vw 0;
   }
 }
 
 .skeleton-line {
   background: #e2e4e7;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
-  height: 25px;
-  margin: 10px 0;
+  height: 30px;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -22,7 +21,7 @@
   content: "";
   height: 100%;
   width: 100%;
-  background-image: linear-gradient(to right, #e2e4e7 0%, #d4d5d6 20%, #d4d5d6 40%, #e2e4e7 100%);
+  background-image: linear-gradient(to right, #d9d9d9 0%, rgba(0, 0, 0, 0.07) 20%, #d9d9d9 40%, #d9d9d9 100%);
   background-repeat: no-repeat;
   /* background-size: 450px 400px; */
   animation: shimmer 1s linear infinite;

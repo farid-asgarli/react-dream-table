@@ -1,6 +1,6 @@
 import React, { ButtonHTMLAttributes } from "react";
-import PlusIcon from "../../../../icons/Plus";
-import { concatStyles } from "../../../../utils/ConcatStyles";
+import { useTableContext } from "../../../../context/TableContext";
+import { cs } from "../../../../utils/ConcatStyles";
 
 export default function ExpandButton({
   isExpanded,
@@ -8,9 +8,11 @@ export default function ExpandButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   isExpanded?: boolean;
 }) {
+  const { icons } = useTableContext();
+
   return (
-    <button className={concatStyles("expand-button", isExpanded && "active")} {...props}>
-      <PlusIcon className="expand-icon" />
+    <button type="button" className={cs("expand-button", isExpanded && "active")} {...props}>
+      <icons.ChevronDown className="expand-icon" />
     </button>
   );
 }

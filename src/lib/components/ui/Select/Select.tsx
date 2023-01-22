@@ -1,10 +1,7 @@
 import React, { HTMLAttributes, useMemo, useRef, useState } from "react";
-import { useDetectOutsideClick } from "../../../hooks/detectOutsideClick";
-import CheckMarkIcon from "../../../icons/CheckMark";
-import ChevronDownIcon from "../../../icons/ChevronDown";
-import ChevronUpIcon from "../../../icons/ChevronUp";
+import { useDetectOutsideClick } from "../../../hooks/use-detect-outside-click/use-detect-outside-click";
 import Fade from "../../animations/Fade/Fade";
-import { concatStyles } from "../../../utils/ConcatStyles";
+import { cs } from "../../../utils/ConcatStyles";
 import "./Select.css";
 import Spinner from "../Spinner/Spinner";
 import { useTableContext } from "../../../context/TableContext";
@@ -34,11 +31,13 @@ type TableSelectProps<OptionValue> = ConditionalProps<OptionValue> & {
   onOpen?: () => void;
   clearable?: boolean | undefined;
   loading?: boolean | undefined;
+  attachmentType?: "fixed" | "absolute" | undefined;
 };
 
 type TableSelectOption<OptionValue> = HTMLAttributes<HTMLDivElement> & {
   value: OptionValue;
   children: React.ReactNode;
+  checkIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element;
 };
 
 export const Select = <OptionValue extends any>({
@@ -49,6 +48,7 @@ export const Select = <OptionValue extends any>({
   multiple,
   clearable,
   loading,
+  attachmentType,
 }: TableSelectProps<OptionValue>) => {
   const [optionsBodyVisible, setOptionsBodyVisible] = useState<boolean>(false);
   function handleSelectChange(val: OptionValue) {
@@ -69,7 +69,7 @@ export const Select = <OptionValue extends any>({
     }
   }
 
-  function handleVisibility() {
+  function handleVisibility(e: React.MouseEvent<HTMLDivElement>) {
     if (!optionsBodyVisible) {
       setOptionsBodyVisible(true);
       onOpen?.();
@@ -81,19 +81,28 @@ export const Select = <OptionValue extends any>({
 
   useDetectOutsideClick([{ key: "select", ref: optionBodyRef }], (e, key) => setOptionsBodyVisible(false));
 
+  function joinNodes(...args: React.ReactNode[]) {
+    if (typeof args[0] === "string") return args.join(", ");
+    return args;
+  }
+
   const renderSelectedValues = useMemo(() => {
     const elements = options.filter((x) => (multiple ? value.has(x.value) : x.value === value)).map((x) => x.children);
     if (elements.length === 0) return <span className="select-placeholder">Seçin</span>;
-    return elements.join(", ");
+    return joinNodes(elements);
   }, [multiple, options, value]);
 
-  const { localization } = useTableContext();
+  const { localization, icons } = useTableContext();
   return (
     <div ref={selectWrapperRef} className="select-wrapper">
-      <div className={concatStyles("select-header", optionsBodyVisible && "active")} onClick={handleVisibility}>
+      <div className={cs("select-header", optionsBodyVisible && "active")} onClick={handleVisibility}>
         <div className="selected-value">{renderSelectedValues}</div>
         <div className="select-icon-wrapper">
-          {optionsBodyVisible ? <ChevronUpIcon className="select-icon" /> : <ChevronDownIcon className="select-icon" />}
+          {optionsBodyVisible ? (
+            <icons.ChevronUp className="select-icon" />
+          ) : (
+            <icons.ChevronDown className="select-icon" />
+          )}
         </div>
       </div>
       <Fade visible={optionsBodyVisible}>
@@ -102,7 +111,7 @@ export const Select = <OptionValue extends any>({
           style={{
             width: selectWrapperRef.current?.clientWidth,
           }}
-          className="select-list-wrapper"
+          className={cs("select-list-wrapper", attachmentType)}
         >
           {loading === true ? (
             <div className="loading-wrapper">
@@ -116,6 +125,7 @@ export const Select = <OptionValue extends any>({
                 {...opt}
                 selected={multiple ? value.has(opt.value) : opt.value === value}
                 onClick={() => handleSelectChange(opt.value)}
+                checkIcon={icons.CheckMark}
               />
             ))
           )}
@@ -131,16 +141,17 @@ Select.Option = <OptionValue extends any>({
   className,
   children,
   selected,
+  checkIcon: CheckIcon,
   ...props
 }: TableSelectOption<OptionValue> & {
   selected?: boolean;
 }) => {
   return (
-    <div className={concatStyles("select-option", selected && "selected", className)} {...props}>
+    <div className={cs("select-option", selected && "selected", className)} {...props}>
       {children}
       {selected && (
         <div className="select-option-icon">
-          <CheckMarkIcon className="select-option-check-icon" />
+          <CheckIcon className="select-option-check-icon" />
         </div>
       )}
     </div>

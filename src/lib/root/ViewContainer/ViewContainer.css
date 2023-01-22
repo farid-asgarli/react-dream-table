@@ -1,0 +1,8 @@
+.view-container {
+  position: absolute;
+  overflow: visible;
+  min-width: 100%;
+  direction: ltr;
+  will-change: transform;
+  backface-visibility: hidden;
+}
