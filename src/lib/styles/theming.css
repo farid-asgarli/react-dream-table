@@ -106,18 +106,15 @@
   outline: 2px solid var(--color-hover);
 }
 
+.data-grid .row.active .row-cell-wrap .cell,
 .data-grid .row.selected .row-cell-wrap .cell {
   background: var(--color-hover);
+}
+
+.data-grid .row.active .row-cell-wrap {
+  border-color: var(--color-primary);
 }
 
 .data-grid .column-header.dragging {
   background: var(--color-hover);
 }
-
-/* .data-grid .row .locked {
-  transition: background 0.2s ease-in-out;
-}
-
-.data-grid .row:not(.row-skeleton) .row-cell-wrap:hover .locked {
-  background: var(--color-hover);
-} */

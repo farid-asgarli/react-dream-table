@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { ConstProps } from "../../static/constantProps";
 import { VirtualListProps } from "../../types/Elements";
 import "./VirtualList.css";
 
 export default function VirtualList<DataType>({
   elements,
-  scrollPosition,
+  topScrollPosition,
   rowHeight,
   containerHeight,
   disabled,
@@ -12,39 +13,35 @@ export default function VirtualList<DataType>({
   expandPanelHeight,
   uniqueRowKey,
   renderElement,
-  preRenderedRowCount,
+  preRenderedRowCount = ConstProps.defaultPreRenderedRows,
 }: VirtualListProps<DataType>) {
-  const bufferedItems = (preRenderedRowCount ?? 2) + expandRowKeys.size;
-
-  function calcExpansionHeight(expKeys: Set<number>, elements: Array<DataType>) {
-    if (expKeys.size === 0) return;
+  const bufferedItems = preRenderedRowCount + expandRowKeys.size;
+  const expansionHeightPerRow = useMemo(() => {
+    if (expandRowKeys.size === 0) return;
     let elementsToIncreaseHeight = 0;
-    const obj: Record<number, number> = {};
+    const expDictionary: Record<number, number> = {};
     elements.forEach((c) => {
       const uniqueId = c[uniqueRowKey];
-      obj[uniqueId as number] = elementsToIncreaseHeight * expandPanelHeight;
-      if (expKeys.has(uniqueId as number)) {
+      expDictionary[uniqueId as number] = elementsToIncreaseHeight * expandPanelHeight;
+      if (expandRowKeys.has(uniqueId as number)) {
         elementsToIncreaseHeight++;
       }
     });
-    return obj;
-  }
+    return expDictionary;
+  }, [elements, expandPanelHeight, expandRowKeys, uniqueRowKey]);
 
   const visibleChildren = React.useMemo(() => {
-    const startIndex = Math.max(Math.floor(scrollPosition / rowHeight) - bufferedItems, 0);
+    const startIndex = Math.max(Math.floor(topScrollPosition / rowHeight) - bufferedItems, 0);
     const endIndex = Math.min(
-      Math.ceil((scrollPosition + containerHeight) / rowHeight - 1) + bufferedItems,
+      Math.ceil((topScrollPosition + containerHeight) / rowHeight - 1) + bufferedItems,
       elements.length - 1
     );
-
-    const expandWidthPerRow = calcExpansionHeight(expandRowKeys, elements);
-
     if (disabled)
       return elements.map((data, index) => {
         const uniqueId = data[uniqueRowKey];
         const styleToApply: React.CSSProperties = {
           position: "absolute",
-          top: index * rowHeight + index + (expandWidthPerRow?.[uniqueId as number] ?? 0),
+          top: index * rowHeight + index + (expansionHeightPerRow?.[uniqueId as number] ?? 0),
           height: rowHeight,
           left: 0,
           right: 0,
@@ -57,7 +54,7 @@ export default function VirtualList<DataType>({
       const uniqueId = data[uniqueRowKey];
       const styleToApply: React.CSSProperties = {
         position: "absolute",
-        top: (startIndex + index) * rowHeight + index + (expandWidthPerRow?.[uniqueId as number] ?? 0),
+        top: (startIndex + index) * rowHeight + (expansionHeightPerRow?.[uniqueId as number] ?? 0),
         height: rowHeight,
         left: 0,
         right: 0,
@@ -65,8 +62,9 @@ export default function VirtualList<DataType>({
       };
       return renderElement(data, styleToApply);
     });
+    // elements, containerHeight, disabled, expandRowKeys, rowHeight, topScrollPosition
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, containerHeight, disabled, expandRowKeys, rowHeight, scrollPosition]);
+  }, [elements, containerHeight, disabled, rowHeight, topScrollPosition, expansionHeightPerRow, renderElement]);
 
   return visibleChildren as unknown as JSX.Element;
 }

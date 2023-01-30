@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import Fade from "../../components/animations/Fade/Fade";
 import { Select } from "../../components/ui/Select/Select";
 import Skeleton from "../../components/ui/Skeleton/Skeleton";
-import { useTableContext } from "../../context/TableContext";
-import { useDetectOutsideClick } from "../../hooks/use-detect-outside-click/use-detect-outside-click";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { TableIconsType, TableLocalizationType } from "../../types/Table";
 import type { FooterProps } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
@@ -24,7 +23,7 @@ export default function Footer<DataType>({
   updatePaginationProps,
   onPaginationChange,
   className,
-  settingsMenu,
+  optionsMenu,
   progressReporters,
   columnVisibilityOptions,
   selectedRows,
@@ -32,7 +31,7 @@ export default function Footer<DataType>({
   style,
   ...props
 }: FooterProps<DataType> & React.HTMLAttributes<HTMLDivElement>) {
-  const { localization, dimensions, paginationDefaults, icons } = useTableContext();
+  const { localization, dimensions, paginationDefaults, icons } = useDataGridContext();
 
   const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
 
@@ -58,7 +57,6 @@ export default function Footer<DataType>({
           value: op,
         }))}
         value={paginationProps.pageSize}
-        attachmentType="fixed"
       />
     ),
     [paginationProps.pageSize]
@@ -92,18 +90,6 @@ export default function Footer<DataType>({
     [paginationProps.dataCount, selectedRows, loading]
   );
 
-  const settingsMenuRef = useRef<HTMLDivElement | null>(null);
-
-  useDetectOutsideClick(
-    [
-      {
-        key: "settingsMenu",
-        ref: settingsMenuRef,
-      },
-    ],
-    (_, key) => settingsMenu.hideSettingsMenu()
-  );
-
   return (
     <div
       className={cs("footer", className)}
@@ -119,13 +105,18 @@ export default function Footer<DataType>({
                   type="button"
                   title={localization.columnVisibilityTitle}
                   onClick={(e) =>
-                    settingsMenu.visibility?.visible
-                      ? settingsMenu.hideSettingsMenu()
-                      : settingsMenu.displaySettingsMenu(e)
+                    optionsMenu.displayOptionsMenu({
+                      data: {},
+                      identifier: "settings",
+                      position: {
+                        xAxis: e.clientX,
+                        yAxis: e.clientY - 320,
+                      },
+                    })
                   }
-                  className={cs("settings-button", settingsMenu.visibility?.visible && "active")}
+                  className={cs("settings-button", optionsMenu.isMenuVisible && "active")}
                 >
-                  <icons.Gear className={"settings-icon"} />
+                  <icons.Settings className={"settings-icon"} />
                 </button>
               </div>
             )}

@@ -2,11 +2,11 @@ import React, { useEffect, useImperativeHandle, useRef } from "react";
 import MenuButton from "../../components/ui/Buttons/MenuButton/MenuButton";
 import SortButton from "../../components/ui/Buttons/SortButton/SortButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { useColumnResizer } from "../../hooks/use-column-resizer/use-column-resizer";
 import { HeaderWrapperProps } from "../../types/Elements";
 import { CommonDataType, InputFiltering, SelectFiltering } from "../../types/Table";
-import { ColumnTypeExtended } from "../../types/Utils";
+import { ColumnTypeExtended, FilteringProps } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
 import Header from "../Header/Header";
@@ -28,9 +28,12 @@ function HeaderWrapper<DataType extends CommonDataType>(
     totalColumnsWidth,
     verticalScrollbarWidth,
     pinnedColumns,
-    tools,
+    tableTools,
+    dataTools,
     tp,
     onColumnHeaderFocus,
+    headerActionsMenu,
+    filterFnsMenu,
     ...props
   }: React.HtmlHTMLAttributes<HTMLDivElement> & HeaderWrapperProps<DataType>,
   ref: React.ForwardedRef<HeaderWrapperRef>
@@ -53,7 +56,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
     []
   );
 
-  const { dimensions } = useTableContext();
+  const { dimensions } = useDataGridContext();
 
   const headerDataRefs = useRef(new Map<string, HTMLDivElement | null>());
 
@@ -68,9 +71,10 @@ function HeaderWrapper<DataType extends CommonDataType>(
   }, [headerDataRefs.current]);
 
   const { activeIndex, mouseDown } = useColumnResizer(
+    headerRef,
     {
       headerDataRefs: headerDataRefs.current,
-      onColumnResize: tools.handleChangeColumnSize,
+      onColumnResize: tableTools.updateColumnWidth,
       minColumnResizeWidth: dimensions.minColumnResizeWidth,
       maxColumnResizeWidth: dimensions.maxColumnResizeWidth,
     },
@@ -86,47 +90,54 @@ function HeaderWrapper<DataType extends CommonDataType>(
     let tableHeadCellProps;
     switch (type) {
       case "data":
+        const isFilterFnActive = tableTools.checkIfFilterFnIsActive(key);
         children = title;
         tableHeadCellProps = {
-          filteringProps: filter
+          filterFnsProps: isFilterFnActive
             ? {
-                handleChangeFilterInput: tools.dataTools.updateCurrentFilterValue,
-                currentValue: tools.dataTools.currentFilters[key],
-                fetchFilters: tools.dataTools.pipeFetchedFilters,
-                prefetchedFilters: tools.dataTools.prefetchedFilters,
+                ...filterFnsMenu,
+                getColumnFilterFn: dataTools.getColumnFilterFn,
+              }
+            : undefined,
+          filterProps: filter
+            ? ({
+                updateFilterValue: dataTools.updateCurrentFilterValue,
+                getColumnFilterValue: dataTools.getColumnFilterValue,
+                fetchFilters: dataTools.pipeFetchedFilters,
+                prefetchedFilters: dataTools.prefetchedFilters,
                 type: filteringProps?.type,
                 render: (filteringProps as SelectFiltering)?.render,
                 multiple: (filteringProps as SelectFiltering)?.multipleSelection,
-                progressReporters: tools.dataTools.progressReporters,
-                searchInputProps: (filteringProps as InputFiltering)?.searchInputProps,
+                progressReporters: dataTools.progressReporters,
+                filterInputProps: (filteringProps as InputFiltering)?.inputProps,
                 renderCustomInput: (filteringProps as InputFiltering)?.renderCustomInput,
-              }
+                isRangeInput: dataTools.isRangeFilterFn(dataTools.getColumnFilterFn(key as string)),
+                disableInputIcon: isFilterFnActive,
+                pickerLocale: (filteringProps as any)?.pickerLocale,
+              } as FilteringProps)
             : undefined,
           toolBoxes: [
             sort ? (
               <SortButton
                 sortingDirection={
-                  tools.dataTools.currentSorting?.key === key ? tools.dataTools.currentSorting?.direction : undefined
+                  dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined
                 }
                 key={`${key as string}_sort`}
-                onClick={() => tools.dataTools.sortData(key as string)}
+                onClick={() => dataTools.sortData(key as string)}
               />
             ) : undefined,
-            tp.pinnedColumns?.active || tp.columnVisibilityOptions?.active ? (
+            tableTools.checkIfHeaderMenuActive ? (
               <MenuButton
                 key={`${key as string}_menu`}
                 onClick={(e) =>
-                  tools.displayContextMenu(
-                    {
-                      data: { id: col.key } as any,
-                      position: {
-                        xAxis: e.currentTarget.getBoundingClientRect().x,
-                        yAxis: e.currentTarget.getBoundingClientRect().y + 20,
-                      },
+                  headerActionsMenu.displayHeaderActionsMenu({
+                    data: { id: col.key } as any,
+                    position: {
+                      xAxis: e.currentTarget.getBoundingClientRect().x,
+                      yAxis: e.currentTarget.getBoundingClientRect().y + 20,
                     },
-                    false,
-                    "header"
-                  )
+                    identifier: col.key as string,
+                  })
                 }
               />
             ) : undefined,
@@ -137,17 +148,17 @@ function HeaderWrapper<DataType extends CommonDataType>(
         children = (
           <Checkbox
             onChange={(e) =>
-              tools.setSelectedRows(
+              tableTools.updateSelectedRowsMultiple(
                 !e.target.checked
                   ? new Set()
-                  : new Set(tools.dataTools.dataWithoutPagination!.map((x) => x[tp.uniqueRowKey as string]))
+                  : new Set(dataTools.dataWithoutPagination!.map((x) => x[tp.uniqueRowKey as string]))
               )
             }
             checked={
-              tools.dataTools.paginationProps.dataCount !== 0 &&
+              dataTools.paginationProps.dataCount !== 0 &&
               (tp.serverSide
-                ? tools.dataTools.data?.length === tools.selectedRows.size
-                : tp.data?.length === tools.selectedRows.size)
+                ? dataTools.data?.length === tableTools.selectedRows.size
+                : tp.data?.length === tableTools.selectedRows.size)
             }
           />
         );
@@ -160,16 +171,16 @@ function HeaderWrapper<DataType extends CommonDataType>(
       <ColumnHeader
         columnProps={col as ColumnTypeExtended<unknown>}
         resizingProps={{
-          isResizable: !isColumnTypeUtil && tools.checkIfColumnIsResizable(key),
+          isResizable: !isColumnTypeUtil && tableTools.checkIfColumnIsResizable(key),
           onMouseDown: mouseDown,
           activeIndex: activeIndex,
         }}
         draggingProps={{
-          isDraggable: !pinned && !isColumnTypeUtil && !!tools.checkIfColumnIsDraggable(key),
+          isDraggable: !pinned && !isColumnTypeUtil && !!tableTools.checkIfColumnIsDraggable(key),
         }}
         ref={(ref: HTMLDivElement | null) => headerDataRefs.current.set(col.key as string, ref)}
         tabIndex={!isColumnTypeUtil ? index : undefined}
-        key={(col.key as string) + `__${tools.dataTools.filterResetKey}`}
+        key={(col.key as string) + `__${dataTools.filterResetKey}`}
         onFocus={(e) => onColumnHeaderFocus(e, col.width)}
         style={{
           width: col.width,
@@ -187,15 +198,15 @@ function HeaderWrapper<DataType extends CommonDataType>(
   return (
     <div className="header-wrapper" {...props}>
       <Header ref={headerRef} style={{ minWidth: totalColumnsWidth }}>
-        {pinnedColumns?.leftColumns && (
+        {!!pinnedColumns?.leftWidth && (
           <LockedStartWrapper type="header" ref={lockedStartWrapperRef}>
             {pinnedColumns?.leftColumns.map((col, index) => renderColumnHeader(col, index + 1))}
           </LockedStartWrapper>
         )}
         <HeaderOrdering
-          columnOrder={tools.columnOrder}
+          columnOrder={tableTools.columnOrder}
           columns={columnsInUse.columns}
-          setColumnOrder={tools.setColumnOrder}
+          setColumnOrder={tableTools.updateColumnOrder}
           onColumnDragged={tp.draggableColumns?.onColumnDragged}
           draggingEnabled={tp.draggableColumns?.active === true}
         >
@@ -203,7 +214,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
             renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1)
           )}
         </HeaderOrdering>
-        {pinnedColumns?.rightColumns && (
+        {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="header" ref={lockedEndWrapperRef}>
             {pinnedColumns?.rightColumns.map((col, index) =>
               renderColumnHeader(
@@ -223,7 +234,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
             // Bottom - Border
             1,
           top: 0,
-          right: 0,
+          right: 0 /** header-layout bottom-right is active */,
           zIndex: 99999999,
         }}
       />

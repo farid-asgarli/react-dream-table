@@ -7,7 +7,7 @@
   }
 }
 
-.skeleton-line {
+.data-grid .skeleton-line {
   background: #e2e4e7;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   height: 30px;
@@ -16,7 +16,7 @@
   width: 100%;
 }
 
-.skeleton-line::before {
+.data-grid .skeleton-line::before {
   position: absolute;
   content: "";
   height: 100%;

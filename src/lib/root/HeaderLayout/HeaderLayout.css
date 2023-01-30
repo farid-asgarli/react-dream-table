@@ -1,3 +1,5 @@
-.header-layout {
+.data-grid .header-layout {
   position: relative;
+  /* border-left: 1px solid transparent;
+  border-right: 1px solid transparent; */
 }

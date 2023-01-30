@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { HTMLAttributes, useEffect, useState } from "react";
+import React, { HTMLAttributes, useEffect, useMemo, useState } from "react";
 import { cs } from "../../../utils/ConcatStyles";
 import "./Fade.css";
 const Fade: React.FC<
@@ -36,20 +36,24 @@ const Fade: React.FC<
     handleAnimation(visible);
   }, [visible]);
 
-  const elementToDisplay = React.Children.map(children as any, (item) => {
-    const newClassName = cs(
-      className,
-      item.props.className,
-      visible ? "fade-in" : "fade-out",
-      !shouldShow && "disabled"
-    );
-    const props = {
-      ...item.props,
-      className: newClassName,
-      style: { ...item.props.style, animationDuration: `${duration}ms` },
-    };
-    return React.cloneElement(item, props);
-  });
+  const elementToDisplay = useMemo(
+    () =>
+      React.Children.map(children as any, (item) => {
+        const newClassName = cs(
+          className,
+          item.props.className,
+          visible ? "fade-in" : "fade-out",
+          !shouldShow && "disabled"
+        );
+        const props = {
+          ...item.props,
+          className: newClassName,
+          style: { ...item.props.style, animationDuration: `${duration}ms` },
+        };
+        return React.cloneElement(item, props);
+      }),
+    [children, className, duration, shouldShow, visible]
+  );
   // const elementToDisplay = React.createElement(as, bodyProps, shouldShow && children);
 
   return shouldShow ? elementToDisplay : null;

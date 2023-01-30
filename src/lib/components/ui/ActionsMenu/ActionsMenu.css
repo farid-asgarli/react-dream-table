@@ -1,4 +1,4 @@
-.context-menu-overlay {
+.actions-menu {
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   z-index: 999;
   min-width: 120px;
@@ -11,28 +11,47 @@
   position: fixed;
 }
 
-.context-menu-overlay .divider {
+.actions-menu .divider {
   width: 90%;
   height: 0.5px;
   background-color: var(--color-line);
   margin: 5px auto;
 }
 
-.context-menu-overlay .button-wrapper {
+.actions-menu .button-wrapper {
   display: flex;
 }
 
-.context-menu-overlay button {
+.actions-menu button {
   all: unset;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   width: 100%;
   padding: 5px 10px;
   cursor: pointer;
   transition: 0.2s ease-in-out background-color;
+  gap: 10px;
 }
 
-.context-menu-overlay button:hover {
+.actions-menu button.selected,
+.actions-menu button:hover {
   background-color: var(--color-hover);
+}
+
+.actions-menu .content-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions-menu .content-wrapper .symbol {
+  color: var(--color-primary);
+}
+
+.actions-menu .content-wrapper .symbol-icon,
+.actions-menu button .selected-icon {
+  fill: var(--color-primary);
+  width: 20px;
 }

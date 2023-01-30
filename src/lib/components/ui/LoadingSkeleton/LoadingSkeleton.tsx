@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTableContext } from "../../../context/TableContext";
+import { useDataGridContext } from "../../../context/DataGridContext";
 import Row from "../../../root/Row/Row";
 import { cs } from "../../../utils/ConcatStyles";
 import Skeleton from "../Skeleton/Skeleton";
@@ -13,10 +13,10 @@ export default function LoadingSkeleton({
   containerHeight,
   ...props
 }: React.TableHTMLAttributes<HTMLTableElement> & { containerHeight: number }) {
-  const { dimensions } = useTableContext();
+  const { dimensions } = useDataGridContext();
 
   const rowsToRender = useMemo(
-    () => Math.floor(containerHeight / dimensions.defaultDataRowHeight),
+    () => Math.floor((containerHeight > 0 ? containerHeight - 50 : 0) / dimensions.defaultDataRowHeight),
     [containerHeight, dimensions.defaultDataRowHeight]
   );
 

@@ -1,13 +1,14 @@
 import React from "react";
 import { ScrollerProps } from "../../types/Elements";
+import { cs } from "../../utils/ConcatStyles";
 import "./Scroller.css";
 
 function Scroller(
-  { minWidth, minHeight, emptySpacerVisible, ...props }: ScrollerProps,
+  { minWidth, minHeight, emptySpacerVisible, className, ...props }: ScrollerProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   return (
-    <div className="scroller" ref={ref} {...props}>
+    <div className={cs("scroller", className)} ref={ref} {...props}>
       {emptySpacerVisible && (
         <div
           className="empty-spacer"
@@ -30,7 +31,7 @@ function Scroller(
               minHeight: minHeight,
               minWidth: minWidth,
             }}
-          ></div>
+          />
         </div>
       </div>
     </div>

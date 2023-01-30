@@ -1,19 +1,22 @@
 import React from "react";
-import { useTableContext } from "../../../context/TableContext";
-import { SettingsMenuProps } from "../../../types/Utils";
+import { useDataGridContext } from "../../../context/DataGridContext";
+import { OptionsMenuProps } from "../../../types/Utils";
 import { cs } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
-import "./SettingsMenu.css";
+import "./OptionsMenu.css";
 
-export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps<any>>(
-  ({ handleColumnVisibility, visibleColumnKeys, className, visible, ...props }, ref) => {
-    const { settingsMenuColumns, localization, icons } = useTableContext();
+export const OptionsMenu = React.forwardRef<HTMLDivElement, OptionsMenuProps<any>>(
+  ({ handleColumnVisibility, visibleColumnKeys, className, ...props }, ref) => {
+    const { optionsMenuColumns, localization, icons } = useDataGridContext();
     return (
-      <Fade visible={visible} duration={200}>
-        <div className={cs("settings-menu-body", className)} ref={ref} {...props}>
+      <React.Fragment>
+        <div className="options-menu-header">
+          <h4 className="options-menu-title">{localization.columnVisibilityTitle}</h4>
+        </div>
+        <div className={cs("options-menu-body", className)} ref={ref} {...props}>
           <div className={"columns-list-wrapper"}>
             <ul>
-              {settingsMenuColumns.map(({ key, title }) => {
+              {optionsMenuColumns.map(({ key, title }) => {
                 const isSelectionActive = visibleColumnKeys.has(key);
                 return (
                   <li
@@ -37,11 +40,8 @@ export const SettingsMenu = React.forwardRef<HTMLDivElement, SettingsMenuProps<a
               })}
             </ul>
           </div>
-          <div className="settings-menu-header">
-            <h4 className="settings-menu-title">{localization.columnVisibilityTitle}</h4>
-          </div>
         </div>
-      </Fade>
+      </React.Fragment>
     );
   }
 );

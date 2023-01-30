@@ -1,5 +1,5 @@
-.skeleton-table {
-  padding: 10px 0.75rem;
+.data-grid .skeleton-table {
+  padding: 10px 2rem;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -8,11 +8,11 @@
   justify-content: center;
 }
 
-.skeleton-table .row-skeleton {
+.data-grid .skeleton-table .row-skeleton {
   width: 100%;
 }
 
-.skeleton-table .row-skeleton .skeleton-line {
+.data-grid .skeleton-table .row-skeleton .skeleton-line {
   height: calc(100% - 10px);
 }
 

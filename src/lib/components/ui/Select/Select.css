@@ -1,12 +1,12 @@
-.select-wrapper {
+.data-grid .select-wrapper {
   position: relative;
   font-size: 14px;
   width: 100%;
   font-weight: 400;
-  color: #000;
+  color: var(--color-text);
 }
 
-.select-wrapper .select-header {
+.data-grid .select-wrapper .select-header {
   min-width: 80px;
   height: 35px;
   display: flex;
@@ -21,26 +21,30 @@
   justify-content: space-between;
   font-weight: 500;
   transition: 0.2s ease-in-out border-color;
+  width: 100%;
 }
-.select-wrapper .select-header:focus {
+.data-grid .select-wrapper .select-header:focus {
   outline: 1px solid var(--color-hover);
 }
 
-.select-wrapper .select-header .select-placeholder {
+.data-grid .select-wrapper .select-header .select-placeholder {
   color: rgba(0, 0, 0, 0.25);
 }
 
-.select-wrapper .select-header .selected-value {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.data-grid .select-wrapper .select-header .selected-value {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
 }
 
-.select-wrapper .select-header.active {
-  border-color: var(--color-hover);
+.data-grid .select-wrapper .select-header.active {
+  border-color: var(--color-primary);
 }
 
-.select-wrapper .select-list-wrapper {
+.data-grid .select-wrapper .select-list-wrapper {
   background-color: #fff;
   border: 1px solid #d9d9d9;
   padding: 5px;
@@ -55,14 +59,14 @@
   max-height: 100px;
 }
 
-.select-wrapper .select-list-wrapper.fixed {
+.data-grid .select-wrapper .select-list-wrapper.fixed {
   position: fixed;
   top: unset;
   transform: unset;
   max-height: 200px;
 }
 
-.select-wrapper .select-option {
+.data-grid .select-wrapper .select-option {
   cursor: pointer;
   border-radius: 4px;
   padding: 2px 5px;
@@ -71,14 +75,14 @@
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: #000;
+  color: inherit;
 }
 
-.select-wrapper .select-option:hover {
+.data-grid .select-wrapper .select-option:hover {
   background-color: var(--color-hover);
 }
 
-.select-wrapper .select-option .select-option-icon,
+.data-grid .select-wrapper .select-option .select-option-icon,
 .select-icon-wrapper {
   display: flex;
   justify-content: center;
@@ -86,14 +90,14 @@
   margin-left: auto;
 }
 
-.select-wrapper .select-option .select-option-check-icon {
+.data-grid .select-wrapper .select-option .select-option-check-icon {
   width: 18px;
   font-size: 18px;
   fill: var(--color-primary);
 }
 
-.select-wrapper .select-option.selected,
-.select-wrapper .select-option:active {
+.data-grid .select-wrapper .select-option.selected,
+.data-grid .select-wrapper .select-option:active {
   background-color: var(--color-hover);
 }
 
@@ -102,7 +106,7 @@
   fill: #7e868c;
 }
 
-.select-wrapper .select-list-wrapper .loading-wrapper {
+.data-grid .select-wrapper .select-list-wrapper .loading-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -110,21 +114,22 @@
   padding: 20px 0;
 }
 
-.select-wrapper .select-list-wrapper::-webkit-scrollbar {
-  width: 15px;
+.data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.select-wrapper .select-list-wrapper::-webkit-scrollbar-track {
+.data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-.select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb {
+.data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
-.select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb:hover {
+.data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }

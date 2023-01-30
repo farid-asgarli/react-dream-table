@@ -1,27 +1,26 @@
 import { ChangeEvent, InputHTMLAttributes, useRef, useState } from "react";
-import { useTableContext } from "../../../context/TableContext";
+import { useDataGridContext } from "../../../context/DataGridContext";
 import { StringExtensions } from "../../../extensions/String";
 import { cs } from "../../../utils/ConcatStyles";
 import "./Input.css";
 
 export default function Input({
+  defaultValue,
   onChange,
+  disableIcon,
   ...props
 }: Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
   onChange?: (value: ChangeEvent<HTMLInputElement>["target"]["value"]) => void;
+  disableIcon?: boolean;
 }) {
   const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(
-    (props.defaultValue as string) ?? StringExtensions.Empty
+    (defaultValue as string) ?? StringExtensions.Empty
   );
   const [focused, setFocused] = useState<boolean>(false);
 
-  // function clearInput() {
-  //   setCurrentInputValue(StringExtensions.Empty);
-  // }
-
   const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const { icons } = useTableContext();
+  const { icons } = useDataGridContext();
 
   function clearUpdateTimeout() {
     if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
@@ -36,24 +35,18 @@ export default function Input({
     }, 600);
   }
   return (
-    <div className={cs("table-text-input", focused && "focused")}>
-      {/* <button
-        type="button"
-        // onClick={clearInput}
-        className="clear-button"
-        disabled={!(currentInputValue && currentInputValue.length > 0)}
-      >
-        <SearchIcon className="search-icon" />
-      </button> */}
-      <div className="search-icon-wrapper">
-        <icons.Search className="search-icon" />
-      </div>
+    <div className={cs("input-wrapper", focused && "focused")}>
+      {disableIcon === false && (
+        <div className="input-icon-wrapper">
+          <icons.Search className="input-icon" />
+        </div>
+      )}
       <input
         onFocus={(e) => setFocused(true)}
         onBlur={() => setFocused(false)}
         onChange={handleInputChange}
         value={currentInputValue}
-        className="search-input"
+        className="basic-input"
         {...props}
       />
     </div>

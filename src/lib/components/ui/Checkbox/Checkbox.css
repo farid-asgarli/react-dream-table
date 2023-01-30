@@ -1,10 +1,10 @@
-.checkbox-wrapper label {
+.data-grid .checkbox-wrapper label {
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-.checkbox-wrapper input {
+.data-grid .checkbox-wrapper input {
   position: relative;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -15,11 +15,11 @@
   cursor: pointer;
 }
 
-.checkbox-wrapper input:focus {
+.data-grid .checkbox-wrapper input:focus {
   outline: 2px solid var(--color-hover);
 }
 
-.checkbox-wrapper input:before {
+.data-grid .checkbox-wrapper input:before {
   content: "";
   display: block;
   box-sizing: content-box;
@@ -28,15 +28,15 @@
   border: 2px solid var(--color-icon);
   transition: 0.2s border-color ease;
 }
-.checkbox-wrapper input:checked:before {
+.data-grid .checkbox-wrapper input:checked:before {
   border-color: var(--color-primary);
   transition: 0.5s border-color ease;
 }
-.checkbox-wrapper input:disabled:before {
+.data-grid .checkbox-wrapper input:disabled:before {
   border-color: #ccc;
   background-color: #ccc;
 }
-.checkbox-wrapper input:after {
+.data-grid .checkbox-wrapper input:after {
   content: "";
   display: block;
   position: absolute;
@@ -50,23 +50,23 @@
   border-radius: 100vh;
   transform: translate(-50%, -50%) scale(0);
 }
-.checkbox-wrapper input[type="radio"]:before {
+.data-grid .checkbox-wrapper input[type="radio"]:before {
   border-radius: 100vh;
 }
-.checkbox-wrapper input[type="radio"]:after {
+.data-grid .checkbox-wrapper input[type="radio"]:after {
   width: 16px;
   height: 16px;
   border-radius: 100vh;
   transform: translate(-50%, -50%) scale(0);
 }
-.checkbox-wrapper input[type="radio"]:checked:after {
+.data-grid .checkbox-wrapper input[type="radio"]:checked:after {
   -webkit-animation: toggleOnRadio 0.2s ease forwards;
   animation: toggleOnRadio 0.2s ease forwards;
 }
-.checkbox-wrapper input[type="checkbox"]:before {
+.data-grid .checkbox-wrapper input[type="checkbox"]:before {
   border-radius: var(--border-radius-sm);
 }
-.checkbox-wrapper input[type="checkbox"]:after {
+.data-grid .checkbox-wrapper input[type="checkbox"]:after {
   width: 9.6px;
   height: 16px;
   border-radius: 0;
@@ -74,18 +74,18 @@
   background-color: transparent;
   box-shadow: 4px 4px 0px 0px var(--color-primary);
 }
-.checkbox-wrapper input[type="checkbox"]:checked:after {
+.data-grid .checkbox-wrapper input[type="checkbox"]:checked:after {
   -webkit-animation: toggleOnCheckbox 0.2s ease forwards;
   animation: toggleOnCheckbox 0.2s ease forwards;
 }
-.checkbox-wrapper input[type="checkbox"].filled:before {
+.data-grid .checkbox-wrapper input[type="checkbox"].filled:before {
   border-radius: var(--border-radius-sm);
   transition: 0.2s border-color ease, 0.2s background-color ease;
 }
-.checkbox-wrapper input[type="checkbox"].filled:checked:not(:disabled):before {
+.data-grid .checkbox-wrapper input[type="checkbox"].filled:checked:not(:disabled):before {
   background-color: var(--color-primary);
 }
-.checkbox-wrapper input[type="checkbox"].filled:not(:disabled):after {
+.data-grid .checkbox-wrapper input[type="checkbox"].filled:not(:disabled):after {
   box-shadow: 4px 4px 0px 0px white;
 }
 @-webkit-keyframes toggleOnCheckbox {

@@ -1,4 +1,4 @@
-.column-header-unlocked {
+.data-grid .column-header-unlocked {
   display: inline-flex;
   vertical-align: middle;
   flex-flow: row;
@@ -14,12 +14,12 @@
   transition: 0.2s ease-in-out outline;
 }
 
-.column-header.align-middle .column-header-unlocked {
+.data-grid .column-header.align-middle .column-header-unlocked {
   justify-content: center;
 }
-.column-header.align-left .column-header-unlocked {
+.data-grid .column-header.align-left .column-header-unlocked {
   justify-content: flex-start;
 }
-.column-header.align-right .column-header-unlocked {
+.data-grid .column-header.align-right .column-header-unlocked {
   justify-content: flex-end;
 }

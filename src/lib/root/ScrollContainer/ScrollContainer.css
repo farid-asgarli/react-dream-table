@@ -1,4 +1,4 @@
-.scroll-container {
+.data-grid .scroll-container {
   overflow: hidden;
   /* position: absolute; */
   display: block;

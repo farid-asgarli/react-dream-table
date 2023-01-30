@@ -1,15 +1,15 @@
-button.pagination-button.active {
+.data-grid .footer button.pagination-button.active {
   font-weight: 600;
   cursor: default;
   box-shadow: var(--box-shadow-primary);
   background: var(--color-primary);
 }
 
-button.pagination-button.active span {
+.data-grid .footer button.pagination-button.active span {
   color: #fff;
 }
 
-button.pagination-button span {
+.data-grid .footer button.pagination-button span {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -17,8 +17,8 @@ button.pagination-button span {
   left: 0px;
 }
 
-button.pagination-button,
-button.settings-button {
+.data-grid .footer button.pagination-button,
+.data-grid .footer button.settings-button {
   border: none;
   position: relative;
   display: inline-flex;
@@ -45,22 +45,22 @@ button.settings-button {
   outline: none;
 }
 
-button.pagination-button:focus,
-button.settings-button:focus {
+.data-grid .footer button.pagination-button:focus,
+.data-grid .footer button.settings-button:focus {
   outline: 2px solid var(--color-hover);
 }
 
-button.settings-button:hover,
-button.pagination-button:not(.active):hover {
+.data-grid .footer button.settings-button:hover,
+.data-grid .footer button.pagination-button:not(.active):hover {
   background: #eceef0;
 }
 
-button.pagination-button:disabled {
+.data-grid .footer button.pagination-button:disabled {
   cursor: not-allowed;
 }
 
-button.settings-button:hover:active,
-button.pagination-button:not(:disabled):active {
+.data-grid .footer button.settings-button:hover:active,
+.data-grid .footer button.pagination-button:not(:disabled):active {
   transform: scale(0.97);
 }
 
@@ -68,28 +68,30 @@ button.pagination-button:not(:disabled):active {
   fill: var(--color-primary);
 }
 
-button.pagination-button .btn-icon {
+.data-grid .footer button.pagination-button .btn-icon {
   width: 15px;
 }
-button.pagination-button .ff-swap {
+
+.data-grid .footer button.pagination-button .ff-swap {
   display: none;
 }
-button.pagination-button.ff-left span:not(.ff-swap) .btn-icon,
-button.pagination-button.ff-right span:not(.ff-swap) .btn-icon {
+
+.data-grid .footer button.pagination-button.ff-left span:not(.ff-swap) .btn-icon,
+.data-grid .footer button.pagination-button.ff-right span:not(.ff-swap) .btn-icon {
   fill: #7e868c;
 }
 
-button.pagination-button.ff-left .ff-swap {
+.data-grid .footer button.pagination-button.ff-left .ff-swap {
   transform: rotate(-180deg);
 }
 
-button.pagination-button.ff-left:hover .content,
-button.pagination-button.ff-right:hover .content {
+.data-grid .footer button.pagination-button.ff-left:hover .content,
+.data-grid .footer button.pagination-button.ff-right:hover .content {
   display: none;
 }
 
-button.pagination-button.ff-left:hover .ff-swap,
-button.pagination-button.ff-right:hover .ff-swap {
+.data-grid .footer button.pagination-button.ff-left:hover .ff-swap,
+.data-grid .footer button.pagination-button.ff-right:hover .ff-swap {
   display: flex;
 }
 
@@ -191,4 +193,9 @@ button.pagination-button.ff-right:hover .ff-swap {
 .data-grid .footer .pagination-skeleton {
   width: 100%;
   padding: unset;
+}
+
+.data-grid .footer .select-list-wrapper {
+  top: -110px;
+  transition: 0.3s ease-in-out;
 }

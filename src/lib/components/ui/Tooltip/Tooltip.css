@@ -1,4 +1,4 @@
-.table-tooltip {
+.data-grid .table-tooltip {
   position: absolute;
   top: 0;
   box-shadow: 0 1em 2em -0.5em rgba(0, 0, 0, 0.35);
@@ -10,15 +10,15 @@
   width: max-content;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
   user-select: none;
-  z-index: 9999;
+  z-index: 999;
 }
 
-.table-tooltip .table-row-cell-data {
+.data-grid .table-tooltip .table-row-cell-data {
   overflow: unset;
   text-overflow: unset;
 }
 
-.table-tooltip::after {
+.data-grid .table-tooltip::after {
   content: "";
   position: absolute;
   width: 5px;

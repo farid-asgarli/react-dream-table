@@ -1,5 +1,5 @@
-.locked-start-wrapper {
-  z-index: 11000;
+.data-grid .locked-start-wrapper {
+  z-index: 1000;
   display: flex;
   flex-flow: row;
   background: inherit;
@@ -9,11 +9,11 @@
   box-shadow: 4px 0px 14px -6px rgba(0, 0, 0, 0.2);
 }
 
-.locked-start-wrapper.type-header {
+.data-grid .locked-start-wrapper.type-header {
   will-change: transform;
 }
 
-.locked-start-wrapper.type-header::after {
+.data-grid .locked-start-wrapper.type-header::after {
   content: "";
   position: absolute;
   height: 100%;

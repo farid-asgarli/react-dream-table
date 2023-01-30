@@ -1,7 +1,7 @@
 import React, { ButtonHTMLAttributes, useMemo } from "react";
 import { cs } from "../../../../utils/ConcatStyles";
 import { SortDirectionType } from "../../../../types/Utils";
-import { useTableContext } from "../../../../context/TableContext";
+import { useDataGridContext } from "../../../../context/DataGridContext";
 
 export default function SortButton({
   sortingDirection,
@@ -10,7 +10,7 @@ export default function SortButton({
   iconProps?: React.SVGProps<SVGSVGElement>;
   sortingDirection: SortDirectionType;
 }) {
-  const { localization, icons } = useTableContext();
+  const { localization, icons } = useDataGridContext();
 
   const renderSortIcon = useMemo(() => {
     switch (sortingDirection) {

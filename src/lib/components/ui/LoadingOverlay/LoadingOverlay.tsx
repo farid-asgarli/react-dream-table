@@ -1,6 +1,6 @@
 import React from "react";
-import { useTableContext } from "../../../context/TableContext";
-// import { useTableContext } from "../../../context/TableContext";
+import { useDataGridContext } from "../../../context/DataGridContext";
+// import { useDataGridContext } from "../../../context/DataGridContext";
 import Fade from "../../animations/Fade/Fade";
 import Spinner from "../Spinner/Spinner";
 import "./LoadingOverlay.css";
@@ -10,7 +10,7 @@ export default function LoadingOverlay({
 }: React.HTMLAttributes<HTMLDivElement> & {
   visible: boolean;
 }) {
-  const { localization } = useTableContext();
+  const { localization } = useDataGridContext();
   return (
     <Fade visible={visible}>
       <div className="loading-overlay" {...props}>

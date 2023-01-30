@@ -1,6 +1,9 @@
+import { Dayjs } from "dayjs";
 import { DefaultTableIcons } from "../static/icons";
 import {
-  ContextMenuListItem,
+  ActionsMenuListItem,
+  BaseFilterFnType,
+  CompleteFilterFnType,
   FooterProps,
   ICurrentFilterCollection,
   ICurrentSorting,
@@ -12,32 +15,61 @@ export type KeyLiteralType<DataType> = keyof DataType | (string & {});
 
 export type CommonDataType = Record<string, any>;
 
-export type InputFiltering = {
-  type?: "input";
+export interface InputDateFiltering {
+  type?: "date";
+  /** Assign datepicker localization. */
+  pickerLocale?: "en" | "az";
+  /**
+   * @default "equals"
+   */
+  defaultFilterFn?: BaseFilterFnType;
   /** Allows the ability to execute custom comparison when search event occurs. */
-  equalityComparer?: (inputValue?: string, dataToCompare?: any) => boolean;
+  equalityComparer?: (filterValue?: Dayjs, data?: any, filterFn?: BaseFilterFnType) => boolean;
+}
+
+export interface InputCommonFiltering {
+  type?: "text" | "number";
+  /**
+   * @default "contains"
+   */
+  defaultFilterFn?: CompleteFilterFnType;
+  /** Allows the ability to execute custom comparison when search event occurs. */
+  equalityComparer?: (filterValue?: string, data?: any, filterFn?: CompleteFilterFnType) => boolean;
+}
+
+export type InputFiltering = (InputDateFiltering | InputCommonFiltering) & {
+  /** Enables filtering functions menu.
+   * @default true
+   */
+  enableFilterFns?: boolean | undefined;
   /** Custom prop rendering for the input element in filter search menu. */
-  searchInputProps?: (key: string) => React.InputHTMLAttributes<HTMLInputElement>;
-  renderCustomInput?: (handleChange: (key: string, value: any | Set<any>) => void, value: any) => React.ReactNode;
+  inputProps?: (key: string) => React.InputHTMLAttributes<HTMLInputElement>;
+  renderCustomInput?: (
+    handleChange: (key: string, value: any | Array<any>) => void,
+    value: any,
+    rangeIndex: number | undefined
+  ) => React.ReactNode;
 };
 
-export type SelectFiltering<DataType = any> = {
+export interface SelectFiltering<DataType = any> {
   type?: "select";
   /** Allows the ability to execute custom comparison when search event occurs. */
-  equalityComparer?: (inputValue?: DataType, dataToCompare?: DataType) => boolean;
+  equalityComparer?: (filterValue?: DataType, data?: DataType) => boolean;
   /** Set of default filters to display. Will override automatic filter generation. */
   defaultFilters?: Array<string> | undefined;
   /** Allows the ability to choose multiple options. */
   multipleSelection?: boolean | undefined;
   /** Custom rendering of filter values. */
   render?: (text: string) => React.ReactNode;
-};
+}
 export type TableFilteringProps = InputFiltering | SelectFiltering;
 
-export type TableLocalizationType = {
+export interface TableLocalizationType {
   dataLoading: string;
-  filterSearchPlaceholder: string;
+  filterInputPlaceholder: string;
+  filterDatePlaceholder: string;
   filterLoading: string;
+  clearFilers: string;
   dataEmpty: string;
   filterEmpty: string;
   paginationPageSize: string;
@@ -53,23 +85,35 @@ export type TableLocalizationType = {
   columnVisibilityTitle: string;
   rowsSelectedTitle: string;
   selectOptionsLoading: string;
+  selectPlaceholder: string;
   menuTitle: string;
   hideColumn: string;
   pinColumnToLeft: string;
   pinColumnToRight: string;
   unpinColumn: string;
-};
+  filterContains: string;
+  filterStartsWith: string;
+  filterEndsWith: string;
+  filterEquals: string;
+  filterNotEquals: string;
+  filterBetween: string;
+  filterBetweenInclusive: string;
+  filterGreaterThan: string;
+  filterGreaterThanOrEqualTo: string;
+  filterLessThan: string;
+  filterLessThanOrEqualTo: string;
+}
 
-export type TableThemeType = {
+export interface TableThemeType {
   boxShadow: string;
   primaryColor: string;
   borderRadiusLg: string;
   borderRadiusMd: string;
   borderRadiusSm: string;
-};
+}
 
-export type TableDimensionsType = {
-  contextMenuColumnWidth: number;
+export interface TableDimensionsType {
+  actionsMenuColumnWidth: number;
   selectionMenuColumnWidth: number;
   expandedMenuColumnWidth: number;
   defaultColumnWidth: number;
@@ -80,31 +124,32 @@ export type TableDimensionsType = {
   maxColumnResizeWidth: number;
   defaultHeaderFilterHeight: number;
   defaultFooterHeight: number;
-};
+  defaultScrollbarWidth: number;
+}
 
 export type TableIconsType = typeof DefaultTableIcons;
 
-type ClientPaginationProps<DataType> = {
+interface ClientPaginationProps<DataType> {
   /** Fires an event when either page size or current page changes.  */
   onPaginationChange?: (props: TablePaginationProps) => void;
   /** Defaults for table pagination. */
   defaults?: FooterProps<DataType>["paginationDefaults"];
-};
+}
 
-type ClientSortingProps<DataType> = {
+interface ClientSortingProps<DataType> {
   /** Fires an event when sorting event occurs. */
   onSortingChange?: (key: KeyLiteralType<DataType>, direction: SortDirectionType, sortedData: DataType[]) => void;
-};
+}
 
-export type EllipsisProps = {
+export interface EllipsisProps {
   columnHead: boolean;
   rowData: boolean;
-};
+}
 
-type ColumnSortingProps = {
+interface ColumnSortingProps {
   /** Allows the ability to implement custom sorting when sorting event occurs. */
   sortingComparer?: (first: any, second: any, alg: SortDirectionType) => number | undefined;
-};
+}
 
 export interface ColumnType<DataType> {
   /** Unique id of column. */
@@ -133,18 +178,18 @@ export interface CommonInteractiveProps {
   active?: boolean | undefined;
 }
 
-type ColumnPinCollection<DataType> = Array<"select" | "context" | "expand" | keyof DataType | (string & {})>;
+type ColumnPinCollection<DataType> = Array<"select" | "actions" | "expand" | keyof DataType | (string & {})>;
 export type ColumnPinProps<DataType> = CommonInteractiveProps & {
   /**
    * An array of column keys to pin.
-   * - "context" - The key to pin context menu.
+   * - "actions" - The key to pin actions menu.
    * - "select" - The key to pin select menu.
    * - "expand" - The key to pin expand menu.
    */
   left?: ColumnPinCollection<DataType>;
   /**
    * An array of column keys to pin.
-   * - "context" - The key to pin context menu.
+   * - "actions" - The key to pin actions menu.
    * - "select" - The key to pin select menu.
    * - "expand" - The key to pin expand menu.
    */
@@ -198,26 +243,28 @@ export interface ColumnDraggingProps<DataType> extends CommonInteractiveProps {
 export interface RowSelectionProps extends CommonInteractiveProps {
   type?: "onRowClick" | "default" | undefined;
 }
-export interface RowContextMenuProps<DataType> extends CommonInteractiveProps {
+export interface RowActionsMenuProps<DataType> extends CommonInteractiveProps {
   render?: (
     data: DataType | undefined,
     selectedRows: Set<TableRowKeyType>,
     paginationProps: TablePaginationProps,
     closeMenu: () => void
-  ) => (ContextMenuListItem | undefined)[];
+  ) => (ActionsMenuListItem | undefined)[];
   /** Displays context menu on right click.
    * @default true
    */
   displayOnRightClick?: boolean;
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+export interface HeaderActionsMenuProps extends CommonInteractiveProps {}
+
 export interface RowExpandabilityProps<DataType> extends CommonInteractiveProps {
   /**
    *  Render element when collapse event occurs.
    * @param data Data that is passed for rendering.
    * @returns Element to be displayed.
    */
-  render?: (data: DataType) => React.ReactNode;
+  render?: (data: DataType, displayWidth: number) => React.ReactNode;
   /**
    *  Exclude set of rows from being expanded.
    * @param data Data that is passed for rendering.
@@ -236,12 +283,12 @@ export interface RowExpandabilityProps<DataType> extends CommonInteractiveProps 
 
 export interface VirtualizationProps extends CommonInteractiveProps {
   /**
-   * @default 2
+   * @default 6
    * Amount of rows to render ahead of scroll event. */
   preRenderedRowCount?: number | undefined;
 }
 
-export type TableReference<DataType> = {
+export interface TableReference<DataType> {
   /**
    * Gets filtered data that is currently displayed.
    * @returns Data collection.
@@ -256,18 +303,20 @@ export type TableReference<DataType> = {
    * Gets collection of filters that are currently active.
    * @returns Filter collection.
    */
-  getCurrentFilters: () => ICurrentFilterCollection<DataType>;
+  getCurrentFilters: () => ICurrentFilterCollection;
   /**
    * Resets collection of filters that are currently active.
    */
   resetCurrentFilters: () => void;
-};
+}
 
 export interface TableProps<DataType> {
   /** Data to display. Object keys must match column keys if default rendering is used. */
   data: DataType[] | undefined;
-  /** Display three-dot context menu at the end of the row.  */
-  contextMenu?: RowContextMenuProps<DataType> | undefined;
+  /** Display three-dot context menu at the end of the row. */
+  rowActionsMenu?: RowActionsMenuProps<DataType> | undefined;
+  /** Display three-dot context menu at the end of head cell. */
+  headerActionsMenu?: HeaderActionsMenuProps | undefined;
   /** Columns that will be used in the table. */
   columns: ColumnType<DataType>[];
   /** Displays loading-skeleton if activated. */
@@ -294,50 +343,8 @@ export interface TableProps<DataType> {
   isHoverable?: boolean | undefined;
   /** Adjusts column width automatically on intitial render. */
   autoAdjustColWidthOnInitialRender?: boolean | undefined;
-  /** Callback function to execute on row click. */
-  onRowClick?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    /** Data of the table row. */
-    data: DataType
-  ) => void;
   pagination?: ClientPaginationProps<DataType> | undefined;
   sorting?: ClientSortingProps<DataType> | undefined;
-  /** Configurations to allow API based filtering and pagination. */
-  serverSide?: {
-    pagination?: {
-      dataCount?: number | undefined;
-      onChangeAsync: (
-        paginationProps: TablePaginationProps,
-        filters: ICurrentFilterCollection<DataType>
-      ) => Promise<void>;
-    };
-    filtering: {
-      /** Fires an event when input field's value is changed.  */
-      onDefaultFilterFetchAsync?: (key: KeyLiteralType<DataType>) => Promise<string[]>;
-      /** Fires an event when filter selection is changed. */
-      onFilterSearchAsync?: (
-        /** Currently selected filters. */
-        filters: ICurrentFilterCollection<DataType>,
-        /** Pagination props that are currently active. */
-        paginationProps: TablePaginationProps,
-        /** Sorting props that are currently active. */
-        sortingProps: ICurrentSorting<DataType> | undefined
-      ) => Promise<void>;
-    };
-    sorting?: {
-      /** Fires an event when sorting occures.  */
-      onSortingChangeAsync?: (
-        /** Column key. */
-        key: KeyLiteralType<DataType>,
-        /** Currently selected filters. */
-        filters: ICurrentFilterCollection<DataType>,
-        /** Pagination props that are currently active. */
-        paginationProps: TablePaginationProps,
-        /** Current sorting direction of the column. */
-        direction: SortDirectionType
-      ) => Promise<void>;
-    };
-  };
   /** Allows the ability to customize icons. */
   icons?: Partial<TableIconsType> | undefined;
   /** Allows the ability to customize localization. */
@@ -346,7 +353,7 @@ export interface TableProps<DataType> {
   dimensions?: Partial<TableDimensionsType>;
   /** Allows the ability to use custom table styling. */
   theming?: Partial<TableThemeType> | undefined;
-  /** Reference to table element to provide data and column access tools. */
+  /** Reference to table element to provide data and column access tableTools. */
   tableApiRef?: React.MutableRefObject<TableReference<DataType> | null>;
   /** Allows the table rows to contain striped background color.  */
   striped?: boolean | undefined;
@@ -354,13 +361,52 @@ export interface TableProps<DataType> {
   virtualization?: VirtualizationProps | undefined;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
+  /** Callback function to execute on row click. */
+  onRowClick?: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    /** Data of the table row. */
+    data: DataType
+  ) => void;
+  /** Configurations to allow API based filtering and pagination. */
+  serverSide?: {
+    pagination?: {
+      dataCount?: number | undefined;
+      onChangeAsync: (paginationProps: TablePaginationProps, filters: ICurrentFilterCollection) => Promise<void>;
+    };
+    filtering: {
+      /** Fires an event when input field's value is changed.  */
+      onDefaultFilterFetchAsync?: (key: KeyLiteralType<DataType>) => Promise<string[]>;
+      /** Fires an event when filter selection is changed. */
+      onFilterSearchAsync?: (
+        /** Currently selected filters. */
+        filters: ICurrentFilterCollection,
+        /** Pagination props that are currently active. */
+        paginationProps: TablePaginationProps,
+        /** Sorting props that are currently active. */
+        sortingProps: ICurrentSorting | undefined
+      ) => Promise<void>;
+    };
+    sorting?: {
+      /** Fires an event when sorting occures.  */
+      onSortingChangeAsync?: (
+        /** Column key. */
+        key: KeyLiteralType<DataType>,
+        /** Currently selected filters. */
+        filters: ICurrentFilterCollection,
+        /** Pagination props that are currently active. */
+        paginationProps: TablePaginationProps,
+        /** Current sorting direction of the column. */
+        direction: SortDirectionType
+      ) => Promise<void>;
+    };
+  };
 }
 
-export type TablePaginationProps = {
+export interface TablePaginationProps {
   /** Current page size to display. */
   pageSize?: number;
   /** Current page of table. */
   currentPage?: number;
   /** Total size of data elements. */
   dataCount?: number;
-};
+}

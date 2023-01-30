@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from "react";
 import VirtualList from "../VirtualList/VirtualList";
-import ContextMenuButton from "../../components/ui/Buttons/ContextMenuButton/ContextMenuButton";
+import ActionsMenuButton from "../../components/ui/Buttons/ActionsMenuButton/ActionsMenuButton";
 import ExpandButton from "../../components/ui/Buttons/ExpandButton/ExpandButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { ColumnTypeExtended } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import Cell from "../Cell/Cell";
@@ -12,20 +12,26 @@ import LockedEndWrapper from "../LockedEndWrapper/LockedEndWrapper";
 import LockedStartWrapper from "../LockedStartWrapper/LockedStartWrapper";
 import Row from "../Row/Row";
 import RowContainer from "../RowContainer/RowContainer";
+import { ExpandProps, ViewContainerProps } from "../../types/Elements";
 import "./ViewContainer.css";
-import { ViewContainerProps } from "../../types/Elements";
 
-function ViewContainer<DataType>({
-  tp,
-  tools,
-  containerHeight,
-  scrollPosition,
-  columnsInUse,
-  pinnedColumns,
-  totalColumnsWidth,
-  ...props
-}: ViewContainerProps<DataType>) {
-  const { dimensions, localization } = useTableContext();
+function ViewContainer<DataType>(
+  {
+    tp,
+    dataTools,
+    tableTools,
+    containerHeight,
+    topScrollPosition,
+    columnsInUse,
+    pinnedColumns,
+    totalColumnsWidth,
+    containerWidth,
+    displayActionsMenu,
+    ...props
+  }: ViewContainerProps<DataType>,
+  viewRef: React.ForwardedRef<HTMLDivElement>
+) {
+  const { dimensions, localization } = useDataGridContext();
 
   function extractBasicCellProps(col: ColumnTypeExtended<DataType>, dat: DataType) {
     return {
@@ -39,22 +45,21 @@ function ViewContainer<DataType>({
     };
   }
 
-  const rowContextMenu = useCallback(
+  const rowActionsMenu = useCallback(
     (data: DataType) => (e: React.MouseEvent) => {
       e.preventDefault();
-      tools.displayContextMenu(
-        {
-          data: data,
-          position: {
-            xAxis: e.clientX,
-            yAxis: e.clientY,
-          },
+      tableTools.updateActiveRow((data as any)[tp.uniqueRowKey]);
+      displayActionsMenu({
+        data: data as any,
+        position: {
+          xAxis: e.clientX,
+          yAxis: e.clientY,
         },
-        true
-      );
+        identifier: data[tp.uniqueRowKey as keyof DataType] as string,
+      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tools.displayContextMenu]
+    [displayActionsMenu]
   );
 
   function renderCell(
@@ -78,18 +83,18 @@ function ViewContainer<DataType>({
         const dataToRender = data[colKey as keyof DataType];
         children = dataRender ? dataRender?.(data) : (dataToRender as React.ReactNode);
         break;
-      case "context":
-        children = <ContextMenuButton onClick={rowContextMenu(data)} />;
+      case "actions":
+        children = <ActionsMenuButton onClick={rowActionsMenu(data)} />;
         break;
       case "expand":
         const uniqueIdData = data[tp.uniqueRowKey as keyof DataType];
-        const isExpanded = tools.expandedRowKeys.has(uniqueIdData as string);
+        const isExpanded = tableTools.expandedRowKeys.has(uniqueIdData as string);
         children = (!tp.expandableRows?.excludeWhen || !tp.expandableRows.excludeWhen(data)) && (
           <ExpandButton
             isExpanded={isExpanded}
             onClick={(e) => {
               e.stopPropagation();
-              tools.handleExpandRow(uniqueIdData as string);
+              tableTools.updateRowExpansion(uniqueIdData as string);
             }}
             title={isExpanded ? localization?.rowShrinkTitle : localization?.rowExpandTitle}
           />
@@ -101,11 +106,11 @@ function ViewContainer<DataType>({
           <Checkbox
             onChange={
               tp.selectableRows?.active && tp.selectableRows.type === "default"
-                ? (e) => tools.handleUpdateSelection(data[tp.uniqueRowKey as keyof unknown])
+                ? (e) => tableTools.updateSelectedRows(data[tp.uniqueRowKey as keyof unknown])
                 : undefined
             }
             readOnly={tp.selectableRows?.type === "onRowClick"}
-            checked={tools.selectedRows.has(data[tp.uniqueRowKey as keyof unknown])}
+            checked={tableTools.selectedRows.has(data[tp.uniqueRowKey as keyof unknown])}
           />
         );
         break;
@@ -124,50 +129,65 @@ function ViewContainer<DataType>({
   const mapCommonRowProps = useCallback(
     (dat: DataType) => {
       const identifier: any = dat[tp.uniqueRowKey as keyof unknown];
-      const isExpanded = tools.expandedRowKeys.has(dat[tp.uniqueRowKey as keyof unknown]);
+      const isExpanded = tableTools.isRowExpanded(dat[tp.uniqueRowKey as keyof unknown]);
       return {
-        onClick: (e: React.MouseEvent<HTMLDivElement>) => tools.handleRowClick(e, dat),
+        onClick: (e: React.MouseEvent<HTMLDivElement>) => tableTools.onRowClick(e, dat),
         key: identifier,
-        onContextMenu: tp.contextMenu?.displayOnRightClick === false ? undefined : rowContextMenu(dat),
+        onContextMenu:
+          tp.rowActionsMenu?.active && tp.rowActionsMenu?.displayOnRightClick !== false
+            ? rowActionsMenu(dat)
+            : undefined,
         expandRowProps: {
-          children: tp.expandableRows?.render?.(dat),
+          children: tp.expandableRows?.render?.(dat, containerWidth),
           showSeperatorLine: tp.expandableRows?.showSeperatorLine === true,
           isRowExpanded: isExpanded,
           leftOffset: pinnedColumns?.leftWidth,
           basicColumnsWidth: columnsInUse.totalWidth,
-        },
-        isSelected: tools.selectedRows.has(identifier),
+        } as ExpandProps,
+        isRowSelected: tableTools.isRowSelected(identifier),
+        isRowActive: tableTools.isRowActive(identifier),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tp.uniqueRowKey, tp.expandableRows, tools.expandedRowKeys, tools.selectedRows, pinnedColumns?.leftWidth]
+    [
+      tp.uniqueRowKey,
+      tp.expandableRows,
+      tableTools.expandedRowKeys,
+      tableTools.selectedRows,
+      tableTools.activeRow,
+      pinnedColumns?.leftWidth,
+      containerWidth,
+    ]
   );
 
-  const dataIndexer = useMemo(
-    () => tools.dataTools.data?.map((d, i) => ({ ...d, _row_index: i })),
-    [tools.dataTools.data]
-  );
+  const indexedData = useMemo(() => {
+    return dataTools.data?.map((d, i) => ({ ...d, __row_index: i }));
+  }, [dataTools.data]);
 
   return (
-    <div className="view-container" {...props}>
+    <div ref={viewRef} className="view-container" {...props}>
       <RowContainer>
-        {tools.dataTools.data && (
+        {dataTools.data && (
           <VirtualList
             containerHeight={containerHeight!}
-            rowHeight={dimensions.defaultDataRowHeight}
+            rowHeight={
+              dimensions.defaultDataRowHeight +
+              // To address bordered-cell (border-bottom, see Scroller and theming.css).
+              1
+            }
             expandPanelHeight={dimensions.defaultExpandPanelHeight}
-            scrollPosition={scrollPosition}
+            topScrollPosition={topScrollPosition}
             disabled={tp.virtualization?.active === false}
             preRenderedRowCount={tp.virtualization?.preRenderedRowCount}
-            expandRowKeys={tools.expandedRowKeys as Set<number>}
-            elements={dataIndexer!}
+            expandRowKeys={tableTools.expandedRowKeys as Set<number>}
+            elements={indexedData!}
             uniqueRowKey={tp.uniqueRowKey as keyof DataType}
             renderElement={(d, style) => (
               <Row
-                className={d._row_index % 2 === 0 ? "odd" : undefined}
+                className={d.__row_index % 2 === 0 ? "odd" : undefined}
                 style={style}
                 totalColumnsWidth={totalColumnsWidth}
-                tabIndex={d._row_index + 1}
+                tabIndex={d.__row_index + 1}
                 {...mapCommonRowProps(d)}
               >
                 {pinnedColumns?.leftColumns && (
@@ -190,4 +210,4 @@ function ViewContainer<DataType>({
   );
 }
 
-export default ViewContainer;
+export default React.forwardRef(ViewContainer);

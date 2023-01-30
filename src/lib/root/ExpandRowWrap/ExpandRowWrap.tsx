@@ -1,14 +1,14 @@
 import Fade from "../../components/animations/Fade/Fade";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { ExpandRowProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import "./ExpandRowWrap.css";
 
 export default function ExpandRowWrap({ expandRowProps, className, style, ...props }: ExpandRowProps) {
-  const { dimensions } = useTableContext();
+  const { dimensions, animationProps } = useDataGridContext();
 
   return (
-    <Fade duration={100} visible={expandRowProps?.isRowExpanded}>
+    <Fade duration={animationProps.duration} visible={expandRowProps?.isRowExpanded}>
       <div
         style={{
           ...style,

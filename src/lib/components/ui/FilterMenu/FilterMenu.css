@@ -1,0 +1,8 @@
+.data-grid .filter-menu {
+  width: 100%;
+}
+
+.data-grid .filter-menu .range-input {
+  display: flex;
+  gap: 10px;
+}

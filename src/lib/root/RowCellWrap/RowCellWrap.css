@@ -1,7 +1,9 @@
-.row-cell-wrap {
+.data-grid .row-cell-wrap {
   display: flex;
   flex-flow: row;
   flex-wrap: nowrap;
   align-items: stretch;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
 }

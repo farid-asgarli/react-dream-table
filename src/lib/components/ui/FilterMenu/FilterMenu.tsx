@@ -1,82 +1,134 @@
 import React, { useMemo } from "react";
-import { useTableContext } from "../../../context/TableContext";
-import { DataFetchingType } from "../../../types/Utils";
+import { useDataGridContext } from "../../../context/DataGridContext";
+import { ConstProps } from "../../../static/constantProps";
+import { FilteringProps } from "../../../types/Utils";
+import Fade from "../../animations/Fade/Fade";
+import DatePicker from "../DatePicker/Input/Input";
 import Input from "../Input/Input";
 import { Select } from "../Select/Select";
+import "./FilterMenu.css";
 // import Select from "react-select";
 
 export default function FilterMenu({
-  filterInputProps,
+  filterProps: {
+    getColumnFilterValue,
+    progressReporters,
+    updateFilterValue,
+    fetchFilters,
+    multiple,
+    prefetchedFilters,
+    render,
+    renderCustomInput,
+    filterInputProps,
+    type,
+    isRangeInput,
+    disableInputIcon,
+    pickerLocale,
+  },
   columnKey,
-  progressReporters,
 }: {
   columnKey: string;
-  progressReporters?: Set<DataFetchingType> | undefined;
-  filterInputProps?: {
-    handleChangeFilterInput?: (key: string, value: string | Set<string>) => void;
-    currentValue?: string | Set<string>;
-    fetchFilters?: (key: string) => Promise<void>;
-    prefetchedFilters?: Record<string, string[]>;
-    type?: "select" | "input";
-    render?: (text: string) => React.ReactNode;
-    multiple?: boolean | undefined;
-    searchInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;
-    renderCustomInput?: (handleChange: (key: string, value: any | Set<any>) => void, value: any) => React.ReactNode;
-  };
+  filterProps: FilteringProps;
 }) {
-  const { localization } = useTableContext();
+  const { localization } = useDataGridContext();
 
-  function handleInputChange(value: React.ChangeEvent<HTMLInputElement>["target"]["value"]) {
-    filterInputProps?.handleChangeFilterInput?.(columnKey, value);
+  function handleInputChange(value: any, index?: number) {
+    if (index !== undefined) {
+      const currentFilterValue = getColumnFilterValue(columnKey);
+      let filterValueToAssign = Array.isArray(currentFilterValue) ? [...currentFilterValue] : [currentFilterValue];
+      filterValueToAssign[index] = value;
+      updateFilterValue?.(columnKey, filterValueToAssign);
+    } else {
+      updateFilterValue?.(columnKey, value);
+    }
   }
   const renderOptions = useMemo(() => {
-    if (filterInputProps?.render) {
-      return filterInputProps?.prefetchedFilters?.[columnKey]?.map((x) => ({
-        children: filterInputProps.render?.(x),
+    if (render) {
+      return prefetchedFilters?.[columnKey]?.map((x) => ({
+        children: render?.(x),
         value: x,
       }));
     }
-    return filterInputProps?.prefetchedFilters?.[columnKey]?.map((x) => ({
+    return prefetchedFilters?.[columnKey]?.map((x) => ({
       children: x,
       value: x,
     }));
-  }, [columnKey, filterInputProps]);
+  }, [columnKey, prefetchedFilters, render]);
+
+  const renderInput = (variant: typeof type, rangeIndex?: number | undefined) => {
+    const rangeInputProps = {
+      ...filterInputProps?.(columnKey),
+      onChange: (val: any) => handleInputChange(val, rangeIndex),
+      defaultValue: getColumnFilterValue(columnKey)?.[rangeIndex ?? 0],
+    };
+    const basicInputProps = {
+      ...filterInputProps?.(columnKey),
+      onChange: handleInputChange,
+      defaultValue: getColumnFilterValue(columnKey),
+    };
+
+    const renderProps = rangeIndex !== undefined ? rangeInputProps : basicInputProps;
+
+    switch (variant) {
+      case "date":
+        return (
+          <DatePicker
+            locale={pickerLocale ?? ConstProps.defaultPickerLocale}
+            placeholder={localization.filterDatePlaceholder}
+            {...renderProps}
+          />
+        );
+
+      case "number":
+        return (
+          <Input
+            type="number"
+            disableIcon={disableInputIcon}
+            placeholder={localization.filterInputPlaceholder}
+            {...renderProps}
+          />
+        );
+      case "select":
+        return (
+          <Select
+            loading={progressReporters?.has("filter-fetch")}
+            value={(getColumnFilterValue(columnKey) as any) ?? []}
+            multiple={multiple}
+            options={renderOptions ?? []}
+            clearable
+            onChange={(val: any) => updateFilterValue?.(columnKey, val)}
+            onOpen={() => fetchFilters?.(columnKey)}
+            attachmentType="fixed"
+          />
+        );
+      default:
+        return (
+          <Input disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />
+        );
+    }
+  };
 
   return (
-    <>
-      {filterInputProps?.renderCustomInput ? (
-        filterInputProps.renderCustomInput(filterInputProps?.handleChangeFilterInput!, filterInputProps.currentValue)
-      ) : filterInputProps?.type === "select" ? (
-        <Select
-          loading={progressReporters?.has("filter-fetch")}
-          value={(filterInputProps?.currentValue as any) ?? new Set()}
-          multiple={filterInputProps.multiple}
-          options={renderOptions ?? []}
-          clearable
-          onChange={(val: any) => filterInputProps?.handleChangeFilterInput?.(columnKey, val)}
-          onOpen={() => filterInputProps?.fetchFilters?.(columnKey)}
-          attachmentType="fixed"
-        />
+    <div className="filter-menu">
+      {renderCustomInput ? (
+        isRangeInput ? (
+          <div className="range-input">
+            {renderCustomInput(updateFilterValue, getColumnFilterValue(columnKey), 0)}
+            {renderCustomInput(updateFilterValue, getColumnFilterValue(columnKey), 1)}
+          </div>
+        ) : (
+          renderCustomInput(updateFilterValue, getColumnFilterValue(columnKey), 0)
+        )
+      ) : isRangeInput ? (
+        <Fade>
+          <div className="range-input">
+            {renderInput(type, 0)}
+            {renderInput(type, 1)}
+          </div>
+        </Fade>
       ) : (
-        // <Select
-        //   options={renderOptions}
-        //   isLoading={progressReporters?.has("filter-fetch")}
-        //   menuPosition="fixed"
-        //   onMenuOpen={() => filterInputProps?.fetchFilters?.(columnKey)}
-        //   value={(filterInputProps?.currentValue as any) ?? new Set()}
-        //   onChange={(obj) => {
-        //     console.log("onChange select", obj);
-        //     filterInputProps?.handleChangeFilterInput?.(columnKey, obj.val);
-        //   }}
-        //   isMulti={filterInputProps.multiple}
-        //   isClearable
-        // />
-        <Input
-          placeholder={localization.filterSearchPlaceholder}
-          {...filterInputProps?.searchInputProps?.(columnKey)}
-          onChange={handleInputChange}
-        />
+        renderInput(type)
       )}
-    </>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import Fade from "../../animations/Fade/Fade";
 import { cs } from "../../../utils/ConcatStyles";
 import "./Select.css";
 import Spinner from "../Spinner/Spinner";
-import { useTableContext } from "../../../context/TableContext";
+import { useDataGridContext } from "../../../context/DataGridContext";
 
 type ConditionalProps<OptionValue> =
   | {
@@ -14,8 +14,8 @@ type ConditionalProps<OptionValue> =
     }
   | {
       multiple: true;
-      value: Set<OptionValue>;
-      onChange?: (val: Set<OptionValue>) => void;
+      value: Array<OptionValue>;
+      onChange?: (val: Array<OptionValue>) => void;
     }
   | {
       multiple?: undefined;
@@ -51,6 +51,8 @@ export const Select = <OptionValue extends any>({
   attachmentType,
 }: TableSelectProps<OptionValue>) => {
   const [optionsBodyVisible, setOptionsBodyVisible] = useState<boolean>(false);
+  const { localization, icons } = useDataGridContext();
+
   function handleSelectChange(val: OptionValue) {
     if (!multiple) {
       if (clearable && val === value) {
@@ -61,9 +63,9 @@ export const Select = <OptionValue extends any>({
         setOptionsBodyVisible(false);
       }
     } else {
-      const stateCopy = new Set(value);
-      if (stateCopy.has(val)) stateCopy.delete(val);
-      else stateCopy.add(val);
+      let stateCopy = [...value];
+      if (stateCopy.includes(val)) stateCopy = stateCopy.filter((x) => x !== val);
+      else stateCopy.push(val);
       onChange?.(stateCopy);
       return stateCopy;
     }
@@ -79,20 +81,26 @@ export const Select = <OptionValue extends any>({
   const optionBodyRef = useRef<HTMLDivElement>(null);
   const selectWrapperRef = useRef<HTMLDivElement>(null);
 
-  useDetectOutsideClick([{ key: "select", ref: optionBodyRef }], (e, key) => setOptionsBodyVisible(false));
+  useDetectOutsideClick(optionBodyRef, (e, key) => setOptionsBodyVisible(false));
 
-  function joinNodes(...args: React.ReactNode[]) {
-    if (typeof args[0] === "string") return args.join(", ");
-    return args;
+  function joinNodes(args: React.ReactNode[]) {
+    const isPunctuationActive = typeof args[0] === "string";
+    return args.map((arg, index) => (
+      <span key={index}>
+        {arg}
+        {isPunctuationActive && args.length - 1 !== index && <span>,&nbsp;</span>}
+      </span>
+    ));
   }
 
   const renderSelectedValues = useMemo(() => {
-    const elements = options.filter((x) => (multiple ? value.has(x.value) : x.value === value)).map((x) => x.children);
-    if (elements.length === 0) return <span className="select-placeholder">Seçin</span>;
+    const elements = options
+      .filter((x) => (multiple ? value.includes(x.value) : x.value === value))
+      .map((x) => x.children);
+    if (elements.length === 0) return <span className="select-placeholder">{localization.selectPlaceholder}</span>;
     return joinNodes(elements);
-  }, [multiple, options, value]);
+  }, [localization.selectPlaceholder, multiple, options, value]);
 
-  const { localization, icons } = useTableContext();
   return (
     <div ref={selectWrapperRef} className="select-wrapper">
       <div className={cs("select-header", optionsBodyVisible && "active")} onClick={handleVisibility}>
@@ -123,7 +131,7 @@ export const Select = <OptionValue extends any>({
               <Select.Option
                 key={opt.value as string}
                 {...opt}
-                selected={multiple ? value.has(opt.value) : opt.value === value}
+                selected={multiple ? value.includes(opt.value) : opt.value === value}
                 onClick={() => handleSelectChange(opt.value)}
                 checkIcon={icons.CheckMark}
               />

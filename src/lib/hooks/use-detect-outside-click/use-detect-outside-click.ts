@@ -1,18 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from "react";
 
-type RefKeyObject<TRef> = {
-  readonly key: string;
-  readonly ref: React.RefObject<TRef>;
-};
-
 /**
  * A hook that fires when the area outside the current element is clicked.
  * @param refObject A collection of ref objects or a single ref.
  * @param callback Function to execute on click.
  */
 export function useDetectOutsideClick<TRef>(
-  refObject: RefKeyObject<TRef>[],
+  elementRef: React.RefObject<TRef>,
   callback?: (event: MouseEvent, key?: string) => void
 ) {
   useEffect(() => {
@@ -23,14 +18,12 @@ export function useDetectOutsideClick<TRef>(
     }
 
     function handleClickOutside(event: MouseEvent) {
-      !Array.isArray(refObject)
-        ? fireEvent(refObject, event)
-        : refObject.forEach((refObject) => fireEvent(refObject.ref, event, refObject.key));
+      fireEvent(elementRef, event);
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [refObject]);
+  }, [elementRef]);
 }

@@ -1,12 +1,12 @@
-.spinner-body {
+.data-grid .spinner-body {
   overflow: hidden;
 }
-.spinner-body .spinner {
+.data-grid .spinner-body .spinner {
   bottom: 36px;
   animation: preloader-spinner 0.5s linear infinite;
 }
 
-.spinner-body .spinner .spinner-icon {
+.data-grid .spinner-body .spinner .spinner-icon {
   stroke: var(--color-primary);
   stroke-width: 3px;
   stroke-dasharray: 314%, 314%;

@@ -1,6 +1,6 @@
 import React from "react";
-import { useTableContext } from "../../../context/TableContext";
-// import { useTableContext } from "../../../context/TableContext";
+import { useDataGridContext } from "../../../context/DataGridContext";
+// import { useDataGridContext } from "../../../context/DataGridContext";
 import { cs } from "../../../utils/ConcatStyles";
 import Fade from "../../animations/Fade/Fade";
 import "./EmptyTable.css";
@@ -13,7 +13,7 @@ export default function EmptyTable({
 }: React.TableHTMLAttributes<HTMLTableElement> & {
   visible: boolean;
 }) {
-  const { localization, icons } = useTableContext();
+  const { localization, icons } = useDataGridContext();
 
   return (
     <Fade visible={visible}>

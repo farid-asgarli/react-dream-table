@@ -1,4 +1,4 @@
-.empty-table .empty-table-wrapper {
+.data-grid .empty-table .empty-table-wrapper {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -8,17 +8,17 @@
   height: 100%;
 }
 
-.empty-table .empty-table-wrapper .empty-icon {
+.data-grid .empty-table .empty-table-wrapper .empty-icon {
   width: 50px;
   fill: var(--color-primary);
 }
-.empty-table .empty-table-wrapper .empty-text {
+.data-grid .empty-table .empty-table-wrapper .empty-text {
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.empty-table {
+.data-grid .empty-table {
   position: absolute;
   background: #fff;
   z-index: 9;

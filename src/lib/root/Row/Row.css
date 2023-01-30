@@ -1,4 +1,7 @@
-.row {
+/* .scroller:not(.scrolling-active) .row {
+} */
+
+.data-grid .row {
   display: flex;
   flex-flow: row;
   flex-wrap: nowrap;
@@ -9,4 +12,5 @@
   direction: ltr;
   overflow: visible;
   z-index: unset;
+  transition: ease-in-out top;
 }

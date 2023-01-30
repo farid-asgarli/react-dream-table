@@ -1,6 +1,6 @@
 import React, { ButtonHTMLAttributes } from "react";
 import { cs } from "../../../../utils/ConcatStyles";
-import { useTableContext } from "../../../../context/TableContext";
+import { useDataGridContext } from "../../../../context/DataGridContext";
 
 export default function SearchButton({
   className,
@@ -11,7 +11,7 @@ export default function SearchButton({
   isActive?: boolean;
   isVisible?: boolean;
 }) {
-  const { localization, icons } = useTableContext();
+  const { localization, icons } = useDataGridContext();
   return (
     <button
       type="button"

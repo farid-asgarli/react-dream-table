@@ -1,4 +1,4 @@
-.column-header-menu-tool {
+.data-grid .column-header-menu-tool {
   height: 100%;
   flex: none;
   flex: 1 1;
@@ -13,7 +13,7 @@
   justify-content: space-between;
 }
 
-.column-header-menu-tool .action-button {
+.data-grid .column-header-menu-tool .action-button {
   all: unset;
   cursor: pointer;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
@@ -26,43 +26,43 @@
   justify-content: center;
   align-items: center;
 }
-.column-header-menu-tool .action-button:last-child {
+.data-grid .column-header-menu-tool .action-button:last-child {
   margin-left: auto;
 }
 
-.column-header-menu-tool .action-button:focus {
+.data-grid .column-header-menu-tool .action-button:focus {
   outline: 2px solid var(--color-hover);
   opacity: 1 !important;
 }
 
-.column-header-menu-tool .action-button:not(.active):not(.visible) {
+.data-grid .column-header-menu-tool .action-button:not(.active):not(.visible) {
   opacity: 0;
 }
 
-.column-header:hover .action-button:not(.active):not(.visible) {
+.data-grid .column-header:hover .action-button:not(.active):not(.visible) {
   opacity: 1;
 }
 
-.column-header-menu-tool .action-button .action-icon {
+.data-grid .column-header-menu-tool .action-button .action-icon {
   width: 20px;
 }
 
-.column-header-menu-tool .action-button.active .action-icon,
-.column-header-menu-tool .action-button.active .action-icon path {
+.data-grid .column-header-menu-tool .action-button.active .action-icon,
+.data-grid .column-header-menu-tool .action-button.active .action-icon path {
   fill: var(--color-primary);
 }
 
-.column-header-menu-tool .action-button .action-icon,
-.column-header-menu-tool .action-button .action-icon path {
+.data-grid .column-header-menu-tool .action-button .action-icon,
+.data-grid .column-header-menu-tool .action-button .action-icon path {
   color: #7e868c;
   fill: #7e868c;
   transition: fill 100ms ease-in-out;
 }
 
-.column-header-menu-tool .action-button:active .action-icon {
+.data-grid .column-header-menu-tool .action-button:active .action-icon {
   scale: 0.9;
 }
 
-.column-header-menu-tool .action-button:hover {
+.data-grid .column-header-menu-tool .action-button:hover {
   background: var(--color-hover);
 }

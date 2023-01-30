@@ -1,8 +1,10 @@
-import useTableTools from "../logic/table-tools";
+import { useDataManagement } from "../logic/data-management/dataManagement";
+import { DisplayActionsMenu } from "../logic/tools/actions-menu-factory";
+import useTableTools from "../logic/tools/table-tools";
 import { KeyLiteralType, TableProps, TableTooltipProps } from "./Table";
-import { ColumnTypeExtended, FilteringProps } from "./Utils";
+import { ColumnTypeExtended, CompleteFilterFnType, FilteringProps } from "./Utils";
 
-export type DataGridProps<DataType> = React.HtmlHTMLAttributes<HTMLDivElement> & {
+export interface DataGridProps<DataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
   theme: "dark" | "light";
   tp: TableProps<DataType>;
   pinnedColumns:
@@ -19,15 +21,26 @@ export type DataGridProps<DataType> = React.HtmlHTMLAttributes<HTMLDivElement> &
     columns: ColumnTypeExtended<DataType>[];
     totalWidth: number;
   };
-  tools: ReturnType<typeof useTableTools<DataType>>;
+  tableTools: ReturnType<typeof useTableTools<DataType>>;
+  dataTools: ReturnType<typeof useDataManagement<DataType>>;
   initiateColumns(): ColumnTypeExtended<DataType>[];
-};
+  displayDataActionsMenu: DisplayActionsMenu<DataType>;
+  displayHeaderActionsMenu: DisplayActionsMenu<DataType>;
+  optionsMenu: {
+    displayOptionsMenu: DisplayActionsMenu<DataType>;
+    isOptionsMenuVisible: boolean;
+  };
+  filterFnsMenu: {
+    displayFilterFnsMenu: DisplayActionsMenu<DataType>;
+    activeFilterMenuKey: string | undefined;
+  };
+}
 
-export type CellContentProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
+export interface CellContentProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
   tooltipProps?: TableTooltipProps | undefined;
-};
+}
 
-export type ColumnHeaderProps<DataType> = {
+export interface ColumnHeaderProps<DataType> {
   columnProps: ColumnTypeExtended<DataType>;
   resizingProps?: {
     onMouseDown: (columnKey: string) => void;
@@ -38,34 +51,41 @@ export type ColumnHeaderProps<DataType> = {
     isDraggable?: boolean | undefined;
   };
   toolBoxes?: (JSX.Element | undefined)[] | undefined;
-  filteringProps?: FilteringProps;
-};
-
-export type ColumnHeaderFilterProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
-  columnKey: string;
-  filteringProps?: FilteringProps;
-};
-
-export type ExpandRowProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
-  expandRowProps?: {
-    children: React.ReactNode;
-    isRowExpanded: boolean;
-    showSeperatorLine: boolean;
-    leftOffset?: number;
-    basicColumnsWidth?: number;
+  filterProps?: FilteringProps;
+  filterFnsProps?: {
+    getColumnFilterFn: (key: string) => CompleteFilterFnType;
+    displayFilterFnsMenu: DisplayActionsMenu<any>;
+    activeFilterMenuKey: string | undefined;
   };
-};
+}
 
-export type HeaderOrderingProps<DataType> = {
+export interface ColumnHeaderFilterProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  columnKey: string;
+  filterProps?: FilteringProps;
+}
+
+export interface ExpandProps {
+  children: React.ReactNode;
+  isRowExpanded: boolean;
+  showSeperatorLine: boolean;
+  leftOffset?: number;
+  basicColumnsWidth?: number;
+}
+
+export interface ExpandRowProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  expandRowProps?: ExpandProps;
+}
+
+export interface HeaderOrderingProps<DataType> {
   draggingEnabled: boolean;
   columnOrder: Array<KeyLiteralType<DataType>>;
-  setColumnOrder: React.Dispatch<React.SetStateAction<Array<KeyLiteralType<DataType>>>>;
+  setColumnOrder: (collection: KeyLiteralType<DataType>[]) => void;
   onColumnDragged?: ((columnKeys: KeyLiteralType<DataType>[]) => void) | undefined;
   columns: ColumnTypeExtended<DataType>[];
   children: React.HtmlHTMLAttributes<HTMLDivElement>["children"];
-};
+}
 
-export type HeaderWrapperProps<DataType> = {
+export interface HeaderWrapperProps<DataType> {
   pinnedColumns:
     | {
         leftColumns: ColumnTypeExtended<DataType>[];
@@ -82,37 +102,40 @@ export type HeaderWrapperProps<DataType> = {
     totalWidth: number;
   };
   tp: TableProps<DataType>;
-  tools: ReturnType<typeof useTableTools<DataType>>;
+  tableTools: ReturnType<typeof useTableTools<DataType>>;
+  dataTools: ReturnType<typeof useDataManagement<DataType>>;
   onColumnHeaderFocus(e: React.FocusEvent<HTMLDivElement>, colWidth: number): void;
-};
-
-export type LockedWrapperProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
-  type: "header" | "body";
-};
-
-export type RowProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
-  totalColumnsWidth: number | string;
-  isSelected?: boolean | undefined;
-  expandRowProps?: {
-    children: React.ReactNode;
-    isRowExpanded: boolean;
-    showSeperatorLine: boolean;
-    leftOffset?: number;
-    basicColumnsWidth?: number;
+  headerActionsMenu: { displayHeaderActionsMenu: DisplayActionsMenu<DataType> };
+  filterFnsMenu: {
+    displayFilterFnsMenu: DisplayActionsMenu<DataType>;
+    activeFilterMenuKey: string | undefined;
   };
-};
+}
 
-export type ScrollerProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
+export interface LockedWrapperProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  type: "header" | "body";
+}
+
+export interface RowProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  totalColumnsWidth: number | string;
+  isRowSelected?: boolean | undefined;
+  isRowActive?: boolean | undefined;
+  expandRowProps?: ExpandProps;
+}
+
+export interface ScrollerProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
   minWidth: number;
   minHeight: number;
   emptySpacerVisible: boolean;
-};
+}
 
-export type ViewContainerProps<DataType> = React.HtmlHTMLAttributes<HTMLDivElement> & {
+export interface ViewContainerProps<DataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
   tp: TableProps<DataType>;
-  tools: ReturnType<typeof useTableTools<DataType>>;
+  tableTools: ReturnType<typeof useTableTools<DataType>>;
+  dataTools: ReturnType<typeof useDataManagement<DataType>>;
   containerHeight?: number | undefined;
-  scrollPosition: number;
+  containerWidth: number;
+  topScrollPosition: number;
   pinnedColumns:
     | {
         leftColumns: ColumnTypeExtended<DataType>[];
@@ -127,13 +150,14 @@ export type ViewContainerProps<DataType> = React.HtmlHTMLAttributes<HTMLDivEleme
     totalWidth: number;
   };
   totalColumnsWidth: number;
-};
+  displayActionsMenu: DisplayActionsMenu<DataType>;
+}
 
 export interface VirtualListProps<DataType> {
   elements: Array<DataType>;
   containerHeight: number;
   rowHeight: number;
-  scrollPosition: number;
+  topScrollPosition: number;
   disabled?: boolean | undefined;
   expandRowKeys: Set<number>;
   expandPanelHeight: number;

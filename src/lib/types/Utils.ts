@@ -1,62 +1,69 @@
 import { HTMLAttributes } from "react";
-import { ColumnType, ColumnVisibilityProps, KeyLiteralType, TablePaginationProps } from "./Table";
+import { DisplayActionsMenu } from "../logic/tools/actions-menu-factory";
+import { ColumnType, ColumnVisibilityProps, InputFiltering, KeyLiteralType, TablePaginationProps } from "./Table";
 
-export type ContextMenuListItem = {
+export interface ActionsMenuListItem {
   content?: React.ReactNode;
   key?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
-};
+  isSelected?: boolean;
+}
 
-export type ContextMenuVisibility<InternalType> = {
-  data?: InternalType;
-  position?: {
-    xAxis: number;
-    yAxis: number;
-  };
-  visible: boolean;
-  area?: "body" | "header";
-};
-
-export type ContextMenuProps = {
-  elements: (ContextMenuListItem | undefined)[];
+export interface ActionsMenuProps {
   visible: boolean;
   onHide?: (visible: boolean) => void;
-};
+  children: React.ReactNode | Array<ActionsMenuListItem | undefined>;
+}
 
 export interface ColumnTypeExtended<DataType> extends Omit<ColumnType<DataType>, "width"> {
-  type: "select" | "context" | "expand" | "data";
+  type: "select" | "actions" | "expand" | "data";
   pinned?: "left" | "right" | undefined;
+  key: string;
   width: number;
 }
+export type BaseFilterFnType =
+  | "equals"
+  | "equalsAlt"
+  | "notEquals"
+  | "greaterThan"
+  | "lessThan"
+  | "greaterThanOrEqualTo"
+  | "lessThanOrEqualTo"
+  | "between"
+  | "betweenInclusive";
+
+export type OptionalFilterFnType = "contains" | "startsWith" | "endsWith";
+export type CompleteFilterFnType = BaseFilterFnType | OptionalFilterFnType;
+
 export type TableRowKeyType = string | number;
-export type IPrefetchedFilter<DataType> = Record<KeyLiteralType<DataType>, string[]>;
-export type IFilterInputCollection<DataType> = Record<KeyLiteralType<DataType>, string | undefined>;
-export type ICurrentFilterCollection<DataType> = Record<KeyLiteralType<DataType>, Set<string> | string | undefined>;
-export type ICurrentSorting<DataType> = {
-  key: KeyLiteralType<DataType>;
+export type IPrefetchedFilter = Record<string, string[]>;
+export type ICurrentFnType = Record<string, CompleteFilterFnType>;
+export type ICurrentFilterCollection = Record<string, Array<string> | string | undefined>;
+export interface ICurrentSorting {
+  key: string;
   direction: SortDirectionType;
-};
+}
 
 export type SortDirectionType = "ascending" | "descending" | undefined;
 
 export type DataFetchingType = "pagination" | "filter-fetch" | "filter-select" | "sort";
 
-export type TableStyleProps = React.CSSProperties & {
+export interface TableStyleProps extends React.CSSProperties {
   "--color-primary": string | undefined;
   "--color-hover": string | undefined;
   "--border-radius-lg": string | undefined;
   "--border-radius-md": string | undefined;
   "--border-radius-sm": string | undefined;
   "--box-shadow-main": string | undefined;
-};
+  "--scrollbar-width": string | undefined;
+}
 
-export type SettingsMenuProps<DataType> = HTMLAttributes<HTMLDivElement> & {
+export interface OptionsMenuProps<DataType> extends HTMLAttributes<HTMLDivElement> {
   visibleColumnKeys: Set<KeyLiteralType<DataType>>;
-  visible: boolean;
   handleColumnVisibility(key: KeyLiteralType<DataType>): Set<KeyLiteralType<DataType>>;
-};
+}
 
-export type FooterProps<DataType> = {
+export interface FooterProps<DataType> {
   paginationProps: TablePaginationProps;
   updatePaginationProps: (valuesToUpdate: TablePaginationProps) => void;
   onPaginationChange?: (props: TablePaginationProps) => void;
@@ -66,36 +73,32 @@ export type FooterProps<DataType> = {
     defaultCurrentPage?: number;
     defaultPageSize?: number;
   };
-  settingsMenu: {
-    props: Omit<SettingsMenuProps<DataType>, "visible">;
-    visibility:
-      | {
-          visible: boolean;
-          position:
-            | {
-                x: number;
-                y: number;
-              }
-            | undefined;
-        }
-      | undefined;
-    displaySettingsMenu(e: React.MouseEvent<HTMLButtonElement>): void;
-    hideSettingsMenu(): void;
+  optionsMenu: {
+    displayOptionsMenu: DisplayActionsMenu<any>;
+    isMenuVisible: boolean;
   };
   columnVisibilityOptions: ColumnVisibilityProps<DataType> | undefined;
   selectedRows: Set<TableRowKeyType>;
   loading?: boolean | undefined;
-};
+}
 
-export type FilteringProps = {
-  handleChangeFilterInput?: (key: string, value: string | Set<string>) => void;
-  currentValue?: string | Set<string>;
+export interface FilteringProps {
+  updateFilterValue: (key: string, value: string | Array<string>) => void;
+  getColumnFilterValue: (key: string) => string | Array<string>;
   fetchFilters?: (key: string) => Promise<void>;
   prefetchedFilters?: Record<string, string[]>;
-  type?: "input" | "select";
+  type?: "text" | "date" | "number" | "select";
   render?: (text: string) => React.ReactNode;
   multiple?: boolean | undefined;
   progressReporters: Set<DataFetchingType>;
-  searchInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;
-  renderCustomInput?: (handleChange: (key: string, value: any | Set<any>) => void, value: any) => React.ReactNode;
-};
+  filterInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;
+  renderCustomInput?: InputFiltering["renderCustomInput"];
+  isRangeInput: boolean;
+  disableInputIcon: boolean;
+  pickerLocale?: "en" | "az";
+}
+
+export interface ScrollPosition {
+  left: number;
+  top: number;
+}

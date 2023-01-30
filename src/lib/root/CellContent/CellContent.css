@@ -1,4 +1,4 @@
-.cell-content {
+.data-grid .cell-content {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -7,7 +7,7 @@
   align-self: center;
 }
 
-.cell.tools .cell-content {
+.data-grid .cell.tools .cell-content {
   width: 100%;
   flex: unset;
   display: flex;

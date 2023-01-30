@@ -1,21 +1,22 @@
-.expand-row-wrap {
+.data-grid .expand-row-wrap {
   position: absolute;
   width: 100%;
 }
 
-.expand-row-wrap .expand-row-wrap-inner {
+.data-grid .expand-row-wrap .expand-row-wrap-inner {
   width: 100%;
   height: 100%;
   padding-left: 10px;
   overflow: hidden;
 }
-.expand-row-wrap .expand-row-wrap-inner .content {
+
+.data-grid .expand-row-wrap .expand-row-wrap-inner .content {
   height: 100%;
   width: 100%;
   padding-left: 20px;
 }
 
-.expand-row-wrap.show-seperator .expand-row-wrap-inner::before {
+.data-grid .expand-row-wrap.show-seperator .expand-row-wrap-inner::before {
   content: "";
   /* subtract table row padding */
   height: calc(100% - 20px);

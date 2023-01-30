@@ -1,15 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ColumnType, KeyLiteralType, TablePaginationProps, TableProps } from "../types/Table";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ConstProps } from "../../static/constantProps";
+import { ColumnType, KeyLiteralType, TablePaginationProps, TableProps } from "../../types/Table";
 import {
   DataFetchingType,
   ICurrentFilterCollection,
-  IFilterInputCollection,
   IPrefetchedFilter,
   ICurrentSorting,
   FooterProps,
   SortDirectionType,
-} from "../types/Utils";
+  CompleteFilterFnType,
+  ICurrentFnType,
+} from "../../types/Utils";
+import { assignFilterFns } from "../../utils/AssignFilterFn";
+import { RDTDateFilters } from "./dateFilterFns";
+import { RDTFilters } from "./filterFns";
 
 export interface IClientDataManagement<DataType> {
   columns: Array<ColumnType<DataType>>;
@@ -26,26 +31,20 @@ export function useClientDataManagement<DataType>({
   dataCount,
   sortingProps,
 }: IClientDataManagement<DataType>) {
-  const PAGINATION_CURRENT_PAGE = paginationDefaults?.defaultCurrentPage ?? 1;
-  const PAGINATION_PAGE_SIZE = paginationDefaults?.defaultPageSize ?? 10;
+  const PAGINATION_CURRENT_PAGE = paginationDefaults?.defaultCurrentPage ?? ConstProps.defaultPaginationCurrentPage;
+  const PAGINATION_PAGE_SIZE = paginationDefaults?.defaultPageSize ?? ConstProps.defaultPaginationPageSize;
 
   /** Collection of already fetched filters. */
-  const [prefetchedFilters, setPrefetchedFilters] = useState<IPrefetchedFilter<DataType>>(
-    {} as IPrefetchedFilter<DataType>
-  );
-
-  /** Search input value in filter menu. */
-  const [inputValue, setInputValue] = useState<IFilterInputCollection<DataType>>(
-    {} as IFilterInputCollection<DataType>
-  );
+  const [prefetchedFilters, setPrefetchedFilters] = useState<IPrefetchedFilter>({});
 
   /** Filters that are currently in use. */
-  const [currentFilters, setCurrentFilters] = useState<ICurrentFilterCollection<DataType>>(
-    {} as ICurrentFilterCollection<DataType>
-  );
+  const [currentFilters, setCurrentFilters] = useState<ICurrentFilterCollection>({});
+
+  /** Filter functions that are currently in use. */
+  const [currentFilterFns, setCurrentFilterFns] = useState<ICurrentFnType>(assignFilterFns(columns));
 
   /** Sorting that is currently in use. */
-  const [currentSorting, setCurrentSorting] = useState<ICurrentSorting<DataType> | undefined>(undefined);
+  const [currentSorting, setCurrentSorting] = useState<ICurrentSorting | undefined>(undefined);
 
   /** Data fetching indicators. */
   const [progressReporters, setProgressReporters] = useState<Set<DataFetchingType>>(new Set());
@@ -53,13 +52,13 @@ export function useClientDataManagement<DataType>({
   /** Table key to reset filters. */
   const [filterResetKey, setFilterResetKey] = useState(0);
 
-  const currentSortingRef = useRef<ICurrentSorting<DataType>>();
+  const currentSortingRef = useRef<ICurrentSorting>();
   currentSortingRef.current = currentSorting;
 
-  const prefetchedFilterRef = useRef<IPrefetchedFilter<DataType>>({} as IPrefetchedFilter<DataType>);
+  const prefetchedFilterRef = useRef<IPrefetchedFilter>({});
   prefetchedFilterRef.current = prefetchedFilters;
 
-  const pipeSorting = (data?: DataType[], filters?: ICurrentSorting<DataType>) => {
+  const pipeSorting = (data?: DataType[], filters?: ICurrentSorting) => {
     if (!data || data.length === 0) return;
     let sortedData = [...data];
 
@@ -84,49 +83,48 @@ export function useClientDataManagement<DataType>({
     return sortedData;
   };
 
-  // Only valid if `filterDisplayStrategy` is `alternative`.
-  const pipeFilterSearch = (data?: DataType[], filters?: ICurrentFilterCollection<DataType>) => {
+  const pipeFilters = (filters: ICurrentFilterCollection, filterFns: ICurrentFnType, data?: DataType[]) => {
     if (!data || data.length === 0) return;
     let filteredData: DataType[] = [...data];
-    if (filters) {
-      for (const key in filters) {
-        const equalityFilter = columns.find((x) => x.key === key)?.filteringProps;
-        filteredData = filteredData.filter((item) => {
-          const assignedFilters = filters[key];
-          if (!assignedFilters || (assignedFilters as any)?.length === 0 || (assignedFilters as any)?.size === 0)
-            return true;
-          switch (equalityFilter?.type) {
-            case "select":
-              if (equalityFilter.multipleSelection) {
-                for (const f of (filters?.[key] as Set<string>)?.keys()) {
-                  if (
-                    (equalityFilter.equalityComparer &&
-                      equalityFilter.equalityComparer?.(item[key as keyof DataType], f)) ||
-                    (!equalityFilter.equalityComparer &&
-                      f?.toLowerCase() === `${item[key as keyof DataType]}`?.toLowerCase())
-                  )
-                    return true;
-                }
-                return false;
-              }
-              return `${item[key as keyof DataType]}`?.toLowerCase() === `${filters[key]}`.toLowerCase();
-            default:
-              if (equalityFilter?.equalityComparer) {
-                return equalityFilter.equalityComparer(assignedFilters as string, item[key as keyof DataType]);
-              }
-              return `${item[key as keyof DataType]}`?.toLowerCase().includes(`${filters[key]}`.toLowerCase());
-          }
-        });
-      }
+    for (const columnKey in filters) {
+      const equalityFilter = columns.find((x) => x.key === columnKey)?.filteringProps;
+      filteredData = filteredData.filter((data) => {
+        const assignedFilters = filters[columnKey];
+        if (!assignedFilters || assignedFilters?.length === 0) return true;
+        switch (equalityFilter?.type) {
+          case "select":
+            if (equalityFilter.multipleSelection) {
+              for (const f of assignedFilters)
+                if (
+                  (equalityFilter.equalityComparer &&
+                    equalityFilter.equalityComparer?.(data[columnKey as keyof DataType], f)) ||
+                  (!equalityFilter.equalityComparer && RDTFilters.equalsAlt(data as {}, columnKey, f as string))
+                )
+                  return true;
+              return false;
+            }
+            return RDTFilters.equalsAlt(data as {}, columnKey, assignedFilters as string);
+          default:
+            if (equalityFilter?.equalityComparer)
+              return equalityFilter.equalityComparer(
+                assignedFilters as string,
+                data[columnKey as keyof DataType],
+                filterFns[columnKey] as any
+              );
+            else {
+              if (equalityFilter?.type === "date")
+                return RDTDateFilters[filterFns[columnKey]]?.((data as any)[columnKey], assignedFilters as any);
+              return RDTFilters[filterFns[columnKey]](data as {}, columnKey, assignedFilters as any);
+            }
+        }
+      });
     }
     return filteredData;
   };
 
   async function pipeFetchedFilters(
-    key: KeyLiteralType<DataType>,
-    asyncFetchCallback?:
-      | ((key: KeyLiteralType<DataType>, inputValue?: string | undefined) => Promise<string[]>)
-      | undefined
+    key: string,
+    asyncFetchCallback?: ((key: string, inputSearchValues?: string | undefined) => Promise<string[]>) | undefined
   ) {
     if (!prefetchedFilters[key]) {
       let mappedFilters: string[] | undefined;
@@ -149,14 +147,17 @@ export function useClientDataManagement<DataType>({
     }
   }
 
-  const pipePagination = useCallback((data?: DataType[], pagination?: TablePaginationProps) => {
+  const pipePagination = (data?: DataType[], pagination?: TablePaginationProps) => {
     return data?.slice(
       pagination?.pageSize! * (pagination?.currentPage! - 1),
       pagination?.pageSize! * pagination?.currentPage!
     );
-  }, []);
+  };
 
-  const filteredData = useMemo(() => pipeFilterSearch(data, currentFilters), [data, currentFilters]);
+  const filteredData = useMemo(
+    () => pipeFilters(currentFilters, currentFilterFns, data),
+    [data, currentFilters, currentFilterFns]
+  );
 
   const sortedData = useMemo(() => pipeSorting(filteredData, currentSorting), [filteredData, currentSorting]);
 
@@ -166,18 +167,8 @@ export function useClientDataManagement<DataType>({
     pageSize: PAGINATION_PAGE_SIZE,
   });
 
-  function updateInputValue(key: string, value: string) {
-    return new Promise<IFilterInputCollection<DataType>>((res) =>
-      setInputValue((prev) => {
-        const updatedState = { ...prev, [key]: value };
-        res(updatedState);
-        return updatedState;
-      })
-    );
-  }
-
   function updatePrefetchedFilters(key: KeyLiteralType<DataType>, value: string[]) {
-    return new Promise<IPrefetchedFilter<DataType>>((res) =>
+    return new Promise<IPrefetchedFilter>((res) =>
       setPrefetchedFilters((prev) => {
         const updatedState = { ...prev, [key]: value };
         res(updatedState);
@@ -196,10 +187,42 @@ export function useClientDataManagement<DataType>({
     });
   }
 
-  function updateCurrentFilterValue(key: string, value: string | Set<string>) {
-    return new Promise<ICurrentFilterCollection<DataType>>((res) => {
+  function getColumnFilterValue(key: string) {
+    return currentFilters[key];
+  }
+
+  function getColumnFilterFn(key: string) {
+    return currentFilterFns[key];
+  }
+
+  function getColumnType(key: string) {
+    return columns.find((x) => x.key === key)?.filteringProps?.type ?? "text";
+  }
+
+  function isRangeFilterFn(fnsKey: CompleteFilterFnType) {
+    const rangeFilterFns: CompleteFilterFnType[] = ["between", "betweenInclusive"];
+    return rangeFilterFns.includes(fnsKey);
+  }
+
+  function updateCurrentFilterFn(key: string, type: CompleteFilterFnType) {
+    if (isRangeFilterFn(type) && !isRangeFilterFn(currentFilterFns[key])) {
+      setCurrentFilters((prev) => ({ ...prev, [key]: [prev[key] as string] }));
+    } else if (!isRangeFilterFn(type) && isRangeFilterFn(currentFilterFns[key])) {
+      setCurrentFilters((prev) => ({ ...prev, [key]: prev[key]?.[0] }));
+    }
+
+    const stateCopy = { ...currentFilterFns, [key]: type };
+    setCurrentFilterFns(stateCopy);
+    return stateCopy;
+  }
+
+  function updateCurrentFilterValue(key: string, value: string | Array<string>) {
+    return new Promise<ICurrentFilterCollection>((res) => {
       setCurrentFilters((prev) => {
-        const updatedState = { ...prev, [key]: value };
+        const updatedState = {
+          ...prev,
+          [key]: value,
+        };
         res(updatedState);
         return updatedState;
       });
@@ -207,10 +230,9 @@ export function useClientDataManagement<DataType>({
   }
 
   function resetCurrentFilters() {
-    return new Promise<ICurrentFilterCollection<DataType>>((res) => {
-      const emptyState = {} as ICurrentFilterCollection<DataType>;
+    return new Promise<ICurrentFilterCollection>((res) => {
+      const emptyState = {} as ICurrentFilterCollection;
       setCurrentFilters(emptyState);
-      setInputValue(emptyState as IFilterInputCollection<DataType>);
       setFilterResetKey(Date.now());
       res(emptyState);
     });
@@ -229,9 +251,9 @@ export function useClientDataManagement<DataType>({
       setCurrentSorting(updatedState);
       return Promise.resolve(updatedState);
     }
-    return new Promise<ICurrentSorting<DataType>>((res) => {
+    return new Promise<ICurrentSorting>((res) => {
       setCurrentSorting((prev) => {
-        let updatedState: ICurrentSorting<DataType>;
+        let updatedState: ICurrentSorting;
         if (prev?.key && prev.key === key) {
           let sortType: SortDirectionType;
           switch (prev.direction) {
@@ -280,25 +302,31 @@ export function useClientDataManagement<DataType>({
     }
   }, [currentSorting]);
 
+  const dataToExport = useMemo(() => pipePagination(sortedData, paginationProps), [paginationProps, sortedData]);
+
   return {
-    inputValue,
+    currentFilterFns,
     currentSorting,
     currentFilters,
-    prefetchedFilters,
     paginationProps,
+    filterResetKey,
+    prefetchedFilters,
+    progressReporters,
+    data: dataToExport,
+    dataWithoutPagination: sortedData,
     sortData,
-    updateInputValue,
+    getColumnType,
+    isRangeFilterFn,
+    getColumnFilterFn,
+    getColumnFilterValue,
+    setPaginationProps,
     pipeFetchedFilters,
     resetCurrentFilters,
     resetFetchedFilters,
-    updateCurrentFilterValue,
+    setProgressReporters,
+    updateCurrentFilterFn,
     updatePaginationProps,
     updatePrefetchedFilters,
-    data: pipePagination(sortedData, paginationProps),
-    dataWithoutPagination: sortedData,
-    progressReporters,
-    setProgressReporters,
-    setPaginationProps,
-    filterResetKey,
+    updateCurrentFilterValue,
   };
 }

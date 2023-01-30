@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { KeyLiteralType, TablePaginationProps, TableProps } from "../types/Table";
-import { DataFetchingType, ICurrentFilterCollection, IPrefetchedFilter, ICurrentSorting } from "../types/Utils";
+import { TablePaginationProps, TableProps } from "../../types/Table";
+import { DataFetchingType, ICurrentFilterCollection, ICurrentSorting, IPrefetchedFilter } from "../../types/Utils";
 import { IClientDataManagement, useClientDataManagement } from "./clientDataManagement";
 
 export interface IServerDataManagement<DataType> extends IClientDataManagement<DataType> {
@@ -24,9 +24,9 @@ export function useServerDataManagement<DataType>({
   });
 
   const paginationPropsRef = useRef<TablePaginationProps>({});
-  const currentSortingRef = useRef<ICurrentSorting<DataType>>();
-  const prefetchedFilterRef = useRef<IPrefetchedFilter<DataType>>({} as any);
-  const currentFilterRef = useRef<ICurrentFilterCollection<DataType>>({} as any);
+  const currentSortingRef = useRef<ICurrentSorting>();
+  const prefetchedFilterRef = useRef<IPrefetchedFilter>({});
+  const currentFilterRef = useRef<ICurrentFilterCollection>({});
 
   paginationPropsRef.current = clientTools.paginationProps;
   currentSortingRef.current = clientTools.currentSorting;
@@ -56,7 +56,7 @@ export function useServerDataManagement<DataType>({
     });
   }
 
-  function updateCurrentFilterValue(key: string, value: string | Set<string>) {
+  function updateCurrentFilterValue(key: string, value: string | Array<string>) {
     clientTools.updateCurrentFilterValue(key, value).then((newState) => {
       if (serverSide?.filtering?.onFilterSearchAsync) {
         startFetching("filter-select");
@@ -82,7 +82,7 @@ export function useServerDataManagement<DataType>({
     });
   }
 
-  async function pipeFetchedFilters(key: KeyLiteralType<DataType>) {
+  async function pipeFetchedFilters(key: string) {
     if (!clientTools.prefetchedFilters[key]) startFetching("filter-fetch");
     if (serverSide?.filtering?.onDefaultFilterFetchAsync) {
       await clientTools.pipeFetchedFilters(key, serverSide?.filtering?.onDefaultFilterFetchAsync);

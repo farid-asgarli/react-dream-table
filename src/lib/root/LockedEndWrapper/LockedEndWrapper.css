@@ -1,5 +1,5 @@
-.locked-end-wrapper {
-  z-index: 11000;
+.data-grid .locked-end-wrapper {
+  z-index: 1000;
   display: flex;
   flex-flow: row;
   background: inherit;
@@ -9,15 +9,15 @@
   box-shadow: -4px 0px 14px -6px rgba(0, 0, 0, 0.2);
 }
 
-.locked-end-wrapper.type-header {
+.data-grid .locked-end-wrapper.type-header {
   will-change: transform;
 }
 
-.locked-end-wrapper.type-header::before {
+.data-grid .locked-end-wrapper.type-header::before {
   content: "";
   position: absolute;
   height: 100%;
-  width: 3px;
-  left: 0px;
+  width: 3.5px;
+  left: -2px;
   z-index: 1;
 }

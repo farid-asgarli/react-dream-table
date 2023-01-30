@@ -1,18 +1,6 @@
-.header-wrapper-fill {
+.data-grid .header-wrapper-fill {
   visibility: visible; /* ?? */
   flex: 1 1;
   position: absolute;
   background-color: #fff;
 }
-
-/* .header-wrapper-fill-filters {
-  min-height: 41px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.data-grid .header-wrapper-fill-filters {
-  min-height: 41px;
-} */

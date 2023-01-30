@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useState } from "react";
 
 interface ColumnResizerHookProps {
@@ -8,6 +9,7 @@ interface ColumnResizerHookProps {
 }
 
 export function useColumnResizer(
+  containerRef: React.RefObject<HTMLDivElement>,
   {
     headerDataRefs,
     onColumnResize,
@@ -24,7 +26,6 @@ export function useColumnResizer(
   const mouseMove = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation();
-
       if (activeIndex && enabled) {
         const column = headerDataRefs.get(activeIndex);
         if (column) {
@@ -39,14 +40,13 @@ export function useColumnResizer(
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeIndex]
   );
 
   const removeListeners = useCallback(() => {
     if (enabled) {
-      window.removeEventListener("mousemove", mouseMove);
-      window.removeEventListener("mouseup", removeListeners);
+      containerRef.current?.removeEventListener("mousemove", mouseMove);
+      containerRef.current?.removeEventListener("mouseup", removeListeners);
     }
   }, [enabled, mouseMove]);
 
@@ -57,8 +57,8 @@ export function useColumnResizer(
 
   useEffect(() => {
     if (activeIndex !== null && enabled) {
-      window.addEventListener("mousemove", mouseMove);
-      window.addEventListener("mouseup", mouseUp);
+      containerRef.current?.addEventListener("mousemove", mouseMove);
+      containerRef.current?.addEventListener("mouseup", mouseUp);
     }
 
     return () => {

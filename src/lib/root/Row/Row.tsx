@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { RowProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import ExpandRowWrap from "../ExpandRowWrap/ExpandRowWrap";
@@ -10,13 +10,14 @@ export default function Row({
   className,
   style,
   children,
-  isSelected,
+  isRowSelected,
+  isRowActive,
   expandRowProps,
   tabIndex,
   totalColumnsWidth,
   ...props
 }: RowProps) {
-  const { dimensions } = useTableContext();
+  const { dimensions, animationProps } = useDataGridContext();
 
   const commonStyle: React.CSSProperties = useMemo(
     () => ({
@@ -30,9 +31,10 @@ export default function Row({
 
   return (
     <div
-      className={cs("row", isSelected && "selected", className)}
+      className={cs("row", isRowSelected && "selected", isRowActive && "active", className)}
       style={{
         ...style,
+        transitionDuration: `${animationProps.duration}ms`,
         ...commonStyle,
       }}
       {...props}

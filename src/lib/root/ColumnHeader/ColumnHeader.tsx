@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { ColumnHeaderProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeaderContent from "../ColumnHeaderContent/ColumnHeaderContent";
@@ -17,16 +17,17 @@ function ColumnHeader<DataType>(
     resizingProps,
     columnProps,
     draggingProps,
-    filteringProps,
+    filterProps,
+    filterFnsProps,
     children,
     style,
     className,
     toolBoxes,
     ...props
   }: React.HtmlHTMLAttributes<HTMLDivElement> & ColumnHeaderProps<DataType>,
-  colHeaderRef: React.ForwardedRef<HTMLDivElement>
+  resizingRef: React.ForwardedRef<HTMLDivElement>
 ) {
-  const { dimensions } = useTableContext();
+  const { dimensions } = useDataGridContext();
 
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, active } = useSortable({
     id: columnProps.key as string,
@@ -41,10 +42,10 @@ function ColumnHeader<DataType>(
     : undefined;
 
   function referenceHandler(ref: HTMLDivElement | null) {
-    if (typeof colHeaderRef === "function") {
-      colHeaderRef(ref);
-    } else if (colHeaderRef) {
-      colHeaderRef.current = ref;
+    if (typeof resizingRef === "function") {
+      resizingRef(ref);
+    } else if (resizingRef) {
+      resizingRef.current = ref;
     }
     setNodeRef(ref);
   }
@@ -75,11 +76,16 @@ function ColumnHeader<DataType>(
         style={{
           height: dimensions.defaultHeaderFilterHeight,
         }}
+        filterFnsProps={filterFnsProps}
+        columnKey={columnProps.key as string}
       >
-        <ColumnHeaderFilter columnKey={columnProps.key as string} filteringProps={filteringProps} />
+        <ColumnHeaderFilter columnKey={columnProps.key as string} filterProps={filterProps} />
       </ColumnHeaderFilterWrapper>
       {resizingProps?.isResizable && (
-        <ColumnResizer onMouseDown={() => resizingProps?.onMouseDown(columnProps.key as string)} />
+        <ColumnResizer
+          className={cs(resizingProps.activeIndex === columnProps.key && "active")}
+          onMouseDown={() => resizingProps?.onMouseDown(columnProps.key as string)}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-.data-grid .context-menu-button,
+.data-grid .actions-menu-button,
 .data-grid .expand-button {
   all: unset;
   display: flex;
@@ -14,7 +14,7 @@
   transition: 0.3s ease-in-out background;
 }
 
-.data-grid .context-menu-button:focus,
+.data-grid .actions-menu-button:focus,
 .data-grid .expand-button:focus {
   outline: 2px solid var(--color-hover);
 }
@@ -30,17 +30,17 @@
   fill: var(--color-primary);
 }
 
-.data-grid .context-menu-button:hover,
-.data-grid .context-menu-button.active,
+.data-grid .actions-menu-button:hover,
+.data-grid .actions-menu-button.active,
 .data-grid .expand-button:hover,
 .data-grid .expand-button.active {
   background: var(--color-hover);
 }
 
-.data-grid .context-menu-button .context-menu-icon {
+.data-grid .actions-menu-button .actions-menu-icon {
   fill: var(--color-icon);
 }
 
-.data-grid .context-menu-button:active .context-menu-icon {
+.data-grid .actions-menu-button:active .actions-menu-icon {
   scale: 0.8;
 }

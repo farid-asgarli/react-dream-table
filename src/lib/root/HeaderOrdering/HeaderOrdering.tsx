@@ -2,7 +2,7 @@ import { Active, closestCenter, DndContext, PointerSensor, useSensor, useSensors
 import { DragEndEvent } from "@dnd-kit/core/dist/types";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
-import { useTableContext } from "../../context/TableContext";
+import { useDataGridContext } from "../../context/DataGridContext";
 import { HeaderOrderingProps } from "../../types/Elements";
 import { ColumnTypeExtended } from "../../types/Utils";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
@@ -27,19 +27,17 @@ export default function HeaderOrdering<DataType>({
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      setColumnOrder((items) => {
-        const oldIndex = items.indexOf(active.id as any);
-        const newIndex = items.indexOf(over?.id as any);
-        const newArray = arrayMove(items, oldIndex, newIndex);
-        onColumnDragged?.(newArray);
-        return newArray;
-      });
+      const oldIndex = columnOrder.indexOf(active.id as any);
+      const newIndex = columnOrder.indexOf(over?.id as any);
+      const newArray = arrayMove(columnOrder, oldIndex, newIndex);
+      setColumnOrder(newArray);
+      onColumnDragged?.(newArray);
     }
     setActive(null);
   }
   const {
     dimensions: { defaultHeadRowHeight },
-  } = useTableContext();
+  } = useDataGridContext();
   return (
     <DndContext
       sensors={sensors}
