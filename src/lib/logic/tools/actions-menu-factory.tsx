@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { HtmlHTMLAttributes, useMemo, useRef, useState } from "react";
 import { ActionsMenu } from "../../components/ui/ActionsMenu/ActionsMenu";
 import { useDetectKeyPress } from "../../hooks/use-detect-key-press/use-detect-key-press";
@@ -30,11 +30,10 @@ type ActionsMenuVisibilityProps<TData> = {
 type ActionsMenuBodyProps = Pick<HtmlHTMLAttributes<HTMLDivElement>, "style" | "className">;
 
 export default function useActionsMenuFactory<TData>(
-  factory: (
-    props: ActionsMenuVisibilityProps<TData>,
-    hide: () => void
-  ) => React.ReactNode | (ActionsMenuListItem | undefined)[],
-  bodyProps?: ActionsMenuBodyProps
+  factory: (props: ActionsMenuVisibilityProps<TData>, hide: () => void) => React.ReactNode | (ActionsMenuListItem | undefined)[],
+  bodyProps?: ActionsMenuBodyProps,
+  onOpen?: (data: TData) => void,
+  onHide?: () => void
 ) {
   const emptyState: ActionsMenuVisibilityProps<TData> = {
     data: undefined,
@@ -47,22 +46,33 @@ export default function useActionsMenuFactory<TData>(
 
   const actionsMenuRef = useRef<HTMLDivElement>(null);
 
-  function displayActionsMenu({
-    identifier,
-    position,
-    data,
-  }: {
-    identifier: string | number;
-    position: ScreenPosition;
-    data: TData;
-  }) {
+  function adjustPosition(position: ScreenPosition, maxElemWidth = 200): ScreenPosition {
+    console.log(maxElemWidth);
+    const spacing = window.innerWidth - position.xAxis;
+    if (spacing < maxElemWidth) {
+      return {
+        xAxis: position.xAxis - spacing,
+        yAxis: position.yAxis,
+      };
+    }
+    return position;
+  }
+
+  useEffect(() => {
+    if (actionsMenuProps.visible) {
+      setActionsMenuProps((prev) => ({
+        ...prev,
+        position: adjustPosition(prev.position!, actionsMenuRef.current?.clientWidth),
+      }));
+    }
+  }, [actionsMenuProps.visible]);
+
+  function displayActionsMenu({ identifier, position, data }: { identifier: string | number; position: ScreenPosition; data: TData }) {
+    onOpen?.(data);
     setActionsMenuProps((prev) => {
       return {
         data,
-        position: {
-          xAxis: position.xAxis,
-          yAxis: position.yAxis,
-        },
+        position: position,
         visible: prev.identifier !== identifier || !prev?.visible,
         identifier,
       };
@@ -71,6 +81,7 @@ export default function useActionsMenuFactory<TData>(
 
   function hideActionsMenu(destroyOnClose: boolean = false) {
     setActionsMenuProps((prev) => (!destroyOnClose ? { ...prev, visible: false } : emptyState));
+    onHide?.();
   }
 
   useDetectOutsideClick(actionsMenuRef, () => hideActionsMenu());

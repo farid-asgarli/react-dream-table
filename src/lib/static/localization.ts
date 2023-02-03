@@ -1,13 +1,13 @@
-import { TableLocalizationType } from "../types/Table";
+import { DataGridLocalizationDefinition } from "../types/DataGrid";
 
-export const DefaultTableLocalization: TableLocalizationType = {
+export const DefaultDataGridLocalization: DataGridLocalizationDefinition = {
   dataLoading: "Loading",
   filterInputPlaceholder: "Search",
   filterDatePlaceholder: "month/day/year",
   filterLoading: "Loading",
   clearFilers: "Clear filters",
   dataEmpty: "No Data",
-  filterEmpty: "No Result",
+  noResult: "No Result",
   paginationPageSize: "Page size",
   paginationNext: "Next",
   paginationPrev: "Previous",
@@ -18,7 +18,7 @@ export const DefaultTableLocalization: TableLocalizationType = {
   clearSortTitle: "Clear",
   rowExpandTitle: "Expand",
   rowShrinkTitle: "Shrink",
-  columnVisibilityTitle: "Column visibility",
+  settingsMenuTitle: "Column visibility",
   rowsSelectedTitle: "rows selected",
   selectOptionsLoading: "Loading options",
   selectPlaceholder: "Select",
@@ -32,10 +32,14 @@ export const DefaultTableLocalization: TableLocalizationType = {
   filterBetweenInclusive: "Between inclusive",
   filterEndsWith: "Ends with",
   filterEquals: "Equals",
+  filterFuzzy: "Fuzzy",
   filterGreaterThan: "Greater than",
   filterGreaterThanOrEqualTo: "Greater than or equal",
   filterLessThan: "Less than",
   filterLessThanOrEqualTo: "Less than or equal",
   filterNotEquals: "Not equals",
   filterStartsWith: "Starts with",
+  fullScreenToggle: "Toggle fullscreen",
+  filterEmpty: "Empty",
+  filterNotEmpty: "Not empty",
 };

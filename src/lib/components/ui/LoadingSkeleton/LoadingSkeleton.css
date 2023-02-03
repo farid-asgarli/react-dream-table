@@ -1,4 +1,4 @@
-.data-grid .skeleton-table {
+.data-grid .skeleton-data-grid {
   padding: 10px 2rem;
   width: 100%;
   height: 100%;
@@ -6,19 +6,20 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  pointer-events: none;
 }
 
-.data-grid .skeleton-table .row-skeleton {
+.data-grid .skeleton-data-grid .row-skeleton {
   width: 100%;
 }
 
-.data-grid .skeleton-table .row-skeleton .skeleton-line {
+.data-grid .skeleton-data-grid .row-skeleton .skeleton-line {
   height: calc(100% - 10px);
 }
 
-.data-grid.striped .skeleton-table .row-skeleton:nth-child(even) .skeleton-line {
+.data-grid.striped .skeleton-data-grid .row-skeleton:nth-child(even) .skeleton-line {
   background: #f7f7f7;
 }
-.data-grid.striped .skeleton-table .row-skeleton:nth-child(even) .skeleton-line::before {
+.data-grid.striped .skeleton-data-grid .row-skeleton:nth-child(even) .skeleton-line::before {
   background-image: linear-gradient(to right, #f0ecec 0%, rgba(0, 0, 0, 0.07) 20%, #f0ecec 40%, #f0ecec 100%);
 }

@@ -114,15 +114,17 @@
   padding: 20px 0;
 }
 
+.data-grid .actions-menu::-webkit-scrollbar,
 .data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-
+.data-grid .actions-menu::-webkit-scrollbar-track,
 .data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
+.data-grid .actions-menu::-webkit-scrollbar-thumb,
 .data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb {
   background-color: #d6dee1;
   border-radius: calc(var(--border-radius-md) + var(--border-radius-sm));
@@ -130,6 +132,7 @@
   background-clip: content-box;
 }
 
+.data-grid .actions-menu::-webkit-scrollbar-thumb:hover,
 .data-grid .select-wrapper .select-list-wrapper::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }

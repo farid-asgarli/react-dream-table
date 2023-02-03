@@ -17,15 +17,14 @@
   left: 0px;
 }
 
-.data-grid .footer button.pagination-button,
-.data-grid .footer button.settings-button {
+.data-grid .footer button.pagination-button {
   border: none;
   position: relative;
   display: inline-flex;
   margin: 0 0;
   align-items: center;
   justify-content: center;
-  padding: 0px;
+  padding: 0px 5px;
   box-sizing: border-box;
   text-transform: capitalize;
   user-select: none;
@@ -45,12 +44,10 @@
   outline: none;
 }
 
-.data-grid .footer button.pagination-button:focus,
-.data-grid .footer button.settings-button:focus {
+.data-grid .footer button.pagination-button:focus {
   outline: 2px solid var(--color-hover);
 }
 
-.data-grid .footer button.settings-button:hover,
 .data-grid .footer button.pagination-button:not(.active):hover {
   background: #eceef0;
 }
@@ -59,13 +56,8 @@
   cursor: not-allowed;
 }
 
-.data-grid .footer button.settings-button:hover:active,
 .data-grid .footer button.pagination-button:not(:disabled):active {
   transform: scale(0.97);
-}
-
-.data-grid .footer .bottom .pagination-data-count button.settings-button.active .settings-icon {
-  fill: var(--color-primary);
 }
 
 .data-grid .footer button.pagination-button .btn-icon {

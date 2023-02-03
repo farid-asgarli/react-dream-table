@@ -25,7 +25,8 @@ import Plus from "../icons/Plus";
 import Search from "../icons/Search";
 import ThreeDots from "../icons/ThreeDots";
 import Unpin from "../icons/Unpin";
-export const DefaultTableIcons = {
+import FullScreen from "../icons/FullScreen";
+export const DefaultDataGridIcons = {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
@@ -41,6 +42,7 @@ export const DefaultTableIcons = {
   Empty,
   FastForward,
   Filter,
+  FullScreen,
   Hidden,
   Menu,
   Minus,

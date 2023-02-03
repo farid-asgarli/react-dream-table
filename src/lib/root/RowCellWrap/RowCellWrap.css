@@ -4,6 +4,8 @@
   flex-wrap: nowrap;
   align-items: stretch;
   transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid transparent;
+}
+
+.data-grid .row.clickable .row-cell-wrap {
+  cursor: pointer;
 }

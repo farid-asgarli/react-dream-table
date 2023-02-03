@@ -3,8 +3,8 @@ import VirtualList from "../VirtualList/VirtualList";
 import ActionsMenuButton from "../../components/ui/Buttons/ActionsMenuButton/ActionsMenuButton";
 import ExpandButton from "../../components/ui/Buttons/ExpandButton/ExpandButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useDataGridContext } from "../../context/DataGridContext";
-import { ColumnTypeExtended } from "../../types/Utils";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
+import { ColumnDefinitionExtended } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import Cell from "../Cell/Cell";
 import CellContent from "../CellContent/CellContent";
@@ -31,9 +31,9 @@ function ViewContainer<DataType>(
   }: ViewContainerProps<DataType>,
   viewRef: React.ForwardedRef<HTMLDivElement>
 ) {
-  const { dimensions, localization } = useDataGridContext();
+  const { dimensions, localization } = useDataGridStaticContext();
 
-  function extractBasicCellProps(col: ColumnTypeExtended<DataType>, dat: DataType) {
+  function extractBasicCellProps(col: ColumnDefinitionExtended<DataType>, dat: DataType) {
     return {
       colKey: col.key,
       data: dat,
@@ -53,7 +53,7 @@ function ViewContainer<DataType>(
         data: data as any,
         position: {
           xAxis: e.clientX,
-          yAxis: e.clientY,
+          yAxis: e.clientY + 10,
         },
         identifier: data[tp.uniqueRowKey as keyof DataType] as string,
       });
@@ -66,7 +66,7 @@ function ViewContainer<DataType>(
     { width, data, dataRender, type, colKey, dataCellAlignment }: ReturnType<typeof extractBasicCellProps>,
     index: number
   ) {
-    const commonTableRowCellProps = {
+    const commonDataGridRowCellProps = {
       style: {
         minWidth: width,
         maxWidth: width,
@@ -117,10 +117,7 @@ function ViewContainer<DataType>(
     }
 
     return (
-      <Cell
-        className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`)}
-        {...commonTableRowCellProps}
-      >
+      <Cell className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`)} {...commonDataGridRowCellProps}>
         <CellContent tooltipProps={tp.tooltipOptions}>{children}</CellContent>
       </Cell>
     );
@@ -133,13 +130,10 @@ function ViewContainer<DataType>(
       return {
         onClick: (e: React.MouseEvent<HTMLDivElement>) => tableTools.onRowClick(e, dat),
         key: identifier,
-        onContextMenu:
-          tp.rowActionsMenu?.active && tp.rowActionsMenu?.displayOnRightClick !== false
-            ? rowActionsMenu(dat)
-            : undefined,
+        onContextMenu: tp.rowActionsMenu?.active && tp.rowActionsMenu?.displayOnRightClick !== false ? rowActionsMenu(dat) : undefined,
         expandRowProps: {
           children: tp.expandableRows?.render?.(dat, containerWidth),
-          showSeperatorLine: tp.expandableRows?.showSeperatorLine === true,
+          showSeparatorLine: tp.expandableRows?.showSeparatorLine === true,
           isRowExpanded: isExpanded,
           leftOffset: pinnedColumns?.leftWidth,
           basicColumnsWidth: columnsInUse.totalWidth,
@@ -171,9 +165,8 @@ function ViewContainer<DataType>(
           <VirtualList
             containerHeight={containerHeight!}
             rowHeight={
-              dimensions.defaultDataRowHeight +
+              dimensions.defaultDataRowHeight
               // To address bordered-cell (border-bottom, see Scroller and theming.css).
-              1
             }
             expandPanelHeight={dimensions.defaultExpandPanelHeight}
             topScrollPosition={topScrollPosition}
@@ -190,13 +183,13 @@ function ViewContainer<DataType>(
                 tabIndex={d.__row_index + 1}
                 {...mapCommonRowProps(d)}
               >
-                {pinnedColumns?.leftColumns && (
+                {!!pinnedColumns?.leftWidth && (
                   <LockedStartWrapper type="body">
                     {pinnedColumns.leftColumns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
                   </LockedStartWrapper>
                 )}
                 {columnsInUse.columns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
-                {pinnedColumns?.rightColumns && (
+                {!!pinnedColumns?.rightWidth && (
                   <LockedEndWrapper type="body">
                     {pinnedColumns.rightColumns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
                   </LockedEndWrapper>

@@ -4,9 +4,9 @@
  * @param predicate Callback function to convert to object.
  * @returns Converted object.
  */
-export function arrayToObject<ColumnType extends { key: any }, ReturnObject>(
-  arr: Array<ColumnType>,
-  predicate: (col: ColumnType) => ReturnObject
+export function arrayToObject<ColumnDefinition extends { key: any }, ReturnObject>(
+  arr: Array<ColumnDefinition>,
+  predicate: (col: ColumnDefinition) => ReturnObject
 ) {
   const colObject: Record<string, ReturnObject> = {};
 

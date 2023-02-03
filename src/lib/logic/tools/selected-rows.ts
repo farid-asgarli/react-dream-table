@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { TableProps } from "../../types/Table";
-import { TableRowKeyType } from "../../types/Utils";
+import { DataGridProps } from "../../types/DataGrid";
+import { DataGridRowKeyDefinition } from "../../types/Utils";
 
-export default function useSelectedRows<DataType>(tp: TableProps<DataType>) {
-  /** List of checked items in the table. */
-  const [selectedRows, setSelectedRows] = useState<Set<TableRowKeyType>>(new Set());
+export default function useSelectedRows<DataType>(tp: DataGridProps<DataType>) {
+  /** List of checked items in the data-grid. */
+  const [selectedRows, setSelectedRows] = useState<Set<DataGridRowKeyDefinition>>(new Set());
 
-  function updateSelectedRows(value: TableRowKeyType) {
+  function updateSelectedRows(value: DataGridRowKeyDefinition) {
     setSelectedRows((rows) => {
       if (rows.has(value)) {
         const updatedRows = new Set(rows);
@@ -17,7 +17,7 @@ export default function useSelectedRows<DataType>(tp: TableProps<DataType>) {
     });
   }
 
-  function updateSelectedRowsMultiple(collection: Set<TableRowKeyType>) {
+  function updateSelectedRowsMultiple(collection: Set<DataGridRowKeyDefinition>) {
     setSelectedRows(collection);
   }
 

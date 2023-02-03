@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import ArrowLeft from "../../../../icons/ArrowLeft";
-import ArrowRight from "../../../../icons/ArrowRight";
 import { cs } from "../../../../utils/ConcatStyles";
 import React from "react";
 import "./Picker.css";
 import "dayjs/locale/az";
 import "dayjs/locale/en";
-import { useDataGridContext } from "../../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../../context/DataGridStaticContext";
+import ButtonPrimary from "../../Buttons/ButtonPrimary/ButtonPrimary";
 
 function DatePicker(
   {
@@ -54,33 +53,31 @@ function DatePicker(
 
   const [flow, setFlow] = useState<"left-flow" | "right-flow">();
 
-  const { localization } = useDataGridContext();
+  const { localization, icons } = useDataGridStaticContext();
 
   return (
     <div className="data-grid-dp main-wrapper" ref={ref} {...props}>
       <div className="calendar-header-wrapper">
         <h3>{selectedDate.clone().locale(pickerLocale).format("MMM YYYY")}</h3>
         <div className="arrows-wrapper">
-          <button
-            className="calendar-day-cell"
+          <ButtonPrimary
             onClick={() => {
               setFlow("left-flow");
               setSelectedDate((date) => date.subtract(1, "month"));
             }}
             title={localization.paginationPrev}
           >
-            <ArrowLeft className="calendar-icon" />
-          </button>
-          <button
-            className="calendar-day-cell"
+            <icons.ArrowLeft className="button-icon" />
+          </ButtonPrimary>
+          <ButtonPrimary
             onClick={() => {
               setFlow("right-flow");
               setSelectedDate((date) => date.add(1, "month"));
             }}
             title={localization.paginationNext}
           >
-            <ArrowRight className="calendar-icon" />
-          </button>
+            <icons.ArrowRight className="button-icon" />
+          </ButtonPrimary>
         </div>
       </div>
       <div className="week-days-wrapper">

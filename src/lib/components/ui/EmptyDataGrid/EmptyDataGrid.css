@@ -1,4 +1,4 @@
-.data-grid .empty-table .empty-table-wrapper {
+.data-grid .empty-data-grid .empty-data-grid-wrapper {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -8,17 +8,17 @@
   height: 100%;
 }
 
-.data-grid .empty-table .empty-table-wrapper .empty-icon {
+.data-grid .empty-data-grid .empty-data-grid-wrapper .empty-icon {
   width: 50px;
   fill: var(--color-primary);
 }
-.data-grid .empty-table .empty-table-wrapper .empty-text {
+.data-grid .empty-data-grid .empty-data-grid-wrapper .empty-text {
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.data-grid .empty-table {
+.data-grid .empty-data-grid {
   position: absolute;
   background: #fff;
   z-index: 9;
@@ -26,4 +26,5 @@
   left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }

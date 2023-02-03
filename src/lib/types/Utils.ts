@@ -1,6 +1,6 @@
 import { HTMLAttributes } from "react";
 import { DisplayActionsMenu } from "../logic/tools/actions-menu-factory";
-import { ColumnType, ColumnVisibilityProps, InputFiltering, KeyLiteralType, TablePaginationProps } from "./Table";
+import { ColumnDefinition, ColumnVisibilityProps, InputFiltering, KeyLiteralType, DataGridPaginationProps } from "./DataGrid";
 
 export interface ActionsMenuListItem {
   content?: React.ReactNode;
@@ -15,40 +15,42 @@ export interface ActionsMenuProps {
   children: React.ReactNode | Array<ActionsMenuListItem | undefined>;
 }
 
-export interface ColumnTypeExtended<DataType> extends Omit<ColumnType<DataType>, "width"> {
+export interface ColumnDefinitionExtended<DataType> extends Omit<ColumnDefinition<DataType>, "width"> {
   type: "select" | "actions" | "expand" | "data";
   pinned?: "left" | "right" | undefined;
   key: string;
   width: number;
 }
-export type BaseFilterFnType =
+
+export type BaseFilterFnDefinition =
   | "equals"
-  | "equalsAlt"
   | "notEquals"
   | "greaterThan"
   | "lessThan"
   | "greaterThanOrEqualTo"
   | "lessThanOrEqualTo"
   | "between"
-  | "betweenInclusive";
+  | "betweenInclusive"
+  | "empty"
+  | "notEmpty";
 
-export type OptionalFilterFnType = "contains" | "startsWith" | "endsWith";
-export type CompleteFilterFnType = BaseFilterFnType | OptionalFilterFnType;
+export type OptionalFilterFnDefinition = "contains" | "startsWith" | "endsWith" | "fuzzy";
+export type CompleteFilterFnDefinition = BaseFilterFnDefinition | OptionalFilterFnDefinition;
 
-export type TableRowKeyType = string | number;
+export type DataGridRowKeyDefinition = string | number;
 export type IPrefetchedFilter = Record<string, string[]>;
-export type ICurrentFnType = Record<string, CompleteFilterFnType>;
+export type ICurrentFnCollection = Record<string, CompleteFilterFnDefinition>;
 export type ICurrentFilterCollection = Record<string, Array<string> | string | undefined>;
 export interface ICurrentSorting {
   key: string;
-  direction: SortDirectionType;
+  direction: SortDirectionDefinition;
 }
 
-export type SortDirectionType = "ascending" | "descending" | undefined;
+export type SortDirectionDefinition = "ascending" | "descending" | undefined;
 
-export type DataFetchingType = "pagination" | "filter-fetch" | "filter-select" | "sort";
+export type DataFetchingDefinition = "pagination" | "filter-fetch" | "filter-select" | "sort";
 
-export interface TableStyleProps extends React.CSSProperties {
+export interface DataGridStyleProps extends React.CSSProperties {
   "--color-primary": string | undefined;
   "--color-hover": string | undefined;
   "--border-radius-lg": string | undefined;
@@ -61,13 +63,15 @@ export interface TableStyleProps extends React.CSSProperties {
 export interface OptionsMenuProps<DataType> extends HTMLAttributes<HTMLDivElement> {
   visibleColumnKeys: Set<KeyLiteralType<DataType>>;
   handleColumnVisibility(key: KeyLiteralType<DataType>): Set<KeyLiteralType<DataType>>;
+  toggleFullScreenMode: (() => void) | undefined;
+  hideMenu: () => void;
 }
 
 export interface FooterProps<DataType> {
-  paginationProps: TablePaginationProps;
-  updatePaginationProps: (valuesToUpdate: TablePaginationProps) => void;
-  onPaginationChange?: (props: TablePaginationProps) => void;
-  progressReporters: Set<DataFetchingType>;
+  paginationProps: DataGridPaginationProps;
+  updatePaginationProps: (valuesToUpdate: DataGridPaginationProps) => void;
+  onPaginationChange?: (props: DataGridPaginationProps) => void;
+  progressReporters: Set<DataFetchingDefinition>;
   paginationDefaults?: {
     pageSizes?: Array<number>;
     defaultCurrentPage?: number;
@@ -78,8 +82,9 @@ export interface FooterProps<DataType> {
     isMenuVisible: boolean;
   };
   columnVisibilityOptions: ColumnVisibilityProps<DataType> | undefined;
-  selectedRows: Set<TableRowKeyType>;
+  selectedRows: Set<DataGridRowKeyDefinition>;
   loading?: boolean | undefined;
+  toggleFullScreenMode: (() => void) | undefined;
 }
 
 export interface FilteringProps {
@@ -90,7 +95,7 @@ export interface FilteringProps {
   type?: "text" | "date" | "number" | "select";
   render?: (text: string) => React.ReactNode;
   multiple?: boolean | undefined;
-  progressReporters: Set<DataFetchingType>;
+  progressReporters: Set<DataFetchingDefinition>;
   filterInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;
   renderCustomInput?: InputFiltering["renderCustomInput"];
   isRangeInput: boolean;

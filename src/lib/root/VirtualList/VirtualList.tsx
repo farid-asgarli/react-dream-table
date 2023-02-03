@@ -30,25 +30,9 @@ export default function VirtualList<DataType>({
     return expDictionary;
   }, [elements, expandPanelHeight, expandRowKeys, uniqueRowKey]);
 
-  const visibleChildren = React.useMemo(() => {
+  const visibleVirtualChildren = React.useMemo(() => {
     const startIndex = Math.max(Math.floor(topScrollPosition / rowHeight) - bufferedItems, 0);
-    const endIndex = Math.min(
-      Math.ceil((topScrollPosition + containerHeight) / rowHeight - 1) + bufferedItems,
-      elements.length - 1
-    );
-    if (disabled)
-      return elements.map((data, index) => {
-        const uniqueId = data[uniqueRowKey];
-        const styleToApply: React.CSSProperties = {
-          position: "absolute",
-          top: index * rowHeight + index + (expansionHeightPerRow?.[uniqueId as number] ?? 0),
-          height: rowHeight,
-          left: 0,
-          right: 0,
-          lineHeight: `${rowHeight}px`,
-        };
-        return renderElement(data, styleToApply);
-      });
+    const endIndex = Math.min(Math.ceil((topScrollPosition + containerHeight) / rowHeight - 1) + bufferedItems, elements.length - 1);
 
     return elements.slice(startIndex, endIndex + 1).map((data, index) => {
       const uniqueId = data[uniqueRowKey];
@@ -56,9 +40,6 @@ export default function VirtualList<DataType>({
         position: "absolute",
         top: (startIndex + index) * rowHeight + (expansionHeightPerRow?.[uniqueId as number] ?? 0),
         height: rowHeight,
-        left: 0,
-        right: 0,
-        lineHeight: `${rowHeight}px`,
       };
       return renderElement(data, styleToApply);
     });
@@ -66,5 +47,12 @@ export default function VirtualList<DataType>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, containerHeight, disabled, rowHeight, topScrollPosition, expansionHeightPerRow, renderElement]);
 
-  return visibleChildren as unknown as JSX.Element;
+  const visibleNonVirtualChildren = React.useMemo(
+    () => elements.map((data) => renderElement(data, {})),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [elements, renderElement]
+  );
+
+  if (disabled) return visibleNonVirtualChildren as unknown as JSX.Element;
+  return visibleVirtualChildren as unknown as JSX.Element;
 }

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useDataGridContext } from "../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import { ConstProps } from "../../../static/constantProps";
 import { FilteringProps } from "../../../types/Utils";
 import Fade from "../../animations/Fade/Fade";
@@ -30,7 +30,7 @@ export default function FilterMenu({
   columnKey: string;
   filterProps: FilteringProps;
 }) {
-  const { localization } = useDataGridContext();
+  const { localization } = useDataGridStaticContext();
 
   function handleInputChange(value: any, index?: number) {
     if (index !== undefined) {
@@ -80,14 +80,7 @@ export default function FilterMenu({
         );
 
       case "number":
-        return (
-          <Input
-            type="number"
-            disableIcon={disableInputIcon}
-            placeholder={localization.filterInputPlaceholder}
-            {...renderProps}
-          />
-        );
+        return <Input type="number" disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />;
       case "select":
         return (
           <Select
@@ -102,9 +95,7 @@ export default function FilterMenu({
           />
         );
       default:
-        return (
-          <Input disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />
-        );
+        return <Input disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />;
     }
   };
 

@@ -1,4 +1,4 @@
-.data-grid .table-tooltip {
+.data-grid .data-grid-tooltip {
   position: absolute;
   top: 0;
   box-shadow: 0 1em 2em -0.5em rgba(0, 0, 0, 0.35);
@@ -13,12 +13,12 @@
   z-index: 999;
 }
 
-.data-grid .table-tooltip .table-row-cell-data {
+.data-grid .data-grid-tooltip .data-grid-row-cell-data {
   overflow: unset;
   text-overflow: unset;
 }
 
-.data-grid .table-tooltip::after {
+.data-grid .data-grid-tooltip::after {
   content: "";
   position: absolute;
   width: 5px;

@@ -1,14 +1,15 @@
 import { Dayjs } from "dayjs";
-import { DefaultTableIcons } from "../static/icons";
+import { DefaultDataGridIcons } from "../static/icons";
 import {
   ActionsMenuListItem,
-  BaseFilterFnType,
-  CompleteFilterFnType,
+  BaseFilterFnDefinition,
+  CompleteFilterFnDefinition,
   FooterProps,
   ICurrentFilterCollection,
   ICurrentSorting,
-  SortDirectionType,
-  TableRowKeyType,
+  SortDirectionDefinition,
+  DataGridRowKeyDefinition,
+  ICurrentFnCollection,
 } from "./Utils";
 
 export type KeyLiteralType<DataType> = keyof DataType | (string & {});
@@ -22,9 +23,9 @@ export interface InputDateFiltering {
   /**
    * @default "equals"
    */
-  defaultFilterFn?: BaseFilterFnType;
+  defaultFilterFn?: BaseFilterFnDefinition;
   /** Allows the ability to execute custom comparison when search event occurs. */
-  equalityComparer?: (filterValue?: Dayjs, data?: any, filterFn?: BaseFilterFnType) => boolean;
+  equalityComparer?: (filterValue?: Dayjs, data?: any, filterFn?: BaseFilterFnDefinition) => boolean;
 }
 
 export interface InputCommonFiltering {
@@ -32,9 +33,9 @@ export interface InputCommonFiltering {
   /**
    * @default "contains"
    */
-  defaultFilterFn?: CompleteFilterFnType;
+  defaultFilterFn?: CompleteFilterFnDefinition;
   /** Allows the ability to execute custom comparison when search event occurs. */
-  equalityComparer?: (filterValue?: string, data?: any, filterFn?: CompleteFilterFnType) => boolean;
+  equalityComparer?: (filterValue?: string, data?: any, filterFn?: CompleteFilterFnDefinition) => boolean;
 }
 
 export type InputFiltering = (InputDateFiltering | InputCommonFiltering) & {
@@ -62,16 +63,16 @@ export interface SelectFiltering<DataType = any> {
   /** Custom rendering of filter values. */
   render?: (text: string) => React.ReactNode;
 }
-export type TableFilteringProps = InputFiltering | SelectFiltering;
+export type DataGridFilteringProps = InputFiltering | SelectFiltering;
 
-export interface TableLocalizationType {
+export interface DataGridLocalizationDefinition {
   dataLoading: string;
   filterInputPlaceholder: string;
   filterDatePlaceholder: string;
   filterLoading: string;
   clearFilers: string;
   dataEmpty: string;
-  filterEmpty: string;
+  noResult: string;
   paginationPageSize: string;
   paginationNext: string;
   paginationPrev: string;
@@ -82,7 +83,7 @@ export interface TableLocalizationType {
   clearSortTitle: string;
   rowExpandTitle: string;
   rowShrinkTitle: string;
-  columnVisibilityTitle: string;
+  settingsMenuTitle: string;
   rowsSelectedTitle: string;
   selectOptionsLoading: string;
   selectPlaceholder: string;
@@ -95,6 +96,7 @@ export interface TableLocalizationType {
   filterStartsWith: string;
   filterEndsWith: string;
   filterEquals: string;
+  filterFuzzy: string;
   filterNotEquals: string;
   filterBetween: string;
   filterBetweenInclusive: string;
@@ -102,9 +104,12 @@ export interface TableLocalizationType {
   filterGreaterThanOrEqualTo: string;
   filterLessThan: string;
   filterLessThanOrEqualTo: string;
+  filterEmpty: string;
+  filterNotEmpty: string;
+  fullScreenToggle: string;
 }
 
-export interface TableThemeType {
+export interface DataGridThemeDefinition {
   boxShadow: string;
   primaryColor: string;
   borderRadiusLg: string;
@@ -112,7 +117,7 @@ export interface TableThemeType {
   borderRadiusSm: string;
 }
 
-export interface TableDimensionsType {
+export interface DataGridDimensionsDefinition {
   actionsMenuColumnWidth: number;
   selectionMenuColumnWidth: number;
   expandedMenuColumnWidth: number;
@@ -127,18 +132,18 @@ export interface TableDimensionsType {
   defaultScrollbarWidth: number;
 }
 
-export type TableIconsType = typeof DefaultTableIcons;
+export type DataGridIconsDefinition = typeof DefaultDataGridIcons;
 
 interface ClientPaginationProps<DataType> {
   /** Fires an event when either page size or current page changes.  */
-  onPaginationChange?: (props: TablePaginationProps) => void;
-  /** Defaults for table pagination. */
+  onPaginationChange?: (props: DataGridPaginationProps) => void;
+  /** Defaults for data-grid pagination. */
   defaults?: FooterProps<DataType>["paginationDefaults"];
 }
 
 interface ClientSortingProps<DataType> {
   /** Fires an event when sorting event occurs. */
-  onSortingChange?: (key: KeyLiteralType<DataType>, direction: SortDirectionType, sortedData: DataType[]) => void;
+  onSortingChange?: (key: KeyLiteralType<DataType>, direction: SortDirectionDefinition, sortedData: DataType[]) => void;
 }
 
 export interface EllipsisProps {
@@ -148,10 +153,10 @@ export interface EllipsisProps {
 
 interface ColumnSortingProps {
   /** Allows the ability to implement custom sorting when sorting event occurs. */
-  sortingComparer?: (first: any, second: any, alg: SortDirectionType) => number | undefined;
+  sortingComparer?: (first: any, second: any, alg: SortDirectionDefinition) => number | undefined;
 }
 
-export interface ColumnType<DataType> {
+export interface ColumnDefinition<DataType> {
   /** Unique id of column. */
   key: KeyLiteralType<DataType>;
   /** Width of the column, in number. */
@@ -160,17 +165,17 @@ export interface ColumnType<DataType> {
   title?: string | undefined;
   /** Custom rendering of data. */
   dataRender?: (entity: DataType) => React.ReactNode;
-  /** Custom rendering of table heads `th`. */
+  /** Custom rendering of data-grid heads `th`. */
   headerRender?: () => React.ReactNode;
   /** Enables filtering of data. */
   filter?: boolean | undefined;
-  filteringProps?: TableFilteringProps | undefined;
+  filteringProps?: DataGridFilteringProps | undefined;
   /** Enables sorting of data. */
   sort?: boolean | undefined;
   sortingProps?: ColumnSortingProps | undefined;
-  /** Alignment of table head. */
+  /** Alignment of data-grid head. */
   headerAlignment?: "left" | "middle" | "right" | undefined;
-  /** Alignment of table row data cell. */
+  /** Alignment of data-grid row data cell. */
   cellAlignment?: "left" | "middle" | "right" | undefined;
 }
 
@@ -194,6 +199,10 @@ export type ColumnPinProps<DataType> = CommonInteractiveProps & {
    * - "expand" - The key to pin expand menu.
    */
   right?: ColumnPinCollection<DataType>;
+  /**
+   * Fires an event when column pinning occurs.
+   */
+  onColumnPin?: (pinnedColumns: { left: ColumnPinCollection<DataType>; right: ColumnPinCollection<DataType> }) => void;
 };
 export interface ColumnResizingProps<DataType> extends CommonInteractiveProps {
   /** List of columns to disable resizing feature. */
@@ -203,10 +212,10 @@ export interface ColumnResizingProps<DataType> extends CommonInteractiveProps {
    * @param collection Set of column keys that are retrieved when resizing ends.
    * @returns
    */
-  onColumnResize?: (collection: Map<KeyLiteralType<DataType>, number>) => void;
+  onColumnResize?: (collection: Record<KeyLiteralType<DataType>, number>) => void;
 }
 
-export interface TableTooltipProps extends CommonInteractiveProps {
+export interface DataGridTooltipProps extends CommonInteractiveProps {
   type?: "native" | "styled" | undefined;
 }
 
@@ -244,10 +253,12 @@ export interface RowSelectionProps extends CommonInteractiveProps {
   type?: "onRowClick" | "default" | undefined;
 }
 export interface RowActionsMenuProps<DataType> extends CommonInteractiveProps {
+  onOpen?: (data: DataType) => void;
+  onHide?: () => void;
   render?: (
     data: DataType | undefined,
-    selectedRows: Set<TableRowKeyType>,
-    paginationProps: TablePaginationProps,
+    selectedRows: Set<DataGridRowKeyDefinition>,
+    paginationProps: DataGridPaginationProps,
     closeMenu: () => void
   ) => (ActionsMenuListItem | undefined)[];
   /** Displays context menu on right click.
@@ -255,6 +266,8 @@ export interface RowActionsMenuProps<DataType> extends CommonInteractiveProps {
    */
   displayOnRightClick?: boolean;
 }
+
+export interface FilterFnsMenuProps extends CommonInteractiveProps {}
 
 export interface HeaderActionsMenuProps extends CommonInteractiveProps {}
 
@@ -272,13 +285,13 @@ export interface RowExpandabilityProps<DataType> extends CommonInteractiveProps 
    */
   excludeWhen?: (data: DataType) => boolean;
   /** Fires an event when expand event occurs. */
-  onRowExpanded?: (uniqueId: TableRowKeyType) => void;
+  onRowExpanded?: (uniqueId: DataGridRowKeyDefinition) => void;
   /** Fires an event when shrink event occurs. */
-  onRowShrinked?: (uniqueId: TableRowKeyType) => void;
+  onRowShrinked?: (uniqueId: DataGridRowKeyDefinition) => void;
   /** Display seperator line on the left of the row when expanded.
    * @default true
    */
-  showSeperatorLine?: boolean | undefined;
+  showSeparatorLine?: boolean | undefined;
 }
 
 export interface VirtualizationProps extends CommonInteractiveProps {
@@ -288,7 +301,7 @@ export interface VirtualizationProps extends CommonInteractiveProps {
   preRenderedRowCount?: number | undefined;
 }
 
-export interface TableReference<DataType> {
+export interface DataGridReference<DataType> {
   /**
    * Gets filtered data that is currently displayed.
    * @returns Data collection.
@@ -298,7 +311,7 @@ export interface TableReference<DataType> {
    * Gets set of columns that are visible.
    * @returns Column collection.
    */
-  getCurrentColumns: () => ColumnType<DataType>[];
+  getCurrentColumns: () => ColumnDefinition<DataType>[];
   /**
    * Gets collection of filters that are currently active.
    * @returns Filter collection.
@@ -310,15 +323,17 @@ export interface TableReference<DataType> {
   resetCurrentFilters: () => void;
 }
 
-export interface TableProps<DataType> {
+export interface DataGridProps<DataType> {
   /** Data to display. Object keys must match column keys if default rendering is used. */
   data: DataType[] | undefined;
   /** Display three-dot context menu at the end of the row. */
   rowActionsMenu?: RowActionsMenuProps<DataType> | undefined;
   /** Display three-dot context menu at the end of head cell. */
   headerActionsMenu?: HeaderActionsMenuProps | undefined;
-  /** Columns that will be used in the table. */
-  columns: ColumnType<DataType>[];
+  /** Display filter functions menu next to inputs. */
+  filterFnsMenu?: FilterFnsMenuProps | undefined;
+  /** Columns that will be used in the data-grid. */
+  columns: ColumnDefinition<DataType>[];
   /** Displays loading-skeleton if activated. */
   loading?: boolean | undefined;
   /** Allows the ability to resize the columns. */
@@ -327,10 +342,14 @@ export interface TableProps<DataType> {
   draggableColumns?: ColumnDraggingProps<DataType> | undefined;
   /** Allows the ability for a row to expand. */
   expandableRows?: RowExpandabilityProps<DataType> | undefined;
+  /**
+   * Enables full screen toggle in footer.
+   * @default true */
+  fullScreenToggle?: boolean | undefined;
   /** Allows the ability to alter column visibility. */
   columnVisibilityOptions?: ColumnVisibilityProps<DataType> | undefined;
   /** Allows the ability to display tooltip on cells. */
-  tooltipOptions?: TableTooltipProps | undefined;
+  tooltipOptions?: DataGridTooltipProps | undefined;
   /** Identifier key of the data object. */
   uniqueRowKey: KeyLiteralType<DataType>;
   /** Allows the usage of checkboxes and row selection. */
@@ -346,16 +365,16 @@ export interface TableProps<DataType> {
   pagination?: ClientPaginationProps<DataType> | undefined;
   sorting?: ClientSortingProps<DataType> | undefined;
   /** Allows the ability to customize icons. */
-  icons?: Partial<TableIconsType> | undefined;
+  icons?: Partial<DataGridIconsDefinition> | undefined;
   /** Allows the ability to customize localization. */
-  localization?: Partial<TableLocalizationType> | undefined;
-  /** Allows the ability to customize table dimensions. */
-  dimensions?: Partial<TableDimensionsType>;
-  /** Allows the ability to use custom table styling. */
-  theming?: Partial<TableThemeType> | undefined;
-  /** Reference to table element to provide data and column access tableTools. */
-  tableApiRef?: React.MutableRefObject<TableReference<DataType> | null>;
-  /** Allows the table rows to contain striped background color.  */
+  localization?: Partial<DataGridLocalizationDefinition> | undefined;
+  /** Allows the ability to customize data-grid dimensions. */
+  dimensions?: Partial<DataGridDimensionsDefinition>;
+  /** Allows the ability to use custom data-grid styling. */
+  theming?: Partial<DataGridThemeDefinition> | undefined;
+  /** Reference to data-grid element to provide data and column access tableTools. */
+  dataGridApiRef?: React.MutableRefObject<DataGridReference<DataType> | null>;
+  /** Allows the data-grid rows to contain striped background color.  */
   striped?: boolean | undefined;
   /** Improves both rendering and overall performance of the list. */
   virtualization?: VirtualizationProps | undefined;
@@ -364,24 +383,35 @@ export interface TableProps<DataType> {
   /** Callback function to execute on row click. */
   onRowClick?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    /** Data of the table row. */
+    /** Data of the data-grid row. */
     data: DataType
   ) => void;
   /** Configurations to allow API based filtering and pagination. */
   serverSide?: {
     pagination?: {
       dataCount?: number | undefined;
-      onChangeAsync: (paginationProps: TablePaginationProps, filters: ICurrentFilterCollection) => Promise<void>;
+      onChangeAsync: (paginationProps: DataGridPaginationProps, filters: ICurrentFilterCollection) => Promise<void>;
     };
     filtering: {
-      /** Fires an event when input field's value is changed.  */
+      /** Fires an event when input field's value is changed.
+       * Required when select options are fetched server-side.  */
       onDefaultFilterFetchAsync?: (key: KeyLiteralType<DataType>) => Promise<string[]>;
-      /** Fires an event when filter selection is changed. */
-      onFilterSearchAsync?: (
+      /** Fires an event when filtering updates. */
+      onFilterChangeAsync?: (
         /** Currently selected filters. */
         filters: ICurrentFilterCollection,
         /** Pagination props that are currently active. */
-        paginationProps: TablePaginationProps,
+        paginationProps: DataGridPaginationProps,
+        /** Sorting props that are currently active. */
+        sortingProps: ICurrentSorting | undefined
+      ) => Promise<void>;
+      onFilterFunctionChangeAsync?: (
+        /** Currently active filter functions. */
+        filterFns: ICurrentFnCollection,
+        /** Currently selected filters. */
+        filters: ICurrentFilterCollection,
+        /** Pagination props that are currently active. */
+        paginationProps: DataGridPaginationProps,
         /** Sorting props that are currently active. */
         sortingProps: ICurrentSorting | undefined
       ) => Promise<void>;
@@ -394,18 +424,18 @@ export interface TableProps<DataType> {
         /** Currently selected filters. */
         filters: ICurrentFilterCollection,
         /** Pagination props that are currently active. */
-        paginationProps: TablePaginationProps,
+        paginationProps: DataGridPaginationProps,
         /** Current sorting direction of the column. */
-        direction: SortDirectionType
+        direction: SortDirectionDefinition
       ) => Promise<void>;
     };
   };
 }
 
-export interface TablePaginationProps {
+export interface DataGridPaginationProps {
   /** Current page size to display. */
   pageSize?: number;
-  /** Current page of table. */
+  /** Current page of data-grid. */
   currentPage?: number;
   /** Total size of data elements. */
   dataCount?: number;

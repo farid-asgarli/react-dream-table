@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes } from "react";
-import { useDataGridContext } from "../../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../../context/DataGridStaticContext";
 import { cs } from "../../../../utils/ConcatStyles";
 
 export default function ExpandButton({
@@ -8,7 +8,7 @@ export default function ExpandButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   isExpanded?: boolean;
 }) {
-  const { icons } = useDataGridContext();
+  const { icons } = useDataGridStaticContext();
 
   return (
     <button type="button" className={cs("expand-button", isExpanded && "active")} {...props}>

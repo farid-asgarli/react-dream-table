@@ -4,6 +4,7 @@ export default function useActiveRow() {
   const [activeRow, setActiveRow] = useState<string>();
 
   function updateActiveRow(uniqueRowKey: string) {
+    if (activeRow === uniqueRowKey) return;
     setActiveRow(uniqueRowKey);
   }
 
@@ -12,6 +13,7 @@ export default function useActiveRow() {
   }
 
   function isRowActive(uniqueRowKey: string) {
+    if (uniqueRowKey === undefined) return false;
     return activeRow === uniqueRowKey;
   }
 

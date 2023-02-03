@@ -1,9 +1,12 @@
-import { CompleteFilterFnType } from "../types/Utils";
+import { CompleteFilterFnDefinition } from "../types/Utils";
 
 export const ConstProps = {
-  defaultActiveFns: "contains" as CompleteFilterFnType,
+  defaultActiveFn: "contains" as CompleteFilterFnDefinition,
+  defaultActiveDateFn: "equals" as CompleteFilterFnDefinition,
   defaultPaginationCurrentPage: 1,
   defaultPaginationPageSize: 10,
   defaultPickerLocale: "en" as const,
   defaultPreRenderedRows: 6,
+  defaultRangeFns: ["between", "betweenInclusive"] as CompleteFilterFnDefinition[],
+  defaultFnsNoFilter: ["empty", "notEmpty"] as CompleteFilterFnDefinition[],
 };

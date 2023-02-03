@@ -1,6 +1,6 @@
-import { TableDimensionsType } from "../types/Table";
+import { DataGridDimensionsDefinition } from "../types/DataGrid";
 
-export const DefaultTableDimensions: TableDimensionsType = {
+export const DefaultDataGridDimensions: DataGridDimensionsDefinition = {
   actionsMenuColumnWidth: 50,
   selectionMenuColumnWidth: 60,
   expandedMenuColumnWidth: 50,
@@ -10,7 +10,7 @@ export const DefaultTableDimensions: TableDimensionsType = {
   defaultHeadRowHeight: 50,
   defaultHeaderFilterHeight: 55,
   defaultScrollbarWidth: 20,
-  maxColumnResizeWidth: Infinity,
+  maxColumnResizeWidth: 600,
   minColumnResizeWidth: 100,
   defaultExpandPanelHeight: 300,
 };

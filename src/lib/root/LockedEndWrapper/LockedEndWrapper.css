@@ -6,18 +6,21 @@
   height: 100%;
   position: sticky;
   right: 0;
-  box-shadow: -4px 0px 14px -6px rgba(0, 0, 0, 0.2);
 }
 
 .data-grid .locked-end-wrapper.type-header {
   will-change: transform;
 }
 
-.data-grid .locked-end-wrapper.type-header::before {
-  content: "";
+.data-grid .locked-end-wrapper::after {
+  box-shadow: inset -10px 0 8px -8px rgb(5 5 5 / 15%);
   position: absolute;
-  height: 100%;
-  width: 3.5px;
-  left: -2px;
-  z-index: 1;
+  top: 0;
+  bottom: -1px;
+  left: 0;
+  width: 30px;
+  transform: translateX(-100%);
+  transition: box-shadow 0.3s;
+  content: "";
+  pointer-events: none;
 }

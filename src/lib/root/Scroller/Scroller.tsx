@@ -1,19 +1,22 @@
 import React from "react";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ScrollerProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import "./Scroller.css";
 
 function Scroller(
-  { minWidth, minHeight, emptySpacerVisible, className, ...props }: ScrollerProps,
+  { minWidth, minHeight, emptySpacerVisible, verticalScrollbarWidth, className, ...props }: ScrollerProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
+  const { virtualizationEnabled } = useDataGridStaticContext();
+
   return (
     <div className={cs("scroller", className)} ref={ref} {...props}>
       {emptySpacerVisible && (
         <div
           className="empty-spacer"
           style={{
-            minWidth: minWidth,
+            minWidth: minWidth + verticalScrollbarWidth,
           }}
         />
       )}
@@ -26,12 +29,14 @@ function Scroller(
           }}
         >
           {props.children}
-          <div
-            style={{
-              minHeight: minHeight,
-              minWidth: minWidth,
-            }}
-          />
+          {virtualizationEnabled && (
+            <div
+              style={{
+                minHeight: minHeight,
+                minWidth: minWidth,
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

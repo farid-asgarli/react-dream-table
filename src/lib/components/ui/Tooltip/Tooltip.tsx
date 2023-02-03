@@ -40,7 +40,7 @@ export default function Tooltip({ children, enabled }: { children: JSX.Element; 
   return (
     <>
       <Fade visible={tooltipVisible}>
-        <div className="table-tooltip">{children}</div>
+        <div className="data-grid-tooltip">{children}</div>
       </Fade>
       {childrenWithProps}
     </>

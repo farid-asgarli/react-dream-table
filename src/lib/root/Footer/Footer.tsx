@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo } from "react";
 import Fade from "../../components/animations/Fade/Fade";
+import ButtonPrimary from "../../components/ui/Buttons/ButtonPrimary/ButtonPrimary";
 import { Select } from "../../components/ui/Select/Select";
 import Skeleton from "../../components/ui/Skeleton/Skeleton";
-import { useDataGridContext } from "../../context/DataGridContext";
-import { TableIconsType, TableLocalizationType } from "../../types/Table";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
+import { DataGridIconsDefinition, DataGridLocalizationDefinition } from "../../types/DataGrid";
 import type { FooterProps } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import "./Footer.css";
@@ -15,7 +16,7 @@ interface RenderPaginationButtonProps {
   disabled?: boolean;
   title?: string;
   type?: "numeric" | "ff-left" | "ff-right";
-  icons: TableIconsType;
+  icons: DataGridIconsDefinition;
 }
 
 export default function Footer<DataType>({
@@ -26,12 +27,13 @@ export default function Footer<DataType>({
   optionsMenu,
   progressReporters,
   columnVisibilityOptions,
+  toggleFullScreenMode,
   selectedRows,
   loading,
   style,
   ...props
 }: FooterProps<DataType> & React.HTMLAttributes<HTMLDivElement>) {
-  const { localization, dimensions, paginationDefaults, icons } = useDataGridContext();
+  const { localization, dimensions, paginationDefaults, icons } = useDataGridStaticContext();
 
   const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
 
@@ -101,9 +103,8 @@ export default function Footer<DataType>({
           <div className={"pagination-data-count"}>
             {columnVisibilityOptions?.active && (
               <div className={"settings"}>
-                <button
-                  type="button"
-                  title={localization.columnVisibilityTitle}
+                <ButtonPrimary
+                  title={localization.settingsMenuTitle}
                   onClick={(e) =>
                     optionsMenu.displayOptionsMenu({
                       data: {},
@@ -116,11 +117,15 @@ export default function Footer<DataType>({
                   }
                   className={cs("settings-button", optionsMenu.isMenuVisible && "active")}
                 >
-                  <icons.Settings className={"settings-icon"} />
-                </button>
+                  <icons.Settings className={"button-icon"} />
+                </ButtonPrimary>
               </div>
             )}
-
+            {columnVisibilityOptions?.active === false && toggleFullScreenMode && (
+              <ButtonPrimary title={localization.fullScreenToggle} onClick={toggleFullScreenMode}>
+                <icons.FullScreen className={"button-icon"} />
+              </ButtonPrimary>
+            )}
             {renderDataCount}
           </div>
           <div className={"pagination-page-numbers"}>
@@ -157,8 +162,8 @@ function renderPaginationButtons<DataType>({
   paginationProps: FooterProps<DataType>["paginationProps"];
   updatePaginationProps: FooterProps<DataType>["updatePaginationProps"];
   onPaginationChange: FooterProps<DataType>["onPaginationChange"];
-  localization: TableLocalizationType;
-  icons: TableIconsType;
+  localization: DataGridLocalizationDefinition;
+  icons: DataGridIconsDefinition;
 }) {
   function updateCurrentPage(navigateTo: number) {
     if (paginationProps.dataCount && paginationProps.pageSize) {
@@ -271,8 +276,7 @@ function renderPaginationButtons<DataType>({
       ...buttons.map((btn) =>
         renderButton({
           navigateTo: btn.navigateTo,
-          component:
-            btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
+          component: btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
           type: btn.type,
           icons,
         })

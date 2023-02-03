@@ -62,30 +62,18 @@
 .data-grid.bordered .cell {
   border-bottom: 1px solid var(--color-line);
 }
+
+.data-grid .locked-end-wrapper,
 .data-grid.bordered .cell:not(:first-child) {
   border-left: 1px solid var(--color-line);
 }
+
 .data-grid.bordered .cell:last-child {
   border-right: 1px solid var(--color-line);
 }
 
 .data-grid .header-wrapper-fill {
-  /* border-bottom: 1px solid var(--color-line); */
-  /* border-top: 1px solid var(--color-line); */
   background: var(--color-bg);
-}
-
-.data-grid .locked-end-wrapper .cell:first-child::before,
-.data-grid .locked-start-wrapper .cell:last-child::after,
-.data-grid .locked-start-wrapper.type-header::after,
-.data-grid .locked-end-wrapper.type-header::before {
-  background-color: var(--color-line);
-  border-left: 1px solid var(--color-line);
-  border-right: 1px solid var(--color-line);
-}
-
-.data-grid .column-resize-handle {
-  background: var(--color-hover);
 }
 
 .data-grid .column-header:focus .column-header-unlocked {
@@ -102,17 +90,9 @@
   color: var(--color-text);
 }
 
-.data-grid .row:focus {
-  outline: 2px solid var(--color-hover);
-}
-
 .data-grid .row.active .row-cell-wrap .cell,
 .data-grid .row.selected .row-cell-wrap .cell {
   background: var(--color-hover);
-}
-
-.data-grid .row.active .row-cell-wrap {
-  border-color: var(--color-primary);
 }
 
 .data-grid .column-header.dragging {

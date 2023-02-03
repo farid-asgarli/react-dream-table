@@ -3,7 +3,6 @@
   right: -2.5px;
   z-index: 99;
   height: 100%;
-  /*  */
   bottom: 41px;
   user-select: none;
   position: absolute;
@@ -11,15 +10,24 @@
   cursor: ew-resize;
 }
 
-.data-grid .column-resizer.active .column-resize-handle,
-.data-grid .column-resizer:hover .column-resize-handle {
-  visibility: visible;
-}
-
 .data-grid .column-resize-handle {
+  height: 100%;
+  background: var(--color-hover);
+  opacity: 0;
+  transition: 0.2s ease-in-out opacity, 0.2s ease-in-out background;
   width: 5px;
   z-index: 0;
-  visibility: hidden;
-  height: 100%;
-  position: relative;
+}
+
+.data-grid .column-resize-handle:not(.active):hover,
+.data-grid .column-resize-handle.active {
+  opacity: 1;
+}
+
+.data-grid .column-resize-handle.active.out-of-bounds {
+  background-color: #ff000055;
+}
+
+.data-grid .column-resize-handle.active {
+  background: var(--color-hover);
 }

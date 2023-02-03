@@ -1,291 +1,255 @@
-import { throttle } from "lodash";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import EmptyTable from "../../components/ui/EmptyTable/EmptyTable";
-import LoadingOverlay from "../../components/ui/LoadingOverlay/LoadingOverlay";
-import LoadingSkeleton from "../../components/ui/LoadingSkeleton/LoadingSkeleton";
-import { useDataGridContext } from "../../context/DataGridContext";
-// import { useDebounce } from "../../hooks/use-debounce/use-debounce";
-import { DataGridProps } from "../../types/Elements";
-import { cs } from "../../utils/ConcatStyles";
-import Body from "../Body/Body";
-import ColumnLayout from "../ColumnLayout/ColumnLayout";
-import Footer from "../Footer/Footer";
-import HeaderLayout from "../HeaderLayout/HeaderLayout";
-import HeaderWrapper, { HeaderWrapperRef } from "../HeaderWrapper/HeaderWrapper";
-import List from "../List/List";
-import ScrollContainer from "../ScrollContainer/ScrollContainer";
-import Scroller from "../Scroller/Scroller";
-import ViewContainer from "../ViewContainer/ViewContainer";
-import "./DataGrid.css";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { DataGridProps, DataGridReference } from "../../types/DataGrid";
+import { useCallback, useEffect, useImperativeHandle, useMemo } from "react";
+import { DefaultDataGridDimensions } from "../../static/dimensions";
+import { DefaultDataGridLocalization } from "../../static/localization";
+import { DefaultDataGridTheme } from "../../static/theme";
+import { ColumnDefinitionExtended, DataGridStyleProps } from "../../types/Utils";
+import { DefaultDataGridIcons } from "../../static/icons";
+import { lightenColor } from "../../utils/Coloring";
+import useDataGridTools from "../../logic/tools/datagrid-tools";
+import DataGridStaticContext from "../../context/DataGridStaticContext";
+import DataGridFactory from "../DataGridFactory/DataGridFactory";
+import { useDataManagement } from "../../logic/data-management/dataManagement";
+import useActionsMenuFactory from "../../logic/tools/actions-menu-factory";
+import { renderHeaderActionsMenu } from "../ActionMenus/HeaderActionMenu/HeaderActionMenu";
+import { renderFilterFnsActionsMenu } from "../ActionMenus/HeaderActionMenu/FilterFnsMenu";
+import "../../styles/theming.css";
 
-function DataGrid<DataType>({
-  theme,
-  tp,
-  tableTools,
-  dataTools,
-  pinnedColumns,
-  totalColumnsWidth,
-  columnsInUse,
-  initiateColumns,
-  children,
-  displayDataActionsMenu,
-  displayHeaderActionsMenu,
-  optionsMenu,
-  filterFnsMenu,
-  ...props
-}: DataGridProps<DataType>) {
-  const { dimensions, striped } = useDataGridContext();
+function DataGrid<DataType>(tp: DataGridProps<DataType>) {
+  const dimensions = useMemo(
+    () => ({
+      ...DefaultDataGridDimensions,
+      ...tp.dimensions,
+    }),
+    [tp.dimensions]
+  );
+  const localization = useMemo(() => ({ ...DefaultDataGridLocalization, ...tp.localization }), [tp.localization]);
+  const theming = useMemo(() => {
+    const themingToInitialize = { ...DefaultDataGridTheme, ...tp.theming };
+    return {
+      ...themingToInitialize,
+      hoverColor: lightenColor(themingToInitialize.primaryColor),
+    };
+  }, [tp.theming]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const icons = useMemo(() => ({ ...DefaultDataGridIcons, ...tp.icons }), []);
 
-  const dataGridRef = useRef<HTMLDivElement | null>(null);
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const headerWrapperRef = useRef<HeaderWrapperRef | null>(null);
-  const viewContainerRef = useRef<HTMLDivElement | null>(null);
+  const defaultStyling: DataGridStyleProps = {
+    "--color-primary": theming.primaryColor,
+    "--border-radius-lg": theming.borderRadiusLg,
+    "--border-radius-md": theming.borderRadiusMd,
+    "--border-radius-sm": theming.borderRadiusSm,
+    "--box-shadow-main": theming.boxShadow,
+    "--color-hover": theming.hoverColor,
+    "--scrollbar-width": `${dimensions.defaultScrollbarWidth}px`,
+    ...tp.style,
+  };
 
-  const [layoutDimensions, setLayoutDimensions] = useState<{
-    containerWidth: number;
-    containerHeight: number;
-  }>({
-    containerWidth: 0,
-    containerHeight: 0,
+  const tableTools = useDataGridTools({
+    tableProps: tp,
+    dimensions,
   });
-  const [topScrollPosition, setTopScrollPosition] = useState<number>(0);
-  // const [isScrolling, setIsScrolling] = useState<boolean>(false);
-  // const virtualListHeight = (dataGridRef.current?.clientHeight ?? 0) - (headerLayoutRef.current?.clientHeight ?? 0);
-  const virtualListHeight = useMemo(
-    () =>
-      layoutDimensions.containerHeight -
-      (dimensions.defaultHeadRowHeight + dimensions.defaultHeaderFilterHeight + dimensions.defaultFooterHeight),
+
+  const dataTools = useDataManagement<DataType>(tp.serverSide !== undefined ? "server" : "client", {
+    columns: tp.columns,
+    data: tp.data,
+    dataCount: tp.serverSide?.pagination?.dataCount,
+    paginationDefaults: tp.pagination?.defaults,
+    serverSide: tp.serverSide,
+    sortingProps: tp.sorting,
+  });
+  const arePinnedColumnsInUse = useMemo(() => {
+    return tp.pinnedColumns?.active && (tableTools.pinnedColumns.left.length > 0 || tableTools.pinnedColumns?.right.length > 0);
+  }, [tableTools.pinnedColumns.left.length, tableTools.pinnedColumns?.right.length, tp.pinnedColumns?.active]);
+
+  function initiateColumns() {
+    let columnsAggregated: ColumnDefinitionExtended<DataType>[] = [];
+    if (tp.selectableRows?.active) {
+      columnsAggregated.push({
+        key: "select",
+        type: "select",
+        width: dimensions.selectionMenuColumnWidth,
+      });
+    }
+
+    if (tp.expandableRows?.active) {
+      columnsAggregated.push({
+        key: "expand",
+        type: "expand",
+        width: dimensions.expandedMenuColumnWidth,
+      });
+    }
+
+    const dataColumns = tp.columns
+      .filter((col) => tableTools.visibleColumns.has(col.key))
+      .sort((a, b) => tableTools.columnOrder.indexOf(a.key) - tableTools.columnOrder.indexOf(b.key))
+      .map((col) => ({
+        ...col,
+        width: tableTools.columnDimensions[col.key as string] ?? dimensions.defaultColumnWidth,
+        type: "data",
+      })) as ColumnDefinitionExtended<DataType>[];
+
+    columnsAggregated = [...columnsAggregated, ...dataColumns];
+    if (tp.rowActionsMenu?.active) {
+      columnsAggregated.push({
+        key: "actions",
+        type: "actions",
+        width: dimensions.actionsMenuColumnWidth,
+      });
+    }
+    return columnsAggregated;
+  }
+
+  const totalColumns = useMemo<ColumnDefinitionExtended<DataType>[]>(() => {
+    const columnsAggregated: ColumnDefinitionExtended<DataType>[] = initiateColumns();
+    if (!arePinnedColumnsInUse) return columnsAggregated;
+    return columnsAggregated.map((col) => ({
+      ...col,
+      pinned: tableTools.pinnedColumns.left.includes(col.key)
+        ? "left"
+        : tableTools.pinnedColumns.right.includes(col.key)
+        ? "right"
+        : undefined,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    tp.selectableRows?.active,
+    tp.expandableRows?.active,
+    tp.rowActionsMenu?.active,
+    tp.columns,
+    arePinnedColumnsInUse,
+    tableTools.visibleColumns,
+    tableTools.columnOrder,
+    tableTools.columnDimensions,
+    tableTools.pinnedColumns?.left,
+    tableTools.pinnedColumns?.right,
+    dimensions,
+  ]);
+
+  const columnsInUse = useMemo(() => {
+    let columns: ColumnDefinitionExtended<DataType>[];
+    if (!arePinnedColumnsInUse) columns = totalColumns;
+    else columns = totalColumns.filter((col) => !col.pinned);
+    return {
+      columns,
+      totalWidth: columns.reduce((prev, curr) => prev + curr.width, 0),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arePinnedColumnsInUse, totalColumns]);
+
+  const pinnedColumnsInUse = useMemo(() => {
+    if (!arePinnedColumnsInUse) return;
+    const leftColumns = totalColumns.filter((x) => x.pinned === "left");
+    const rightColumns = totalColumns.filter((x) => x.pinned === "right");
+    const leftWidth = leftColumns.reduce((prev, curr) => prev + curr.width, 0);
+    const rightWidth = rightColumns.filter((x) => x.pinned === "right").reduce((prev, curr) => prev + curr.width, 0);
+
+    return {
+      leftColumns,
+      rightColumns,
+      leftWidth: leftWidth,
+      rightWidth: rightWidth,
+      totalWidth: leftWidth + rightWidth,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arePinnedColumnsInUse, totalColumns]);
+
+  const tbodyInnerWidth = useMemo(() => totalColumns.reduce((prev, curr) => prev + curr.width, 0), [totalColumns]);
+
+  const filterFnsMenuContent = useCallback(
+    (key: string, hideMenu: () => void) => renderFilterFnsActionsMenu(key, hideMenu, dataTools, localization),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataTools.currentFilterFns, localization]
+  );
+
+  const headerMenuContent = useCallback(
+    (key: string, hideMenu: () => void) => renderHeaderActionsMenu(key, hideMenu, tableTools, dataTools, tp, localization, icons),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      layoutDimensions.containerHeight,
-      dimensions.defaultFooterHeight,
-      dimensions.defaultHeadRowHeight,
-      dimensions.defaultHeaderFilterHeight,
+      tableTools.pinnedColumns,
+      tableTools.updateColumnVisibility,
+      tableTools.updatePinnedColumns,
+      tp.columnVisibilityOptions?.active,
+      tp.pinnedColumns?.active,
     ]
   );
 
-  function onWindowResize() {
-    if (dataGridRef.current?.clientHeight && dataGridRef.current.clientWidth) {
-      setLayoutDimensions({
-        containerHeight: dataGridRef.current.clientHeight,
-        containerWidth:
-          dataGridRef.current.clientWidth -
-          (pinnedColumns?.totalWidth ?? 0) -
-          // padding-left of expand width
-          10 -
-          // padding-left ::before
-          20 -
-          // vertical scrollbar-width),
-          dimensions.defaultScrollbarWidth,
-      });
-    }
-  }
-
-  // const scrollPositionDebounced = useDebounce(topScrollPosition, 500);
-
-  const updateScrollPositionY = React.useMemo(
-    () =>
-      throttle(
-        (top: number) => {
-          // setIsScrolling(true);
-          setTopScrollPosition(top);
-        },
-        50,
-        { leading: false }
-      ),
-    []
+  const [dataActionsMenu, _, displayDataActionsMenu] = useActionsMenuFactory(
+    (props, hide) => tp.rowActionsMenu?.render?.(props.data as any, tableTools.selectedRows, dataTools.paginationProps, hide) ?? [],
+    undefined,
+    tp.rowActionsMenu?.onOpen,
+    tp.rowActionsMenu?.onHide
   );
 
-  const verticalScrollbarWidth = useMemo(
-    () =>
-      // horizontal scroll olanda tersine olmalidi mentiq
-      scrollerRef.current?.scrollWidth! > scrollerRef.current?.clientWidth! &&
-      scrollerRef.current?.scrollHeight! > scrollerRef.current?.clientHeight!
-        ? dimensions.defaultScrollbarWidth
-        : 0,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [scrollerRef.current?.scrollHeight, scrollerRef.current?.scrollWidth]
+  const [headerActionsMenu, __, displayHeaderActionsMenu] = useActionsMenuFactory((props, hide) =>
+    headerMenuContent(props.identifier as string, hide)
   );
 
-  // useEffect(() => {
-  //   setIsScrolling(false);
-  // }, [scrollPositionDebounced]);
+  const [filterFnsMenu, filterFnsMenuProps, displayFilterFnsMenu] = useActionsMenuFactory(
+    (props, hide) => filterFnsMenuContent(props.identifier as string, hide),
+    {
+      className: "filter-fns-menu",
+    }
+  );
+
+  useImperativeHandle(
+    tp.dataGridApiRef,
+    (): DataGridReference<DataType> => ({
+      getCurrentData: () => dataTools.dataWithoutPagination,
+      getCurrentColumns: () => totalColumns,
+      getCurrentFilters: () => dataTools.currentFilters,
+      resetCurrentFilters: dataTools.resetCurrentFilters,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataTools.currentFilters, dataTools.dataWithoutPagination, totalColumns]
+  );
 
   useEffect(() => {
-    autoAdjustColWidth();
-
-    onWindowResize();
-    window.addEventListener("resize", onWindowResize);
-    return () => {
-      window.removeEventListener("resize", onWindowResize);
-    };
+    if (tableTools.expandedRowKeys.size > 0) tableTools.closeExpandedRows();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (pinnedColumns?.rightWidth) {
-      headerWrapperRef.current?.updateLockedEndTransform(
-        (scrollerRef.current?.scrollLeft ?? 0) - verticalScrollbarWidth
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pinnedColumns?.rightWidth, verticalScrollbarWidth]);
-
-  useEffect(() => {
-    if (tp.data) tableTools.updateSelectedRowsMultiple(new Set());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tp.data]);
-
-  function onBodyScroll(e: React.UIEvent<HTMLDivElement>) {
-    const leftScroll = e.currentTarget.scrollLeft;
-    const topScroll = e.currentTarget.scrollTop;
-
-    // viewContainerRef.current!.style.transform = `translate3d(${-leftScroll}px, ${-topScroll}px, 0px)`;
-
-    headerWrapperRef.current?.updateHeaderTransform(-leftScroll);
-    if (pinnedColumns?.leftWidth) {
-      headerWrapperRef.current?.updateLockedStartTransform(leftScroll);
-    }
-    //#1 -(e.currentTarget.scrollWidth - e.currentTarget.clientWidth - leftScroll)
-    //#2 (leftScroll - verticalScrollbarWidth)
-
-    if (pinnedColumns?.rightWidth)
-      headerWrapperRef.current?.updateLockedEndTransform(leftScroll - verticalScrollbarWidth);
-
-    if (topScroll !== topScrollPosition) {
-      updateScrollPositionY(topScroll);
-    }
-  }
-
-  function onColumnHeaderFocus(e: React.FocusEvent<HTMLDivElement>, colWidth: number) {
-    const colOffset = e.currentTarget.offsetLeft;
-
-    const totalWidth = dataGridRef.current?.clientWidth;
-    if (colOffset > totalWidth! - colWidth - (pinnedColumns?.rightWidth ?? 0))
-      scrollerRef.current?.scrollBy({
-        left: colWidth,
-        behavior: "smooth",
-      });
-    else if (colOffset - colWidth - (pinnedColumns?.leftWidth ?? 0) < 0)
-      scrollerRef.current?.scrollTo({
-        left: 0,
-        behavior: "smooth",
-      });
-  }
-
-  function autoAdjustColWidth() {
-    if (!tp.autoAdjustColWidthOnInitialRender) return;
-    const columnsToCalculate = initiateColumns();
-    const sum = columnsToCalculate.reduce((width, col) => width + col.width, 0);
-    const containerWidth = dataGridRef.current?.clientWidth;
-    if (containerWidth && containerWidth > sum) {
-      const dataColumns = columnsToCalculate.filter((x) => x.type === "data");
-      const difference = containerWidth - sum;
-      const sharedWidth = (difference - dimensions.defaultScrollbarWidth) / dataColumns.length;
-      const dimensionsToAssign: Record<string, number> = {};
-      dataColumns.forEach((col) => (dimensionsToAssign[col.key] = col.width + sharedWidth));
-      tableTools.updateColumnWidthMultiple(dimensionsToAssign);
-    }
-  }
+  }, [dataTools.data]);
 
   return (
-    <div
-      ref={dataGridRef}
-      data-theme={theme}
-      className={cs(
-        "data-grid",
-        theme === "dark" && "theme-dark",
-        striped && "striped",
-        tp.isHoverable && "hoverable",
-        tp.borderedCell !== false && "bordered"
-      )}
-      {...props}
+    <DataGridStaticContext.Provider
+      value={{
+        localization: localization,
+        dimensions: dimensions,
+        theming: theming,
+        icons: icons,
+        optionsMenuColumns: tp.columnVisibilityOptions?.defaultValues ?? tp.columns,
+        paginationDefaults: tp.pagination?.defaults,
+        striped: tp.striped !== false,
+        animationProps: {
+          duration: 300,
+        },
+        isRowClickable: !!tp.onRowClick,
+        virtualizationEnabled: tp.virtualization?.active === true,
+      }}
     >
-      {children}
-      <Body>
-        <ColumnLayout style={{ height: layoutDimensions.containerHeight }}>
-          <HeaderLayout>
-            <HeaderWrapper
-              onColumnHeaderFocus={onColumnHeaderFocus}
-              pinnedColumns={pinnedColumns as any}
-              columnsInUse={columnsInUse as any}
-              totalColumnsWidth={totalColumnsWidth}
-              verticalScrollbarWidth={verticalScrollbarWidth}
-              tp={tp as any}
-              tableTools={tableTools as any}
-              ref={headerWrapperRef}
-              dataTools={dataTools as any}
-              headerActionsMenu={{
-                displayHeaderActionsMenu: displayHeaderActionsMenu as any,
-              }}
-              filterFnsMenu={filterFnsMenu as any}
-            />
-          </HeaderLayout>
-          <List
-            style={{
-              height: virtualListHeight,
-            }}
-          >
-            <LoadingOverlay
-              visible={
-                dataTools.progressReporters.has("filter-select") ||
-                dataTools.progressReporters.has("pagination") ||
-                dataTools.progressReporters.has("sort")
-              }
-            />
-            <EmptyTable visible={!tp.loading && (!dataTools.data || dataTools.data?.length === 0)} />
-            {tp.loading ? (
-              <LoadingSkeleton containerHeight={virtualListHeight > 0 ? virtualListHeight : 0} />
-            ) : (
-              <ScrollContainer>
-                <Scroller
-                  ref={scrollerRef}
-                  onScroll={onBodyScroll}
-                  minWidth={totalColumnsWidth}
-                  minHeight={
-                    (dataTools.data?.length ?? 0) *
-                      (dimensions.defaultDataRowHeight +
-                        // To address bordered-cell (border-bottom, see ViewContainer and theming.css).
-                        1) +
-                    tableTools.expandedRowKeys.size * dimensions.defaultExpandPanelHeight
-                  }
-                  emptySpacerVisible={!tp.loading && (!dataTools.data || dataTools.data?.length === 0)}
-                  // className={cs(isScrolling && "scrolling-active")}
-                >
-                  <ViewContainer
-                    columnsInUse={columnsInUse as any}
-                    pinnedColumns={pinnedColumns as any}
-                    topScrollPosition={topScrollPosition}
-                    tableTools={tableTools as any}
-                    dataTools={dataTools as any}
-                    tp={tp as any}
-                    totalColumnsWidth={totalColumnsWidth}
-                    containerHeight={virtualListHeight}
-                    containerWidth={layoutDimensions.containerWidth}
-                    ref={viewContainerRef}
-                    displayActionsMenu={displayDataActionsMenu as any}
-                  />
-                </Scroller>
-              </ScrollContainer>
-            )}
-          </List>
-          <Footer
-            columnVisibilityOptions={tp.columnVisibilityOptions}
-            paginationProps={{
-              ...dataTools.paginationProps,
-              ...(!tp.serverSide ? { dataCount: dataTools.dataWithoutPagination?.length } : undefined),
-            }}
-            progressReporters={dataTools.progressReporters}
-            selectedRows={tableTools.selectedRows}
-            optionsMenu={{
-              displayOptionsMenu: optionsMenu.displayOptionsMenu,
-              isMenuVisible: optionsMenu.isOptionsMenuVisible,
-            }}
-            loading={tp.loading}
-            updatePaginationProps={dataTools.updatePaginationProps}
-          />
-        </ColumnLayout>
-      </Body>
-    </div>
+      <DataGridFactory
+        theme="light"
+        columnsInUse={columnsInUse}
+        pinnedColumns={pinnedColumnsInUse}
+        totalColumnsWidth={tbodyInnerWidth}
+        tp={tp}
+        style={defaultStyling}
+        initiateColumns={initiateColumns}
+        dataTools={dataTools}
+        tableTools={tableTools}
+        displayDataActionsMenu={displayDataActionsMenu}
+        displayHeaderActionsMenu={displayHeaderActionsMenu}
+        filterFnsMenu={{
+          displayFilterFnsMenu,
+          activeFilterMenuKey: filterFnsMenuProps.identifier as string,
+        }}
+      >
+        {tp.rowActionsMenu?.active && dataActionsMenu}
+        {tp.headerActionsMenu?.active !== false && headerActionsMenu}
+        {filterFnsMenu}
+      </DataGridFactory>
+    </DataGridStaticContext.Provider>
   );
 }
 export default DataGrid;

@@ -12,6 +12,7 @@
   align-items: center;
   cursor: wait;
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-md));
+  /* pointer-events: none; */
 }
 .data-grid .loading-overlay .content {
   display: flex;

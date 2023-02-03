@@ -1,6 +1,6 @@
 import dayjs, { Dayjs } from "dayjs";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useDataGridContext } from "../../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../../context/DataGridStaticContext";
 import { StringExtensions } from "../../../../extensions/String";
 import { useDetectOutsideClick } from "../../../../hooks/use-detect-outside-click/use-detect-outside-click";
 import { cs } from "../../../../utils/ConcatStyles";
@@ -31,13 +31,11 @@ const DatePicker = ({
   const inputCard = useRef<HTMLInputElement | null>(null);
 
   function matchInput(value: string) {
-    const matchValue = value.replace(/\D/g, "").match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
+    const matchValue = value.replace(/\D/g, StringExtensions.Empty).match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
     if (matchValue) {
       const valueToAssign = !matchValue[2]
         ? matchValue[1]
-        : `${matchValue[1]}${dateDelimiter}${matchValue[2]}${`${
-            matchValue[3] ? `${dateDelimiter}${matchValue[3]}` : ""
-          }`}`;
+        : `${matchValue[1]}${dateDelimiter}${matchValue[2]}${`${matchValue[3] ? `${dateDelimiter}${matchValue[3]}` : ""}`}`;
       return valueToAssign;
     }
   }
@@ -59,7 +57,7 @@ const DatePicker = ({
 
   const handleBlur = () => {
     if (!(inputValue.length === 0 || (inputValue.length === 10 && validateDate(inputValue)))) {
-      setInputValue("");
+      setInputValue(StringExtensions.Empty);
       onChange?.(null);
     }
     setFocused(false);
@@ -73,10 +71,8 @@ const DatePicker = ({
     });
   };
 
-  useEffect(() => {
-    handleChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => handleChange(), [inputValue]);
 
   const validateDate = (val: string) => {
     const parsedDate = new Date(val);
@@ -93,7 +89,7 @@ const DatePicker = ({
   const pickerRef = useRef<HTMLDivElement | null>(null);
 
   useDetectOutsideClick(pickerRef, () => setPickerVisible(false));
-  const { dimensions, icons } = useDataGridContext();
+  const { dimensions, icons } = useDataGridStaticContext();
 
   return (
     <div className={cs("input-wrapper ", "date-picker", focused && "focused")}>
@@ -107,10 +103,7 @@ const DatePicker = ({
         {...props}
         onChange={handleChange}
       />
-      <button
-        className={cs("util-button", pickerVisible && "active")}
-        onClick={() => setPickerVisible((prev) => !prev)}
-      >
+      <button className={cs("util-button", pickerVisible && "active")} onClick={() => setPickerVisible((prev) => !prev)}>
         <icons.Date className="input-icon" />
       </button>
       <Fade className="data-grid-dp main-wrapper" visible={pickerVisible}>

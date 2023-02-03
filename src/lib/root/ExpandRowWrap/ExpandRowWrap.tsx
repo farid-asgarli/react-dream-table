@@ -1,27 +1,32 @@
 import Fade from "../../components/animations/Fade/Fade";
-import { useDataGridContext } from "../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ExpandRowProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import "./ExpandRowWrap.css";
 
-export default function ExpandRowWrap({ expandRowProps, className, style, ...props }: ExpandRowProps) {
-  const { dimensions, animationProps } = useDataGridContext();
+export default function ExpandRowWrap({
+  expandRowProps: { children, isRowExpanded, showSeparatorLine, basicColumnsWidth, leftOffset },
+  className,
+  style,
+  ...props
+}: ExpandRowProps) {
+  const { dimensions, animationProps, virtualizationEnabled } = useDataGridStaticContext();
 
   return (
-    <Fade duration={animationProps.duration} visible={expandRowProps?.isRowExpanded}>
+    <Fade duration={animationProps.duration} visible={isRowExpanded}>
       <div
         style={{
           ...style,
-          left: expandRowProps?.leftOffset,
-          width: expandRowProps?.basicColumnsWidth,
+          left: leftOffset,
+          width: basicColumnsWidth,
           top: dimensions.defaultDataRowHeight,
-          height: dimensions.defaultExpandPanelHeight,
+          height: virtualizationEnabled ? dimensions.defaultExpandPanelHeight : undefined,
         }}
-        className={cs("expand-row-wrap", expandRowProps?.showSeperatorLine && "show-seperator", className)}
+        className={cs("expand-row-wrap", showSeparatorLine && "show-seperator", className)}
         {...props}
       >
         <div className="expand-row-wrap-inner">
-          <div className="content">{expandRowProps?.children}</div>
+          <div className="content">{children}</div>
         </div>
       </div>
     </Fade>

@@ -1,21 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+
+/**
+ * Resizing hook to adjust width.
+ * Dependent on element refs and is index based.
+ * Not a performant solution, but appeals visually.
+ * Causes stutter and frame drops when the row count exceeds 30.
+ */
+
 import { useCallback, useEffect, useState } from "react";
 
-interface ColumnResizerHookProps {
+interface ColumnResizeHookProps {
   headerDataRefs: Map<string, HTMLDivElement | null>;
   onColumnResize?(key: string, newWidth: number): void;
   minColumnResizeWidth?: number | undefined;
   maxColumnResizeWidth?: number | undefined;
 }
 
-export function useColumnResizer(
+export function useColumnResize(
   containerRef: React.RefObject<HTMLDivElement>,
-  {
-    headerDataRefs,
-    onColumnResize,
-    minColumnResizeWidth = 50,
-    maxColumnResizeWidth = Infinity,
-  }: ColumnResizerHookProps,
+  { headerDataRefs, onColumnResize, minColumnResizeWidth = 50, maxColumnResizeWidth = Infinity }: ColumnResizeHookProps,
   enabled: boolean = false
 ) {
   const [activeIndex, setActiveIndex] = useState<string>();

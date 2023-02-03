@@ -2,7 +2,6 @@
   width: 280px;
   border-radius: calc(var(--border-radius-lg) + var(--border-radius-sm));
   padding: 20px;
-  padding-top: 0;
   background-color: white;
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   overflow: hidden;
@@ -16,6 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 5px;
+  margin-bottom: 20px;
 }
 
 .data-grid-dp.main-wrapper .calendar-header-wrapper h3 {
@@ -75,10 +76,7 @@
 }
 .data-grid-dp.main-wrapper .arrows-wrapper {
   display: flex;
-}
-.data-grid-dp.main-wrapper .calendar-icon {
-  fill: #000;
-  width: 20px;
+  gap: 5px;
 }
 
 @keyframes animate-right {

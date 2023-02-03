@@ -4,7 +4,7 @@ import Fade from "../../animations/Fade/Fade";
 import { cs } from "../../../utils/ConcatStyles";
 import "./Select.css";
 import Spinner from "../Spinner/Spinner";
-import { useDataGridContext } from "../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 
 type ConditionalProps<OptionValue> =
   | {
@@ -23,7 +23,7 @@ type ConditionalProps<OptionValue> =
       onChange?: (val: OptionValue) => void;
     };
 
-type TableSelectProps<OptionValue> = ConditionalProps<OptionValue> & {
+type DataGridSelectProps<OptionValue> = ConditionalProps<OptionValue> & {
   options: {
     value: OptionValue;
     children: React.ReactNode;
@@ -34,7 +34,7 @@ type TableSelectProps<OptionValue> = ConditionalProps<OptionValue> & {
   attachmentType?: "fixed" | "absolute" | undefined;
 };
 
-type TableSelectOption<OptionValue> = HTMLAttributes<HTMLDivElement> & {
+type DataGridSelectOption<OptionValue> = HTMLAttributes<HTMLDivElement> & {
   value: OptionValue;
   children: React.ReactNode;
   checkIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element;
@@ -49,9 +49,9 @@ export const Select = <OptionValue extends any>({
   clearable,
   loading,
   attachmentType,
-}: TableSelectProps<OptionValue>) => {
+}: DataGridSelectProps<OptionValue>) => {
   const [optionsBodyVisible, setOptionsBodyVisible] = useState<boolean>(false);
-  const { localization, icons } = useDataGridContext();
+  const { localization, icons } = useDataGridStaticContext();
 
   function handleSelectChange(val: OptionValue) {
     if (!multiple) {
@@ -94,9 +94,7 @@ export const Select = <OptionValue extends any>({
   }
 
   const renderSelectedValues = useMemo(() => {
-    const elements = options
-      .filter((x) => (multiple ? value.includes(x.value) : x.value === value))
-      .map((x) => x.children);
+    const elements = options.filter((x) => (multiple ? value.includes(x.value) : x.value === value)).map((x) => x.children);
     if (elements.length === 0) return <span className="select-placeholder">{localization.selectPlaceholder}</span>;
     return joinNodes(elements);
   }, [localization.selectPlaceholder, multiple, options, value]);
@@ -106,11 +104,7 @@ export const Select = <OptionValue extends any>({
       <div className={cs("select-header", optionsBodyVisible && "active")} onClick={handleVisibility}>
         <div className="selected-value">{renderSelectedValues}</div>
         <div className="select-icon-wrapper">
-          {optionsBodyVisible ? (
-            <icons.ChevronUp className="select-icon" />
-          ) : (
-            <icons.ChevronDown className="select-icon" />
-          )}
+          {optionsBodyVisible ? <icons.ChevronUp className="select-icon" /> : <icons.ChevronDown className="select-icon" />}
         </div>
       </div>
       <Fade visible={optionsBodyVisible}>
@@ -151,7 +145,7 @@ Select.Option = <OptionValue extends any>({
   selected,
   checkIcon: CheckIcon,
   ...props
-}: TableSelectOption<OptionValue> & {
+}: DataGridSelectOption<OptionValue> & {
   selected?: boolean;
 }) => {
   return (

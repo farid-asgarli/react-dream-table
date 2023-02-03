@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { TableProps } from "../../types/Table";
-import { TableRowKeyType } from "../../types/Utils";
+import { DataGridProps } from "../../types/DataGrid";
+import { DataGridRowKeyDefinition } from "../../types/Utils";
 
-export default function useExpandedRows<DataType>(tp: TableProps<DataType>) {
-  const [expandedRowKeys, setExpandedRowKeys] = useState<Set<TableRowKeyType>>(new Set());
+export default function useExpandedRows<DataType>(tp: DataGridProps<DataType>) {
+  const [expandedRowKeys, setExpandedRowKeys] = useState<Set<DataGridRowKeyDefinition>>(new Set());
 
-  function updateRowExpansion(key: TableRowKeyType) {
+  function updateRowExpansion(key: DataGridRowKeyDefinition) {
     setExpandedRowKeys((prev) => {
       const stateCopy = new Set(prev);
       if (prev.has(key)) {

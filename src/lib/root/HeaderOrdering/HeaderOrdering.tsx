@@ -2,9 +2,9 @@ import { Active, closestCenter, DndContext, PointerSensor, useSensor, useSensors
 import { DragEndEvent } from "@dnd-kit/core/dist/types";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
-import { useDataGridContext } from "../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { HeaderOrderingProps } from "../../types/Elements";
-import { ColumnTypeExtended } from "../../types/Utils";
+import { ColumnDefinitionExtended } from "../../types/Utils";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
 import "./HeaderOrdering.css";
 import { SortableOverlay } from "./SortableOverlay";
@@ -37,7 +37,7 @@ export default function HeaderOrdering<DataType>({
   }
   const {
     dimensions: { defaultHeadRowHeight },
-  } = useDataGridContext();
+  } = useDataGridStaticContext();
   return (
     <DndContext
       sensors={sensors}
@@ -58,7 +58,7 @@ export default function HeaderOrdering<DataType>({
           <ColumnHeader
             style={{ height: defaultHeadRowHeight }}
             className="column-header-dnd-overlay"
-            columnProps={activeItem as ColumnTypeExtended<unknown>}
+            columnProps={activeItem as ColumnDefinitionExtended<unknown>}
           >
             {activeItem.headerRender ? activeItem.headerRender() : activeItem.title}
           </ColumnHeader>

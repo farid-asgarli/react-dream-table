@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { KeyLiteralType, TableProps } from "../../types/Table";
+import { KeyLiteralType, DataGridProps } from "../../types/DataGrid";
 
-export default function useVisibleColumns<DataType>(tp: TableProps<DataType>) {
+export default function useVisibleColumns<DataType>(tp: DataGridProps<DataType>) {
   const [visibleColumns, setVisibleColumns] = useState<Set<KeyLiteralType<DataType>>>(
     tp.columnVisibilityOptions?.active && tp.columnVisibilityOptions?.defaultVisibleHeaders
       ? new Set(tp.columnVisibilityOptions.defaultVisibleHeaders)

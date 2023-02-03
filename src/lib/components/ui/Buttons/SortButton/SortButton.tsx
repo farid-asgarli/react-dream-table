@@ -1,16 +1,16 @@
 import React, { ButtonHTMLAttributes, useMemo } from "react";
 import { cs } from "../../../../utils/ConcatStyles";
-import { SortDirectionType } from "../../../../types/Utils";
-import { useDataGridContext } from "../../../../context/DataGridContext";
+import { SortDirectionDefinition } from "../../../../types/Utils";
+import { useDataGridStaticContext } from "../../../../context/DataGridStaticContext";
 
 export default function SortButton({
   sortingDirection,
   ...buttonProps
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   iconProps?: React.SVGProps<SVGSVGElement>;
-  sortingDirection: SortDirectionType;
+  sortingDirection: SortDirectionDefinition;
 }) {
-  const { localization, icons } = useDataGridContext();
+  const { localization, icons } = useDataGridStaticContext();
 
   const renderSortIcon = useMemo(() => {
     switch (sortingDirection) {

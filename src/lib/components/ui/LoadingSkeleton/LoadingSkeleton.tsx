@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
-import { useDataGridContext } from "../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import Row from "../../../root/Row/Row";
 import { cs } from "../../../utils/ConcatStyles";
+import Fade from "../../animations/Fade/Fade";
 import Skeleton from "../Skeleton/Skeleton";
-// import VirtualTableRow from "../../../Table/TableRow/VirtualTableRow";
+// import VirtualDataGridRow from "../../../DataGrid/DataGridRow/VirtualDataGridRow";
 // import Skeleton from "../Skeleton/Skeleton";
 import "./LoadingSkeleton.css";
 
@@ -12,8 +13,8 @@ export default function LoadingSkeleton({
   style,
   containerHeight,
   ...props
-}: React.TableHTMLAttributes<HTMLTableElement> & { containerHeight: number }) {
-  const { dimensions } = useDataGridContext();
+}: React.HtmlHTMLAttributes<HTMLDivElement> & { containerHeight: number }) {
+  const { dimensions } = useDataGridStaticContext();
 
   const rowsToRender = useMemo(
     () => Math.floor((containerHeight > 0 ? containerHeight - 50 : 0) / dimensions.defaultDataRowHeight),
@@ -21,18 +22,27 @@ export default function LoadingSkeleton({
   );
 
   return (
-    <div
-      className={cs("skeleton-table", className)}
-      style={{
-        ...style,
-      }}
-      {...props}
-    >
-      {[...Array(rowsToRender)].map((_, i) => (
-        <Row totalColumnsWidth="100%" className="row-skeleton" key={i}>
-          <Skeleton />
-        </Row>
-      ))}
-    </div>
+    <Fade>
+      <div
+        className={cs("skeleton-data-grid", className)}
+        style={{
+          ...style,
+        }}
+        {...props}
+      >
+        {[...Array(rowsToRender)].map((_, i) => (
+          <Row
+            style={{
+              height: dimensions.defaultDataRowHeight,
+            }}
+            totalColumnsWidth="100%"
+            className="row-skeleton"
+            key={i}
+          >
+            <Skeleton />
+          </Row>
+        ))}
+      </div>
+    </Fade>
   );
 }

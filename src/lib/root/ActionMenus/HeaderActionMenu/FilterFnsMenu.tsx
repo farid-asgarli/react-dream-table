@@ -1,14 +1,13 @@
-import { useDataManagement } from "../../../logic/data-management/dataManagement";
-import { TableLocalizationType } from "../../../types/Table";
-import { CompleteFilterFnType } from "../../../types/Utils";
+import { DataGridLocalizationDefinition } from "../../../types/DataGrid";
+import { CompleteFilterFnDefinition } from "../../../types/Utils";
 
 export const renderFilterFnsActionsMenu = (
   key: string,
   hideMenu: () => void,
-  dataTools: ReturnType<typeof useDataManagement>,
-  localization: TableLocalizationType
+  dataTools: any,
+  localization: DataGridLocalizationDefinition
 ) => {
-  const activeColFilterFn = dataTools.getColumnFilterFn(key);
+  const activeColFilterFn = dataTools.getColumnFilterFn(key).current;
   const columnType = dataTools.getColumnType(key);
 
   let baseFns = [
@@ -54,6 +53,17 @@ export const renderFilterFnsActionsMenu = (
       symbol: "≤",
       label: localization.filterLessThanOrEqualTo,
     },
+    {},
+    {
+      key: "empty",
+      symbol: "∅",
+      label: localization.filterEmpty,
+    },
+    {
+      key: "notEmpty",
+      symbol: "!∅",
+      label: localization.filterNotEmpty,
+    },
   ];
 
   const restrictedFns = [
@@ -61,6 +71,11 @@ export const renderFilterFnsActionsMenu = (
       key: "contains",
       symbol: "*",
       label: localization.filterContains,
+    },
+    {
+      key: "fuzzy",
+      symbol: "≈",
+      label: localization.filterFuzzy,
     },
     {
       key: "startsWith",
@@ -89,7 +104,7 @@ export const renderFilterFnsActionsMenu = (
         ),
         isSelected: it.key === activeColFilterFn,
         onClick: () => {
-          dataTools.updateCurrentFilterFn(key, it.key as CompleteFilterFnType);
+          dataTools.updateCurrentFilterFn(key, it.key as CompleteFilterFnDefinition);
           hideMenu();
         },
       };

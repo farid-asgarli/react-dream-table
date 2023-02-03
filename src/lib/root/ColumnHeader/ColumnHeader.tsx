@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-import { useDataGridContext } from "../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ColumnHeaderProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeaderContent from "../ColumnHeaderContent/ColumnHeaderContent";
@@ -12,25 +12,23 @@ import ColumnHeaderUnlocked from "../ColumnHeaderUnlocked/ColumnHeaderUnlocked";
 import ColumnResizer from "../ColumnResizer/ColumnResizer";
 import "./ColumnHeader.css";
 
-function ColumnHeader<DataType>(
-  {
-    resizingProps,
-    columnProps,
-    draggingProps,
-    filterProps,
-    filterFnsProps,
-    children,
-    style,
-    className,
-    toolBoxes,
-    ...props
-  }: React.HtmlHTMLAttributes<HTMLDivElement> & ColumnHeaderProps<DataType>,
-  resizingRef: React.ForwardedRef<HTMLDivElement>
-) {
-  const { dimensions } = useDataGridContext();
+function ColumnHeader<DataType>({
+  resizingProps,
+  columnProps,
+  draggingProps,
+  filterProps,
+  filterFnsProps,
+  children,
+  style,
+  className,
+  toolBoxes,
+  containerHeight,
+  ...props
+}: React.HtmlHTMLAttributes<HTMLDivElement> & ColumnHeaderProps<DataType>) {
+  const { dimensions } = useDataGridStaticContext();
 
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, active } = useSortable({
-    id: columnProps.key as string,
+    id: columnProps.key,
   });
 
   const draggableProps = draggingProps?.isDraggable
@@ -42,23 +40,18 @@ function ColumnHeader<DataType>(
     : undefined;
 
   function referenceHandler(ref: HTMLDivElement | null) {
-    if (typeof resizingRef === "function") {
-      resizingRef(ref);
-    } else if (resizingRef) {
-      resizingRef.current = ref;
-    }
+    // if (typeof resizingRef === "function") {
+    //   resizingRef(ref);
+    // } else if (resizingRef) {
+    //   resizingRef.current = ref;
+    // }
     setNodeRef(ref);
   }
 
   return (
     <div
       ref={referenceHandler}
-      className={cs(
-        className,
-        "column-header",
-        active?.id === columnProps.key && "dragging",
-        draggingProps?.isDraggable && "draggable"
-      )}
+      className={cs(className, "column-header", active?.id === columnProps.key && "dragging", draggingProps?.isDraggable && "draggable")}
       style={{ transform: CSS.Transform.toString(transform), transition, ...style }}
       {...props}
     >
@@ -77,18 +70,21 @@ function ColumnHeader<DataType>(
           height: dimensions.defaultHeaderFilterHeight,
         }}
         filterFnsProps={filterFnsProps}
-        columnKey={columnProps.key as string}
+        columnKey={columnProps.key}
       >
-        <ColumnHeaderFilter columnKey={columnProps.key as string} filterProps={filterProps} />
+        <ColumnHeaderFilter columnKey={columnProps.key} filterProps={filterProps} />
       </ColumnHeaderFilterWrapper>
       {resizingProps?.isResizable && (
         <ColumnResizer
-          className={cs(resizingProps.activeIndex === columnProps.key && "active")}
-          onMouseDown={() => resizingProps?.onMouseDown(columnProps.key as string)}
+          columnWidth={columnProps.width}
+          updateColumnWidth={resizingProps.updateColumnWidth}
+          columnKey={columnProps.key}
+          containerHeight={containerHeight}
+          updateColumnResizingStatus={resizingProps.updateColumnResizingStatus}
         />
       )}
     </div>
   );
 }
 
-export default React.forwardRef(ColumnHeader);
+export default ColumnHeader;

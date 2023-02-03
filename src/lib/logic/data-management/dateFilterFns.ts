@@ -11,13 +11,11 @@ const notEquals = (data: string, filterValue: Dayjs) => !filterValue.isSame(data
 
 const greaterThan = (data: string, filterValue: Dayjs) => filterValue.isBefore(data);
 
-const greaterThanOrEqualTo = (data: string, filterValue: Dayjs) =>
-  equals(data, filterValue) || greaterThan(data, filterValue);
+const greaterThanOrEqualTo = (data: string, filterValue: Dayjs) => equals(data, filterValue) || greaterThan(data, filterValue);
 
 const lessThan = (data: string, filterValue: Dayjs) => filterValue.isAfter(data);
 
-const lessThanOrEqualTo = (data: string, filterValue: Dayjs) =>
-  equals(data, filterValue) || lessThan(data, filterValue);
+const lessThanOrEqualTo = (data: string, filterValue: Dayjs) => equals(data, filterValue) || lessThan(data, filterValue);
 
 const between = (data: string, filterValues: [Dayjs, Dayjs]) => {
   const a = filterValues[0];
@@ -37,8 +35,14 @@ const betweenInclusive = (data: string, filterValues: [Dayjs, Dayjs]) => {
   return lessThanOrEqualTo(data, b) && greaterThanOrEqualTo(data, a);
 };
 
+const empty = (data: string) => !data?.toString()?.trim();
+
+const notEmpty = (data: string) => !!data?.toString()?.trim();
+
 export const RDTDateFilters = {
   contains,
+  empty,
+  notEmpty,
   startsWith,
   endsWith,
   equals,

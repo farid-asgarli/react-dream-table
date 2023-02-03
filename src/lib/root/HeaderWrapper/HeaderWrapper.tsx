@@ -1,12 +1,11 @@
-import React, { useEffect, useImperativeHandle, useRef } from "react";
+import React, { useImperativeHandle, useRef } from "react";
 import MenuButton from "../../components/ui/Buttons/MenuButton/MenuButton";
 import SortButton from "../../components/ui/Buttons/SortButton/SortButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useDataGridContext } from "../../context/DataGridContext";
-import { useColumnResizer } from "../../hooks/use-column-resizer/use-column-resizer";
+import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { HeaderWrapperProps } from "../../types/Elements";
-import { CommonDataType, InputFiltering, SelectFiltering } from "../../types/Table";
-import { ColumnTypeExtended, FilteringProps } from "../../types/Utils";
+import { CommonDataType, InputFiltering, SelectFiltering } from "../../types/DataGrid";
+import { ColumnDefinitionExtended, FilteringProps } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
 import Header from "../Header/Header";
@@ -34,6 +33,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
     onColumnHeaderFocus,
     headerActionsMenu,
     filterFnsMenu,
+    containerHeight,
     ...props
   }: React.HtmlHTMLAttributes<HTMLDivElement> & HeaderWrapperProps<DataType>,
   ref: React.ForwardedRef<HeaderWrapperRef>
@@ -56,36 +56,12 @@ function HeaderWrapper<DataType extends CommonDataType>(
     []
   );
 
-  const { dimensions } = useDataGridContext();
+  const { dimensions } = useDataGridStaticContext();
 
-  const headerDataRefs = useRef(new Map<string, HTMLDivElement | null>());
-
-  useEffect(() => {
-    if (
-      headerDataRefs.current.size === 0
-      //  && resizableColumns
-    ) {
-      headerDataRefs.current = new Map(headerDataRefs.current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerDataRefs.current]);
-
-  const { activeIndex, mouseDown } = useColumnResizer(
-    headerRef,
-    {
-      headerDataRefs: headerDataRefs.current,
-      onColumnResize: tableTools.updateColumnWidth,
-      minColumnResizeWidth: dimensions.minColumnResizeWidth,
-      maxColumnResizeWidth: dimensions.maxColumnResizeWidth,
-    },
-    // Enable column resizing if only 'true' or 'props' are passed as an arg.
-    tp.resizableColumns?.active === true
-  );
-
-  function renderColumnHeader(col: ColumnTypeExtended<DataType>, index: number) {
+  function renderColumnHeader(col: ColumnDefinitionExtended<DataType>, index: number) {
     const { key, title, type, filteringProps, filter, sort, headerAlignment, headerRender, pinned } = col;
 
-    const isColumnTypeUtil = type !== "data";
+    const isColumnDefinitionUtil = type !== "data";
     let children: React.ReactNode;
     let tableHeadCellProps;
     switch (type) {
@@ -97,6 +73,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
             ? {
                 ...filterFnsMenu,
                 getColumnFilterFn: dataTools.getColumnFilterFn,
+                isFilterFnActive: dataTools.isFilterFnActive,
               }
             : undefined,
           filterProps: filter
@@ -111,7 +88,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
                 progressReporters: dataTools.progressReporters,
                 filterInputProps: (filteringProps as InputFiltering)?.inputProps,
                 renderCustomInput: (filteringProps as InputFiltering)?.renderCustomInput,
-                isRangeInput: dataTools.isRangeFilterFn(dataTools.getColumnFilterFn(key as string)),
+                isRangeInput: dataTools.isRangeFilterFn(dataTools.getColumnFilterFn(key as string).current),
                 disableInputIcon: isFilterFnActive,
                 pickerLocale: (filteringProps as any)?.pickerLocale,
               } as FilteringProps)
@@ -119,9 +96,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
           toolBoxes: [
             sort ? (
               <SortButton
-                sortingDirection={
-                  dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined
-                }
+                sortingDirection={dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined}
                 key={`${key as string}_sort`}
                 onClick={() => dataTools.sortData(key as string)}
               />
@@ -149,16 +124,12 @@ function HeaderWrapper<DataType extends CommonDataType>(
           <Checkbox
             onChange={(e) =>
               tableTools.updateSelectedRowsMultiple(
-                !e.target.checked
-                  ? new Set()
-                  : new Set(dataTools.dataWithoutPagination!.map((x) => x[tp.uniqueRowKey as string]))
+                !e.target.checked ? new Set() : new Set(dataTools.dataWithoutPagination!.map((x) => x[tp.uniqueRowKey as string]))
               )
             }
             checked={
               dataTools.paginationProps.dataCount !== 0 &&
-              (tp.serverSide
-                ? dataTools.data?.length === tableTools.selectedRows.size
-                : tp.data?.length === tableTools.selectedRows.size)
+              (tp.serverSide ? dataTools.data?.length === tableTools.selectedRows.size : tp.data?.length === tableTools.selectedRows.size)
             }
           />
         );
@@ -169,17 +140,16 @@ function HeaderWrapper<DataType extends CommonDataType>(
 
     return (
       <ColumnHeader
-        columnProps={col as ColumnTypeExtended<unknown>}
+        columnProps={col as ColumnDefinitionExtended<unknown>}
         resizingProps={{
-          isResizable: !isColumnTypeUtil && tableTools.checkIfColumnIsResizable(key),
-          onMouseDown: mouseDown,
-          activeIndex: activeIndex,
+          isResizable: !isColumnDefinitionUtil && tableTools.checkIfColumnIsResizable(key),
+          updateColumnWidth: tableTools.updateColumnWidth,
+          updateColumnResizingStatus: tableTools.updateColumnResizingStatus,
         }}
         draggingProps={{
-          isDraggable: !pinned && !isColumnTypeUtil && !!tableTools.checkIfColumnIsDraggable(key),
+          isDraggable: !pinned && !isColumnDefinitionUtil && !!tableTools.checkIfColumnIsDraggable(key),
         }}
-        ref={(ref: HTMLDivElement | null) => headerDataRefs.current.set(col.key as string, ref)}
-        tabIndex={!isColumnTypeUtil ? index : undefined}
+        tabIndex={!isColumnDefinitionUtil ? index : undefined}
         key={(col.key as string) + `__${dataTools.filterResetKey}`}
         onFocus={(e) => onColumnHeaderFocus(e, col.width)}
         style={{
@@ -187,8 +157,9 @@ function HeaderWrapper<DataType extends CommonDataType>(
           minWidth: col.width,
           maxWidth: col.width,
         }}
-        className={cs(isColumnTypeUtil && "tools", headerAlignment && `align-${headerAlignment}`)}
-        {...(!isColumnTypeUtil && tableHeadCellProps)}
+        className={cs(isColumnDefinitionUtil && "tools", headerAlignment && `align-${headerAlignment}`)}
+        containerHeight={containerHeight}
+        {...(!isColumnDefinitionUtil && tableHeadCellProps)}
       >
         {headerRender ? headerRender() : children}
       </ColumnHeader>
@@ -210,17 +181,12 @@ function HeaderWrapper<DataType extends CommonDataType>(
           onColumnDragged={tp.draggableColumns?.onColumnDragged}
           draggingEnabled={tp.draggableColumns?.active === true}
         >
-          {columnsInUse.columns.map((col, index) =>
-            renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1)
-          )}
+          {columnsInUse.columns.map((col, index) => renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1))}
         </HeaderOrdering>
         {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="header" ref={lockedEndWrapperRef}>
             {pinnedColumns?.rightColumns.map((col, index) =>
-              renderColumnHeader(
-                col,
-                index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsInUse.columns.length) + 1
-              )
+              renderColumnHeader(col, index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsInUse.columns.length) + 1)
             )}
           </LockedEndWrapper>
         )}

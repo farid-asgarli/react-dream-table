@@ -3,6 +3,17 @@
   padding: 10px;
 }
 
+.data-grid .options-menu button.fullscreen-toggle {
+  width: 20px;
+}
+
+.data-grid .options-menu .options-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 5px;
+}
+
 .data-grid .options-menu .options-menu-header .options-menu-title {
   font-size: 18px;
   font-weight: 500;

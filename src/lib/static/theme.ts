@@ -1,6 +1,6 @@
-import { TableThemeType } from "../types/Table";
+import { DataGridThemeDefinition } from "../types/DataGrid";
 
-export const DefaultTableTheme: TableThemeType = {
+export const DefaultDataGridTheme: DataGridThemeDefinition = {
   primaryColor: "#7828c8",
   borderRadiusLg: "10px",
   borderRadiusMd: "5px",

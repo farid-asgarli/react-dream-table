@@ -1,5 +1,5 @@
 import { ChangeEvent, InputHTMLAttributes, useRef, useState } from "react";
-import { useDataGridContext } from "../../../context/DataGridContext";
+import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import { StringExtensions } from "../../../extensions/String";
 import { cs } from "../../../utils/ConcatStyles";
 import "./Input.css";
@@ -13,14 +13,12 @@ export default function Input({
   onChange?: (value: ChangeEvent<HTMLInputElement>["target"]["value"]) => void;
   disableIcon?: boolean;
 }) {
-  const [currentInputValue, setCurrentInputValue] = useState<string | undefined>(
-    (defaultValue as string) ?? StringExtensions.Empty
-  );
+  const [currentInputValue, setCurrentInputValue] = useState<string | undefined>((defaultValue as string) ?? StringExtensions.Empty);
   const [focused, setFocused] = useState<boolean>(false);
 
   const inputUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const { icons } = useDataGridContext();
+  const { icons } = useDataGridStaticContext();
 
   function clearUpdateTimeout() {
     if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
@@ -30,9 +28,7 @@ export default function Input({
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setCurrentInputValue(e.target.value);
     clearUpdateTimeout();
-    inputUpdateTimeout.current = setTimeout(async () => {
-      onChange?.(e.target.value);
-    }, 600);
+    inputUpdateTimeout.current = setTimeout(() => onChange?.(e.target.value), 600);
   }
   return (
     <div className={cs("input-wrapper", focused && "focused")}>

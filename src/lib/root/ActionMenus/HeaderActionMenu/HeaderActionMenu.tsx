@@ -1,22 +1,21 @@
-import { TableIconsType, TableLocalizationType, TableProps } from "../../../types/Table";
+import { DataGridIconsDefinition, DataGridLocalizationDefinition, DataGridProps } from "../../../types/DataGrid";
+import "./../ActionMenus.css";
 
 export const renderHeaderActionsMenu = (
   key: string,
   hideMenu: () => void,
   tableTools: any,
   dataTools: any,
-  tp: TableProps<any>,
-  localization: TableLocalizationType,
-  icons: TableIconsType
+  tp: DataGridProps<any>,
+  localization: DataGridLocalizationDefinition,
+  icons: DataGridIconsDefinition
 ) => {
   return [
     ...(tp.pinnedColumns?.active === true
       ? [
           {
             symbol: tableTools.pinnedColumns.left.includes(key) ? icons.Unpin : icons.PinLeft,
-            label: tableTools.pinnedColumns.left.includes(key)
-              ? localization.unpinColumn
-              : localization.pinColumnToLeft,
+            label: tableTools.pinnedColumns.left.includes(key) ? localization.unpinColumn : localization.pinColumnToLeft,
             key: "pin-left",
             onClick: () => {
               tableTools.updatePinnedColumns(key, "left");
@@ -25,9 +24,7 @@ export const renderHeaderActionsMenu = (
           },
           {
             symbol: tableTools.pinnedColumns.right.includes(key) ? icons.Unpin : icons.PinRight,
-            label: tableTools.pinnedColumns.right.includes(key)
-              ? localization.unpinColumn
-              : localization.pinColumnToRight,
+            label: tableTools.pinnedColumns.right.includes(key) ? localization.unpinColumn : localization.pinColumnToRight,
             key: "pin-right",
             onClick: () => {
               tableTools.updatePinnedColumns(key, "right");
