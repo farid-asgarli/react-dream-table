@@ -1,5 +1,5 @@
 import { cs } from "../../../utils/ConcatStyles";
-import "./Spinner.css";
+import "./Spinner.scss";
 const Spinner: React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
     size?: number;
@@ -21,13 +21,13 @@ const Spinner: React.FC<
       {...props}
     >
       <div
-        className={"spinner"}
+        className="spinner"
         style={{
-          left: `calc(50vw - calc(${32}px / 2px))`,
+          left: `calc(50vw - calc(${size}px / 2px))`,
           ...dimensions,
         }}
       >
-        <svg className={"spinner-icon"} viewBox="0 0 24 24" style={dimensions}>
+        <svg className="spinner-icon" viewBox="0 0 24 24" style={dimensions}>
           <path
             d="M 22.49772,12.000001 A 10.49772,10.497721 0 0 1 12,22.497722 10.49772,10.497721 0 0 1 1.5022797,12.000001 10.49772,10.497721 0 0 1 12,1.5022797 10.49772,10.497721 0 0 1 22.49772,12.000001 Z"
             fill="none"

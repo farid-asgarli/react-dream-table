@@ -1,0 +1,10 @@
+.data-grid {
+  .list {
+    overflow: hidden;
+    display: block;
+    flex-flow: column;
+    position: relative;
+    contain: layout style;
+    box-sizing: initial;
+  }
+}

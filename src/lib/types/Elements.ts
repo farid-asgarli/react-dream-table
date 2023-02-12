@@ -1,12 +1,20 @@
-import { useDataManagement } from "../logic/data-management/dataManagement";
 import { DisplayActionsMenu } from "../logic/tools/actions-menu-factory";
-import useDataGridTools from "../logic/tools/datagrid-tools";
+import { HeaderWrapperRef } from "../root/HeaderWrapper/HeaderWrapper";
 import { KeyLiteralType, DataGridProps, DataGridTooltipProps } from "./DataGrid";
-import { ColumnDefinitionExtended, CompleteFilterFnDefinition, FilteringProps } from "./Utils";
+import {
+  ColumnDefinitionExtended,
+  CompleteFilterFnDefinition,
+  DataTools,
+  FilteringProps,
+  GridDataType,
+  GridTools,
+  GroupedColumnHeaderCollection,
+  IndexedData,
+} from "./Utils";
 
-export interface DataGridFactoryProps<DataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
-  theme: "dark" | "light";
-  tp: DataGridProps<DataType>;
+export interface DataGridFactoryProps<DataType extends GridDataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  theme: DataGridProps<DataType>["theme"];
+  gridProps: DataGridProps<DataType>;
   pinnedColumns:
     | {
         leftColumns: ColumnDefinitionExtended<DataType>[];
@@ -17,13 +25,14 @@ export interface DataGridFactoryProps<DataType> extends React.HtmlHTMLAttributes
       }
     | undefined;
   totalColumnsWidth: number;
-  columnsInUse: {
+  columnsToRender: {
     columns: ColumnDefinitionExtended<DataType>[];
     totalWidth: number;
   };
-  tableTools: ReturnType<typeof useDataGridTools<DataType>>;
-  dataTools: ReturnType<typeof useDataManagement<DataType>>;
-  initiateColumns(): ColumnDefinitionExtended<DataType>[];
+  groupedColumnHeaders: GroupedColumnHeaderCollection;
+  gridTools: GridTools<DataType>;
+  dataTools: DataTools<DataType>;
+  initializedColumns: ColumnDefinitionExtended<DataType>[];
   displayDataActionsMenu: DisplayActionsMenu<DataType>;
   displayHeaderActionsMenu: DisplayActionsMenu<DataType>;
   filterFnsMenu: {
@@ -36,7 +45,7 @@ export interface CellContentProps extends React.HtmlHTMLAttributes<HTMLDivElemen
   tooltipProps?: DataGridTooltipProps | undefined;
 }
 
-export interface ColumnHeaderProps<DataType> {
+export interface ColumnHeaderProps<DataType extends GridDataType> {
   columnProps: ColumnDefinitionExtended<DataType>;
   resizingProps?: {
     updateColumnWidth: (key: string, width: number) => void;
@@ -47,6 +56,7 @@ export interface ColumnHeaderProps<DataType> {
     isDraggable?: boolean | undefined;
   };
   toolBoxes?: (JSX.Element | undefined)[] | undefined;
+
   filterProps?: FilteringProps;
   filterFnsProps?: {
     getColumnFilterFn: (key: string) => {
@@ -58,6 +68,7 @@ export interface ColumnHeaderProps<DataType> {
     activeFilterMenuKey: string | undefined;
   };
   containerHeight?: number;
+  isFilterMenuVisible?: boolean;
 }
 
 export interface ColumnHeaderFilterWrapperProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
@@ -74,15 +85,16 @@ export interface ExpandProps {
   children: React.ReactNode;
   isRowExpanded: boolean;
   showSeparatorLine: boolean;
+  rowIndex: number;
+  updateExpandRowHeightCache?(index: number, height: number, forceUpdate?: boolean): void;
   leftOffset?: number;
-  basicColumnsWidth?: number;
 }
 
 export interface ExpandRowProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
   expandRowProps: ExpandProps;
 }
 
-export interface HeaderOrderingProps<DataType> {
+export interface HeaderOrderingProps<DataType extends GridDataType> {
   draggingEnabled: boolean;
   columnOrder: Array<KeyLiteralType<DataType>>;
   setColumnOrder: (collection: KeyLiteralType<DataType>[]) => void;
@@ -91,7 +103,7 @@ export interface HeaderOrderingProps<DataType> {
   children: React.HtmlHTMLAttributes<HTMLDivElement>["children"];
 }
 
-export interface HeaderWrapperProps<DataType> {
+export interface HeaderWrapperProps<DataType extends GridDataType> {
   pinnedColumns:
     | {
         leftColumns: ColumnDefinitionExtended<DataType>[];
@@ -103,13 +115,13 @@ export interface HeaderWrapperProps<DataType> {
     | undefined;
   totalColumnsWidth: number;
   verticalScrollbarWidth: number;
-  columnsInUse: {
+  columnsToRender: {
     columns: ColumnDefinitionExtended<DataType>[];
     totalWidth: number;
   };
-  tp: DataGridProps<DataType>;
-  tableTools: ReturnType<typeof useDataGridTools<DataType>>;
-  dataTools: ReturnType<typeof useDataManagement<DataType>>;
+  gridProps: DataGridProps<DataType>;
+  gridTools: GridTools<DataType>;
+  dataTools: DataTools<DataType>;
   onColumnHeaderFocus(e: React.FocusEvent<HTMLDivElement>, colWidth: number): void;
   headerActionsMenu: { displayHeaderActionsMenu: DisplayActionsMenu<DataType> };
   filterFnsMenu: {
@@ -117,6 +129,8 @@ export interface HeaderWrapperProps<DataType> {
     activeFilterMenuKey: string | undefined;
   };
   containerHeight: number;
+  headerWrapperRef: React.ForwardedRef<HeaderWrapperRef>;
+  groupedColumnHeaders: GroupedColumnHeaderCollection;
 }
 
 export interface LockedWrapperProps extends React.HtmlHTMLAttributes<HTMLDivElement> {
@@ -137,11 +151,11 @@ export interface ScrollerProps extends React.HtmlHTMLAttributes<HTMLDivElement> 
   verticalScrollbarWidth: number;
 }
 
-export interface ViewContainerProps<DataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
-  tp: DataGridProps<DataType>;
-  tableTools: ReturnType<typeof useDataGridTools<DataType>>;
-  dataTools: ReturnType<typeof useDataManagement<DataType>>;
-  containerHeight?: number | undefined;
+export interface ViewContainerProps<DataType extends GridDataType> extends React.HtmlHTMLAttributes<HTMLDivElement> {
+  gridProps: DataGridProps<DataType>;
+  gridTools: GridTools<DataType>;
+  dataTools: DataTools<DataType>;
+  containerHeight: number;
   containerWidth: number;
   topScrollPosition: number;
   pinnedColumns:
@@ -153,23 +167,27 @@ export interface ViewContainerProps<DataType> extends React.HtmlHTMLAttributes<H
         totalWidth: number;
       }
     | undefined;
-  columnsInUse: {
+  columnsToRender: {
     columns: ColumnDefinitionExtended<DataType>[];
     totalWidth: number;
   };
   totalColumnsWidth: number;
   displayActionsMenu: DisplayActionsMenu<DataType>;
+  viewRef: React.ForwardedRef<HTMLDivElement>;
+  getRowExpansionHeight(index: number): number | undefined;
+  indexedData: IndexedData<DataType>[];
 }
 
-export interface VirtualListProps<DataType> {
-  elements: Array<DataType>;
+export interface VirtualListProps<DataType extends GridDataType> {
+  rows: Array<DataType>;
   containerHeight: number;
   rowHeight: number;
   topScrollPosition: number;
-  disabled?: boolean | undefined;
+  getExpandRowHeightFromCache?: (index: number) => number | undefined;
+  isDynamicExpandActive: boolean;
   expandRowKeys: Set<number>;
   expandPanelHeight: number;
   renderElement: (data: DataType, style: React.CSSProperties) => JSX.Element;
-  uniqueRowKey: keyof DataType;
   preRenderedRowCount?: number | undefined;
+  getRowExpansionHeight(index: number): number | undefined;
 }

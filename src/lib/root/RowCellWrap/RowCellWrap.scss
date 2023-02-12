@@ -1,0 +1,14 @@
+.data-grid {
+  .row-cell-wrap {
+    display: flex;
+    flex-flow: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  }
+  .row.clickable {
+    .row-cell-wrap {
+      cursor: pointer;
+    }
+  }
+}

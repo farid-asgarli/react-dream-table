@@ -1,0 +1,30 @@
+.data-grid {
+  .data-grid-tooltip {
+    position: absolute;
+    top: 0;
+    box-shadow: 0 1em 2em -0.5em rgba(0, 0, 0, 0.35);
+    background: #333;
+    color: #fff;
+    transform: translate(-50%, -100%);
+    left: 50%;
+    padding: 5px 10px;
+    width: max-content;
+    border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+    user-select: none;
+    z-index: 999;
+    .data-grid-row-cell-data {
+      overflow: unset;
+      text-overflow: unset;
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #333;
+      transform: translate(-50%, -50%) rotate(45deg);
+      bottom: -5px;
+      left: 50%;
+    }
+  }
+}

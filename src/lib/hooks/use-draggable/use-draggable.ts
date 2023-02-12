@@ -81,7 +81,7 @@ export const useDraggable: DraggableHookDefinition = ({ onDrag = id, onDragEnd }
       // that was long gone. not really sure what's correct
       // behavior for a case when you've been scrolling, and
       // the target element was replaced. probably some formulae
-      // needed to handle that case. TODO
+      // needed to handle that case. // TODO
       const elem = ref.current;
       position.current = onDrag({
         // Previous implementation:

@@ -9,7 +9,7 @@ export default function useActiveRow() {
   }
 
   function clearActiveRow() {
-    setActiveRow(undefined);
+    activeRow !== undefined && setActiveRow(undefined);
   }
 
   function isRowActive(uniqueRowKey: string) {

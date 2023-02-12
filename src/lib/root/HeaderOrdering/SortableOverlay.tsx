@@ -16,8 +16,5 @@ const dropAnimationConfig: DropAnimation = {
 interface Props {}
 
 export function SortableOverlay({ children }: PropsWithChildren<Props>) {
-  return createPortal(
-    <DragOverlay dropAnimation={dropAnimationConfig}>{children}</DragOverlay>,
-    document.getElementById("root")!
-  );
+  return createPortal(<DragOverlay dropAnimation={dropAnimationConfig}>{children}</DragOverlay>, document.getElementById("root")!);
 }

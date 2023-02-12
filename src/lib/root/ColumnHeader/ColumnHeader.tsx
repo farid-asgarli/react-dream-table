@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import React from "react";
 import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ColumnHeaderProps } from "../../types/Elements";
+import { GridDataType } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeaderContent from "../ColumnHeaderContent/ColumnHeaderContent";
 import ColumnHeaderFilter from "../ColumnHeaderFilter/ColumnHeaderFilter";
@@ -10,9 +11,9 @@ import ColumnHeaderFilterWrapper from "../ColumnHeaderFilterWrapper/ColumnHeader
 import ColumnHeaderMenuTool from "../ColumnHeaderMenuTool/ColumnHeaderMenuTool";
 import ColumnHeaderUnlocked from "../ColumnHeaderUnlocked/ColumnHeaderUnlocked";
 import ColumnResizer from "../ColumnResizer/ColumnResizer";
-import "./ColumnHeader.css";
+import "./ColumnHeader.scss";
 
-function ColumnHeader<DataType>({
+function ColumnHeader<DataType extends GridDataType>({
   resizingProps,
   columnProps,
   draggingProps,
@@ -23,6 +24,7 @@ function ColumnHeader<DataType>({
   className,
   toolBoxes,
   containerHeight,
+  isFilterMenuVisible,
   ...props
 }: React.HtmlHTMLAttributes<HTMLDivElement> & ColumnHeaderProps<DataType>) {
   const { dimensions } = useDataGridStaticContext();
@@ -65,15 +67,17 @@ function ColumnHeader<DataType>({
         <ColumnHeaderContent {...draggableProps}>{children}</ColumnHeaderContent>
         {toolBoxes && <ColumnHeaderMenuTool>{toolBoxes}</ColumnHeaderMenuTool>}
       </ColumnHeaderUnlocked>
-      <ColumnHeaderFilterWrapper
-        style={{
-          height: dimensions.defaultHeaderFilterHeight,
-        }}
-        filterFnsProps={filterFnsProps}
-        columnKey={columnProps.key}
-      >
-        <ColumnHeaderFilter columnKey={columnProps.key} filterProps={filterProps} />
-      </ColumnHeaderFilterWrapper>
+      {isFilterMenuVisible && (
+        <ColumnHeaderFilterWrapper
+          style={{
+            height: dimensions.defaultHeaderFilterHeight,
+          }}
+          filterFnsProps={filterFnsProps}
+          columnKey={columnProps.key}
+        >
+          <ColumnHeaderFilter columnKey={columnProps.key} filterProps={filterProps} />
+        </ColumnHeaderFilterWrapper>
+      )}
       {resizingProps?.isResizable && (
         <ColumnResizer
           columnWidth={columnProps.width}

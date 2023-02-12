@@ -1,5 +1,5 @@
 import { InputHTMLAttributes } from "react";
-import "./Checkbox.css";
+import "./Checkbox.scss";
 export default function Checkbox(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="checkbox-wrapper">

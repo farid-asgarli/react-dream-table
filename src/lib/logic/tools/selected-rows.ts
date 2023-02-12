@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { DataGridProps } from "../../types/DataGrid";
-import { DataGridRowKeyDefinition } from "../../types/Utils";
+import { DataGridRowKeyDefinition, GridDataType } from "../../types/Utils";
 
-export default function useSelectedRows<DataType>(tp: DataGridProps<DataType>) {
+export default function useSelectedRows<DataType extends GridDataType>(gridProps: DataGridProps<DataType>) {
   /** List of checked items in the data-grid. */
   const [selectedRows, setSelectedRows] = useState<Set<DataGridRowKeyDefinition>>(new Set());
 

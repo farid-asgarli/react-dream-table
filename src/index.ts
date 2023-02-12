@@ -3,9 +3,9 @@ import {
   ColumnDefinition,
   DataGridLocalizationDefinition,
   DataGridPaginationProps,
-  DataGridThemeDefinition,
+  DataGridStylingDefinition,
   DataGridProps,
 } from "./lib/types/DataGrid";
 
-export type { ColumnDefinition, DataGridLocalizationDefinition, DataGridPaginationProps, DataGridThemeDefinition, DataGridProps };
+export type { ColumnDefinition, DataGridLocalizationDefinition, DataGridPaginationProps, DataGridStylingDefinition, DataGridProps };
 export default DataGrid;

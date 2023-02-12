@@ -1,11 +1,11 @@
 import React from "react";
-import Fade from "../../components/animations/Fade/Fade";
-import "./ScrollContainer.css";
+import { Animations } from "../../components/animations/Animations";
+import "./ScrollContainer.scss";
 
 export default function ScrollContainer(props: React.HtmlHTMLAttributes<HTMLDivElement>) {
   return (
-    <Fade>
+    <Animations.Auto>
       <div className="scroll-container" {...props}></div>
-    </Fade>
+    </Animations.Auto>
   );
 }

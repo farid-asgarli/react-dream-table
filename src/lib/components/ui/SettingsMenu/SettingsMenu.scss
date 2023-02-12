@@ -1,0 +1,152 @@
+.data-grid {
+  .actions-menu-constructor.options-menu {
+    width: 280px;
+    padding: 10px;
+    user-select: none;
+    .back-button {
+      font-size: 16px;
+      font-weight: 600;
+      padding-right: 5px;
+      height: 35px;
+      .button-icon {
+        width: 25px;
+      }
+    }
+  }
+  .options-menu {
+    overflow: hidden;
+    .options-menu-body {
+      .bottom-utility {
+        padding: 3px;
+        padding-top: 0;
+      }
+      .options-menu-toggles {
+        margin-top: 15px;
+        width: 100%;
+        height: 100%;
+        .menu-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 5px 0;
+          padding: 5px;
+          transition: 0.2s ease-in-out background-color;
+          border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+          cursor: pointer;
+          &:hover {
+            background-color: var(--grid-color-hover);
+          }
+
+          .menu-toggle-icon {
+            width: 25px;
+          }
+          .menu-toggle-title {
+            font-weight: 400;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s ease-in-out transform;
+            &:active {
+              transform: scale(0.97);
+            }
+          }
+        }
+        .menu-divider {
+          width: 100%;
+          height: 0.5px;
+          border-top: 1px solid var(--grid-color-line);
+          margin: 10px auto;
+        }
+      }
+      button.fullscreen-toggle {
+        width: 20px;
+      }
+      .options-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 5px;
+        .options-menu-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin: 0;
+          padding: 0 5px;
+        }
+      }
+      .columns-list-wrapper {
+        ul {
+          max-height: 200px;
+          overflow-x: hidden;
+          overflow: auto;
+          position: relative;
+          margin-top: 20px;
+          border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+          background-color: var(--grid-color-bg-odd);
+          padding: 4px;
+          &::-webkit-scrollbar {
+            width: 12px;
+          }
+          &::-webkit-scrollbar-thumb {
+            border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+            border: 3px solid transparent;
+          }
+        }
+      }
+      li.filter-element {
+        transition: 0.2s ease-in-out background, 0.2s ease-in-out border-color, 0.2s ease-in-out transform;
+        list-style: none;
+        background-color: var(--grid-color-input-bg);
+        border: 2px solid var(--grid-color-line);
+        border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+        overflow: hidden;
+        padding: 2px;
+        margin: 4px 0;
+        height: 34px;
+        &:active {
+          transform: scale(0.97);
+        }
+        .select-button {
+          all: unset;
+          cursor: pointer;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          .content {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            word-break: keep-all;
+            position: relative;
+            overflow-wrap: break-word;
+            user-select: none;
+            overflow: hidden;
+            padding: 0 4px;
+          }
+        }
+        .select-button.disabled {
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+        .check-button {
+          all: unset;
+          cursor: pointer;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          .check-icon {
+            width: 20px;
+            fill: var(--grid-color-primary);
+          }
+        }
+      }
+      li.filter-element.active {
+        border-color: var(--grid-color-hover);
+        background-color: var(--grid-color-hover);
+      }
+    }
+  }
+}

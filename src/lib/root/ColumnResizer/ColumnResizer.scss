@@ -1,0 +1,33 @@
+.data-grid {
+  .column-resizer {
+    width: 5px;
+    right: -2.5px;
+    z-index: 99;
+    height: 100%;
+    bottom: 41px;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    cursor: ew-resize;
+  }
+  .column-resize-handle {
+    height: 100%;
+    background: var(--grid-color-hover);
+    opacity: 0;
+    transition: 0.2s ease-in-out opacity, 0.2s ease-in-out background;
+    width: 5px;
+    z-index: 0;
+    &:not(.active) {
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+  .column-resize-handle.active {
+    opacity: 1;
+    background: var(--grid-color-hover);
+  }
+  .column-resize-handle.active.out-of-bounds {
+    background-color: #ff000055;
+  }
+}

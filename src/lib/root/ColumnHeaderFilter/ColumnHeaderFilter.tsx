@@ -1,6 +1,6 @@
 import FilterMenu from "../../components/ui/FilterMenu/FilterMenu";
 import { ColumnHeaderFilterProps } from "../../types/Elements";
-import "./ColumnHeaderFilter.css";
+import "./ColumnHeaderFilter.scss";
 
 export default function ColumnHeaderFilter({ filterProps, columnKey, ...props }: ColumnHeaderFilterProps) {
   return (

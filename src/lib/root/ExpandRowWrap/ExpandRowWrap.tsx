@@ -1,34 +1,33 @@
-import Fade from "../../components/animations/Fade/Fade";
+import { useRef } from "react";
+import { Animations } from "../../components/animations/Animations";
 import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ExpandRowProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
-import "./ExpandRowWrap.css";
+import "./ExpandRowWrap.scss";
 
 export default function ExpandRowWrap({
-  expandRowProps: { children, isRowExpanded, showSeparatorLine, basicColumnsWidth, leftOffset },
+  expandRowProps: { children, isRowExpanded, showSeparatorLine, updateExpandRowHeightCache, rowIndex },
   className,
   style,
   ...props
 }: ExpandRowProps) {
-  const { dimensions, animationProps, virtualizationEnabled } = useDataGridStaticContext();
+  const { animationProps } = useDataGridStaticContext();
+
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  //TODO
+  function onAnimationFinish(visible: boolean) {
+    if (updateExpandRowHeightCache && visible)
+      setTimeout(() => updateExpandRowHeightCache?.(rowIndex, ref.current?.getBoundingClientRect().height ?? 0), 0);
+  }
 
   return (
-    <Fade duration={animationProps.duration} visible={isRowExpanded}>
-      <div
-        style={{
-          ...style,
-          left: leftOffset,
-          width: basicColumnsWidth,
-          top: dimensions.defaultDataRowHeight,
-          height: virtualizationEnabled ? dimensions.defaultExpandPanelHeight : undefined,
-        }}
-        className={cs("expand-row-wrap", showSeparatorLine && "show-seperator", className)}
-        {...props}
-      >
-        <div className="expand-row-wrap-inner">
+    <Animations.Auto onAnimationFinish={onAnimationFinish} duration={animationProps.duration} visible={isRowExpanded}>
+      <div className={cs("expand-row-wrap", showSeparatorLine && "show-separator", className)} {...props}>
+        <div ref={ref} className="expand-row-wrap-inner">
           <div className="content">{children}</div>
         </div>
       </div>
-    </Fade>
+    </Animations.Auto>
   );
 }

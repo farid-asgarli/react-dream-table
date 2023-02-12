@@ -1,10 +1,10 @@
 import { DataGridLocalizationDefinition } from "../../../types/DataGrid";
-import { CompleteFilterFnDefinition } from "../../../types/Utils";
+import { CompleteFilterFnDefinition, DataTools, GridDataType } from "../../../types/Utils";
 
-export const renderFilterFnsActionsMenu = (
+export const renderFilterFnsActionsMenu = <DataType extends GridDataType>(
   key: string,
   hideMenu: () => void,
-  dataTools: any,
+  dataTools: DataTools<DataType>,
   localization: DataGridLocalizationDefinition
 ) => {
   const activeColFilterFn = dataTools.getColumnFilterFn(key).current;
@@ -95,7 +95,6 @@ export const renderFilterFnsActionsMenu = (
   return baseFns.map((it) => {
     if (Object.keys(it).length > 0)
       return {
-        ...it,
         content: (
           <div className="content-wrapper">
             <span className="symbol">{it.symbol}</span>
@@ -108,6 +107,6 @@ export const renderFilterFnsActionsMenu = (
           hideMenu();
         },
       };
-    return it;
+    return {};
   });
 };

@@ -13,4 +13,5 @@ export const DefaultDataGridDimensions: DataGridDimensionsDefinition = {
   maxColumnResizeWidth: 600,
   minColumnResizeWidth: 100,
   defaultExpandPanelHeight: 300,
+  defaultGroupedColumnHeight: 60,
 };

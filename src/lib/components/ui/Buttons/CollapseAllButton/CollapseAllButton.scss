@@ -1,0 +1,20 @@
+.data-grid {
+  .actions-menu-constructor-button.collapse-all-button {
+    flex-direction: column;
+    .actions-menu-constructor-icon {
+      font-size: 25px;
+      min-width: 25px;
+      max-width: 25px;
+      &:first-child {
+        transform: translateY(9.5px);
+      }
+      &:last-child {
+        transform: translateY(-9.5px);
+      }
+    }
+    .icon-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

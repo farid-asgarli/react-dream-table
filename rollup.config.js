@@ -1,6 +1,6 @@
 import typescript from "rollup-plugin-typescript2";
-import postcss from "rollup-plugin-postcss";
 import pkg from "./package.json";
+import scss from "rollup-plugin-scss";
 
 const config = {
   input: "src/index.ts",
@@ -13,12 +13,7 @@ const config = {
     },
   ],
 
-  plugins: [
-    typescript({ objectHashIgnoreUnknownHack: true }),
-    postcss({
-      extract: false,
-    }),
-  ],
+  plugins: [typescript({ objectHashIgnoreUnknownHack: true }), scss({ failOnError: true, runtime: require("sass") })],
   external: ["react", "react-dom"],
 };
 

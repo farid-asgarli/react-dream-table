@@ -4,7 +4,7 @@ import { RowProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
 import ExpandRowWrap from "../ExpandRowWrap/ExpandRowWrap";
 import RowCellWrap from "../RowCellWrap/RowCellWrap";
-import "./Row.css";
+import "./Row.scss";
 
 export default function Row({
   className,
@@ -15,9 +15,10 @@ export default function Row({
   expandRowProps,
   tabIndex,
   totalColumnsWidth,
+  onContextMenu,
   ...props
 }: RowProps) {
-  const { dimensions, animationProps, isRowClickable, virtualizationEnabled } = useDataGridStaticContext();
+  const { dimensions, animationProps, isRowClickable } = useDataGridStaticContext();
 
   const commonStyle: React.CSSProperties = useMemo(
     () => ({
@@ -30,7 +31,6 @@ export default function Row({
   const rowCellWrapStyle: React.CSSProperties = useMemo(
     () => ({
       ...commonStyle,
-      ...(virtualizationEnabled ? { position: "absolute", top: 0, left: 0 } : {}),
       height: dimensions.defaultDataRowHeight,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,7 +47,9 @@ export default function Row({
       }}
       {...props}
     >
-      <RowCellWrap style={rowCellWrapStyle}>{children}</RowCellWrap>
+      <RowCellWrap style={rowCellWrapStyle} onContextMenu={onContextMenu}>
+        {children}
+      </RowCellWrap>
       {expandRowProps?.children !== undefined && <ExpandRowWrap expandRowProps={expandRowProps} />}
     </div>
   );

@@ -1,0 +1,10 @@
+.data-grid {
+  .skeleton-line {
+    background: var(--grid-color-skeleton-bg);
+    border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+    height: 30px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+}

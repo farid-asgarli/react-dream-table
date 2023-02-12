@@ -2,7 +2,7 @@ import React from "react";
 import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { ScrollerProps } from "../../types/Elements";
 import { cs } from "../../utils/ConcatStyles";
-import "./Scroller.css";
+import "./Scroller.scss";
 
 function Scroller(
   { minWidth, minHeight, emptySpacerVisible, verticalScrollbarWidth, className, ...props }: ScrollerProps,

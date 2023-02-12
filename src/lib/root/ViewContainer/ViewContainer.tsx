@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import VirtualList from "../VirtualList/VirtualList";
 import ActionsMenuButton from "../../components/ui/Buttons/ActionsMenuButton/ActionsMenuButton";
 import ExpandButton from "../../components/ui/Buttons/ExpandButton/ExpandButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
 import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
-import { ColumnDefinitionExtended } from "../../types/Utils";
+import { ColumnDefinitionExtended, GridDataType } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import Cell from "../Cell/Cell";
 import CellContent from "../CellContent/CellContent";
@@ -12,25 +12,25 @@ import LockedEndWrapper from "../LockedEndWrapper/LockedEndWrapper";
 import LockedStartWrapper from "../LockedStartWrapper/LockedStartWrapper";
 import Row from "../Row/Row";
 import RowContainer from "../RowContainer/RowContainer";
-import { ExpandProps, ViewContainerProps } from "../../types/Elements";
-import "./ViewContainer.css";
+import { RowProps, ViewContainerProps } from "../../types/Elements";
+import "./ViewContainer.scss";
 
-function ViewContainer<DataType>(
-  {
-    tp,
-    dataTools,
-    tableTools,
-    containerHeight,
-    topScrollPosition,
-    columnsInUse,
-    pinnedColumns,
-    totalColumnsWidth,
-    containerWidth,
-    displayActionsMenu,
-    ...props
-  }: ViewContainerProps<DataType>,
-  viewRef: React.ForwardedRef<HTMLDivElement>
-) {
+const ViewContainer = <DataType extends GridDataType>({
+  gridProps,
+  dataTools,
+  gridTools,
+  containerHeight,
+  topScrollPosition,
+  columnsToRender,
+  pinnedColumns,
+  totalColumnsWidth,
+  containerWidth,
+  displayActionsMenu,
+  getRowExpansionHeight,
+  viewRef,
+  indexedData,
+  ...props
+}: ViewContainerProps<DataType>) => {
   const { dimensions, localization } = useDataGridStaticContext();
 
   function extractBasicCellProps(col: ColumnDefinitionExtended<DataType>, dat: DataType) {
@@ -48,14 +48,14 @@ function ViewContainer<DataType>(
   const rowActionsMenu = useCallback(
     (data: DataType) => (e: React.MouseEvent) => {
       e.preventDefault();
-      tableTools.updateActiveRow((data as any)[tp.uniqueRowKey]);
+      gridTools.updateActiveRow(data[gridProps.uniqueRowKey]);
       displayActionsMenu({
-        data: data as any,
+        data: data,
         position: {
           xAxis: e.clientX,
           yAxis: e.clientY + 10,
         },
-        identifier: data[tp.uniqueRowKey as keyof DataType] as string,
+        identifier: data[gridProps.uniqueRowKey],
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +64,8 @@ function ViewContainer<DataType>(
 
   function renderCell(
     { width, data, dataRender, type, colKey, dataCellAlignment }: ReturnType<typeof extractBasicCellProps>,
-    index: number
+    index: number,
+    rowIndex: number
   ) {
     const commonDataGridRowCellProps = {
       style: {
@@ -80,21 +81,20 @@ function ViewContainer<DataType>(
 
     switch (type) {
       case "data":
-        const dataToRender = data[colKey as keyof DataType];
-        children = dataRender ? dataRender?.(data) : (dataToRender as React.ReactNode);
+        const dataToRender = data[colKey];
+        children = dataRender ? dataRender?.(data) : dataToRender;
         break;
       case "actions":
         children = <ActionsMenuButton onClick={rowActionsMenu(data)} />;
         break;
       case "expand":
-        const uniqueIdData = data[tp.uniqueRowKey as keyof DataType];
-        const isExpanded = tableTools.expandedRowKeys.has(uniqueIdData as string);
-        children = (!tp.expandableRows?.excludeWhen || !tp.expandableRows.excludeWhen(data)) && (
+        const isExpanded = gridTools.expandedRowKeys.has(rowIndex);
+        children = (!gridProps.expandableRows?.excludeWhen || !gridProps.expandableRows.excludeWhen(data)) && (
           <ExpandButton
             isExpanded={isExpanded}
             onClick={(e) => {
               e.stopPropagation();
-              tableTools.updateRowExpansion(uniqueIdData as string);
+              gridTools.updateRowExpansion(rowIndex);
             }}
             title={isExpanded ? localization?.rowShrinkTitle : localization?.rowExpandTitle}
           />
@@ -105,102 +105,120 @@ function ViewContainer<DataType>(
         children = (
           <Checkbox
             onChange={
-              tp.selectableRows?.active && tp.selectableRows.type === "default"
-                ? (e) => tableTools.updateSelectedRows(data[tp.uniqueRowKey as keyof unknown])
+              gridProps.rowSelection?.enabled && gridProps.rowSelection.type === "default"
+                ? (e) => gridTools.updateSelectedRows(data[gridProps.uniqueRowKey])
                 : undefined
             }
-            readOnly={tp.selectableRows?.type === "onRowClick"}
-            checked={tableTools.selectedRows.has(data[tp.uniqueRowKey as keyof unknown])}
+            readOnly={gridProps.rowSelection?.type === "onRowClick"}
+            checked={gridTools.selectedRows.has(data[gridProps.uniqueRowKey])}
           />
         );
         break;
     }
 
     return (
-      <Cell className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`)} {...commonDataGridRowCellProps}>
-        <CellContent tooltipProps={tp.tooltipOptions}>{children}</CellContent>
+      <Cell
+        className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`, index === 0 && "no-border")}
+        {...commonDataGridRowCellProps}
+      >
+        <CellContent tooltipProps={gridProps.tooltipOptions}>{children}</CellContent>
       </Cell>
     );
   }
 
   const mapCommonRowProps = useCallback(
-    (dat: DataType) => {
-      const identifier: any = dat[tp.uniqueRowKey as keyof unknown];
-      const isExpanded = tableTools.isRowExpanded(dat[tp.uniqueRowKey as keyof unknown]);
+    (dat: DataType, index: number): Partial<RowProps> & { key: string } => {
+      const identifier: any = dat[gridProps.uniqueRowKey];
+      const isExpanded = gridTools.isRowExpanded(index);
       return {
-        onClick: (e: React.MouseEvent<HTMLDivElement>) => tableTools.onRowClick(e, dat),
+        onClick: (e: React.MouseEvent<HTMLDivElement>) => gridTools.onRowClick(e, dat),
         key: identifier,
-        onContextMenu: tp.rowActionsMenu?.active && tp.rowActionsMenu?.displayOnRightClick !== false ? rowActionsMenu(dat) : undefined,
+        onContextMenu: gridTools.isRightClickIsActive ? rowActionsMenu(dat) : undefined,
         expandRowProps: {
-          children: tp.expandableRows?.render?.(dat, containerWidth),
-          showSeparatorLine: tp.expandableRows?.showSeparatorLine === true,
+          children: gridProps.expandableRows?.render?.(dat, containerWidth),
+          showSeparatorLine: gridProps.expandableRows?.showSeparatorLine === true,
           isRowExpanded: isExpanded,
           leftOffset: pinnedColumns?.leftWidth,
-          basicColumnsWidth: columnsInUse.totalWidth,
-        } as ExpandProps,
-        isRowSelected: tableTools.isRowSelected(identifier),
-        isRowActive: tableTools.isRowActive(identifier),
+          updateExpandRowHeightCache: gridTools.isDynamicRowExpandHeightEnabled ? gridTools.updateExpandRowHeightCache : undefined,
+          rowIndex: index,
+        },
+        isRowSelected: gridTools.isRowSelected(identifier),
+        isRowActive: gridTools.isRowActive(identifier),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      tp.uniqueRowKey,
-      tp.expandableRows,
-      tableTools.expandedRowKeys,
-      tableTools.selectedRows,
-      tableTools.activeRow,
+      gridTools.isRowExpanded,
+      gridProps.uniqueRowKey,
+      gridProps.expandableRows,
+      gridTools.isRowSelected,
+      gridTools.isRowActive,
       pinnedColumns?.leftWidth,
       containerWidth,
     ]
   );
 
-  const indexedData = useMemo(() => {
-    return dataTools.data?.map((d, i) => ({ ...d, __row_index: i }));
-  }, [dataTools.data]);
+  const renderCellCollection = (
+    col: ColumnDefinitionExtended<DataType>,
+    d: DataType,
+    cellIndex: number,
+    rowIndex: number = d.__virtual_row_index
+  ) => renderCell(extractBasicCellProps(col, d), cellIndex, rowIndex);
 
+  const renderFullRow = useCallback(
+    (rowData: DataType, style: React.CSSProperties = {}, rowIndex = rowData.__virtual_row_index) => (
+      <Row
+        className={rowIndex % 2 === 0 ? undefined : "odd"}
+        style={style}
+        totalColumnsWidth={totalColumnsWidth}
+        tabIndex={rowIndex + 1}
+        {...mapCommonRowProps(rowData, rowIndex)}
+      >
+        {!!pinnedColumns?.leftWidth && (
+          <LockedStartWrapper type="body">
+            {pinnedColumns.leftColumns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
+          </LockedStartWrapper>
+        )}
+        {columnsToRender.columns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
+        {!!pinnedColumns?.rightWidth && (
+          <LockedEndWrapper type="body">
+            {pinnedColumns.rightColumns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
+          </LockedEndWrapper>
+        )}
+      </Row>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      columnsToRender.columns,
+      mapCommonRowProps,
+      pinnedColumns?.leftWidth,
+      pinnedColumns?.rightWidth,
+      renderCellCollection,
+      totalColumnsWidth,
+    ]
+  );
   return (
     <div ref={viewRef} className="view-container" {...props}>
       <RowContainer>
-        {dataTools.data && (
+        {gridTools.isVirtualizationIsEnabled && indexedData && (
           <VirtualList
-            containerHeight={containerHeight!}
-            rowHeight={
-              dimensions.defaultDataRowHeight
-              // To address bordered-cell (border-bottom, see Scroller and theming.css).
-            }
+            containerHeight={containerHeight}
+            rowHeight={dimensions.defaultDataRowHeight}
             expandPanelHeight={dimensions.defaultExpandPanelHeight}
+            getRowExpansionHeight={getRowExpansionHeight}
             topScrollPosition={topScrollPosition}
-            disabled={tp.virtualization?.active === false}
-            preRenderedRowCount={tp.virtualization?.preRenderedRowCount}
-            expandRowKeys={tableTools.expandedRowKeys as Set<number>}
-            elements={indexedData!}
-            uniqueRowKey={tp.uniqueRowKey as keyof DataType}
-            renderElement={(d, style) => (
-              <Row
-                className={d.__row_index % 2 === 0 ? "odd" : undefined}
-                style={style}
-                totalColumnsWidth={totalColumnsWidth}
-                tabIndex={d.__row_index + 1}
-                {...mapCommonRowProps(d)}
-              >
-                {!!pinnedColumns?.leftWidth && (
-                  <LockedStartWrapper type="body">
-                    {pinnedColumns.leftColumns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
-                  </LockedStartWrapper>
-                )}
-                {columnsInUse.columns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
-                {!!pinnedColumns?.rightWidth && (
-                  <LockedEndWrapper type="body">
-                    {pinnedColumns.rightColumns.map((col, i) => renderCell(extractBasicCellProps(col, d), i))}
-                  </LockedEndWrapper>
-                )}
-              </Row>
-            )}
+            preRenderedRowCount={gridProps.virtualization?.preRenderedRowCount}
+            expandRowKeys={gridTools.expandedRowKeys}
+            rows={indexedData}
+            isDynamicExpandActive={gridTools.isDynamicRowExpandHeightEnabled}
+            getExpandRowHeightFromCache={gridTools.getExpandRowHeightFromCache}
+            renderElement={renderFullRow}
           />
         )}
+        {!gridTools.isVirtualizationIsEnabled && dataTools.data && dataTools.data.map((dat, index) => renderFullRow(dat, undefined, index))}
       </RowContainer>
     </div>
   );
-}
+};
 
-export default React.forwardRef(ViewContainer);
+export default ViewContainer;

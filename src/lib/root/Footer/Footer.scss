@@ -1,0 +1,179 @@
+.data-grid {
+  .footer {
+    button.pagination-button.active {
+      font-weight: 600;
+      cursor: default;
+      box-shadow: var(--grid-box-shadow-primary);
+      background: var(--grid-color-primary);
+      span {
+        color: var(--grid-color-bg);
+      }
+    }
+    button.pagination-button {
+      span {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        top: 0px;
+        left: 0px;
+      }
+      border: none;
+      position: relative;
+      display: inline-flex;
+      margin: 0 0;
+      align-items: center;
+      justify-content: center;
+      padding: 0px 5px;
+      box-sizing: border-box;
+      text-transform: capitalize;
+      user-select: none;
+      white-space: nowrap;
+      text-align: center;
+      vertical-align: middle;
+      box-shadow: none;
+      outline: none;
+      height: 2rem;
+      min-width: 2rem;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+      color: var(--grid-color-text);
+      background: var(--grid-color-button-bg);
+      transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, 0.3s ease-in-out transform;
+      outline: none;
+      &:focus {
+        outline: 2px solid var(--grid-color-hover);
+      }
+      &:not(.active) {
+        &:hover {
+          background: var(--grid-color-button-hover-bg);
+        }
+      }
+      &:disabled {
+        cursor: not-allowed;
+      }
+      &:not(:disabled) {
+        &:active {
+          transform: scale(0.97);
+        }
+      }
+      .btn-icon {
+        width: 15px;
+      }
+      .ff-swap {
+        display: none;
+      }
+    }
+    button.pagination-button.ff-left {
+      span {
+        &:not(.ff-swap) {
+          .btn-icon {
+            fill: #7e868c;
+          }
+        }
+      }
+      .ff-swap {
+        transform: rotate(-180deg);
+      }
+      &:hover {
+        .content {
+          display: none;
+        }
+        .ff-swap {
+          display: flex;
+        }
+      }
+    }
+    button.pagination-button.ff-right {
+      span {
+        &:not(.ff-swap) {
+          .btn-icon {
+            fill: #7e868c;
+          }
+        }
+      }
+      &:hover {
+        .content {
+          display: none;
+        }
+        .ff-swap {
+          display: flex;
+        }
+      }
+    }
+    padding: 0 0.75rem;
+    height: 96px;
+    margin-top: auto;
+    border-top: 1px solid var(--grid-color-line);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 20px;
+      width: 100%;
+      .pagination-page-numbers {
+        margin: 0px;
+        padding: 0px;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        font-variant: tabular-nums;
+        margin-left: auto;
+        width: 100%;
+        button {
+          margin: 0 3px;
+          &:first-child {
+            margin-right: 15px;
+          }
+          &:last-child {
+            margin-left: 15px;
+          }
+        }
+      }
+      .pagination-page-size {
+        margin-left: auto;
+      }
+      .pagination-data-count {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: keep-all;
+        position: relative;
+        overflow-wrap: break-word;
+        user-select: none;
+        .title {
+          font-size: 14px;
+        }
+        .data-count {
+          font-weight: 500;
+          font-size: 14px;
+        }
+        .settings {
+          position: relative;
+        }
+        .settings-button {
+          .settings-icon {
+            fill: gray;
+            width: 20px;
+            transition: 0.2s ease-in-out fill;
+          }
+        }
+      }
+    }
+    .pagination-skeleton {
+      width: 100%;
+      padding: unset;
+    }
+    .select-list-wrapper {
+      top: -110px;
+      transition: 0.3s ease-in-out;
+    }
+  }
+}

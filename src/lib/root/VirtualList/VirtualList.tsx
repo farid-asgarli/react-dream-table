@@ -1,58 +1,60 @@
-import React, { useMemo } from "react";
+import React, { useCallback } from "react";
 import { ConstProps } from "../../static/constantProps";
 import { VirtualListProps } from "../../types/Elements";
-import "./VirtualList.css";
+import { IndexedData } from "../../types/Utils";
 
-export default function VirtualList<DataType>({
-  elements,
-  topScrollPosition,
+export default function VirtualList<DataType extends IndexedData>({
+  rows,
   rowHeight,
-  containerHeight,
-  disabled,
   expandRowKeys,
-  expandPanelHeight,
-  uniqueRowKey,
   renderElement,
+  containerHeight,
+  expandPanelHeight,
+  topScrollPosition,
+  isDynamicExpandActive,
+  getRowExpansionHeight,
   preRenderedRowCount = ConstProps.defaultPreRenderedRows,
 }: VirtualListProps<DataType>) {
-  const bufferedItems = preRenderedRowCount + expandRowKeys.size;
-  const expansionHeightPerRow = useMemo(() => {
-    if (expandRowKeys.size === 0) return;
-    let elementsToIncreaseHeight = 0;
-    const expDictionary: Record<number, number> = {};
-    elements.forEach((c) => {
-      const uniqueId = c[uniqueRowKey];
-      expDictionary[uniqueId as number] = elementsToIncreaseHeight * expandPanelHeight;
-      if (expandRowKeys.has(uniqueId as number)) {
-        elementsToIncreaseHeight++;
+  const expandPanelHeightToDeduct = React.useMemo(() => {
+    if (!expandRowKeys.size) return 0;
+    if (isDynamicExpandActive) {
+      let totalHeight = 0;
+      expandRowKeys.forEach((exp) => {
+        if (exp < Math.floor(topScrollPosition / rowHeight)) totalHeight += getRowExpansionHeight(exp) ?? 0;
+      });
+      return totalHeight;
+    } else return Array.from(expandRowKeys).filter((x) => x < Math.floor(topScrollPosition / rowHeight)).length * expandPanelHeight;
+  }, [expandPanelHeight, expandRowKeys, getRowExpansionHeight, isDynamicExpandActive, rowHeight, topScrollPosition]);
+
+  const extractVirtualizedData = useCallback(
+    (start: number, end: number) => {
+      const virtualizedRows: JSX.Element[] = [];
+      for (let index = start; index <= end; index++) {
+        if (rows[index] !== undefined)
+          virtualizedRows.push(
+            renderElement(rows[index], {
+              position: "absolute",
+              top: index * rowHeight + (getRowExpansionHeight(rows[index].__virtual_row_index) ?? 0),
+            })
+          );
       }
-    });
-    return expDictionary;
-  }, [elements, expandPanelHeight, expandRowKeys, uniqueRowKey]);
-
-  const visibleVirtualChildren = React.useMemo(() => {
-    const startIndex = Math.max(Math.floor(topScrollPosition / rowHeight) - bufferedItems, 0);
-    const endIndex = Math.min(Math.ceil((topScrollPosition + containerHeight) / rowHeight - 1) + bufferedItems, elements.length - 1);
-
-    return elements.slice(startIndex, endIndex + 1).map((data, index) => {
-      const uniqueId = data[uniqueRowKey];
-      const styleToApply: React.CSSProperties = {
-        position: "absolute",
-        top: (startIndex + index) * rowHeight + (expansionHeightPerRow?.[uniqueId as number] ?? 0),
-        height: rowHeight,
-      };
-      return renderElement(data, styleToApply);
-    });
-    // elements, containerHeight, disabled, expandRowKeys, rowHeight, topScrollPosition
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, containerHeight, disabled, rowHeight, topScrollPosition, expansionHeightPerRow, renderElement]);
-
-  const visibleNonVirtualChildren = React.useMemo(
-    () => elements.map((data) => renderElement(data, {})),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [elements, renderElement]
+      return virtualizedRows;
+    },
+    [getRowExpansionHeight, renderElement, rowHeight, rows]
   );
 
-  if (disabled) return visibleNonVirtualChildren as unknown as JSX.Element;
-  return visibleVirtualChildren as unknown as JSX.Element;
+  return React.useMemo(() => {
+    const startIndex = Math.max(Math.floor((topScrollPosition - expandPanelHeightToDeduct) / rowHeight) - preRenderedRowCount, 0);
+    const endIndex = Math.min(Math.ceil((topScrollPosition + containerHeight) / rowHeight - 1) + preRenderedRowCount, rows.length - 1);
+
+    return extractVirtualizedData(startIndex, endIndex + 3);
+  }, [
+    topScrollPosition,
+    expandPanelHeightToDeduct,
+    rowHeight,
+    preRenderedRowCount,
+    containerHeight,
+    rows.length,
+    extractVirtualizedData,
+  ]) as unknown as JSX.Element;
 }

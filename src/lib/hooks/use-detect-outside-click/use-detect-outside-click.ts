@@ -6,10 +6,7 @@ import React, { useEffect } from "react";
  * @param refObject A collection of ref objects or a single ref.
  * @param callback Function to execute on click.
  */
-export function useDetectOutsideClick<TRef>(
-  elementRef: React.RefObject<TRef>,
-  callback?: (event: MouseEvent, key?: string) => void
-) {
+export function useDetectOutsideClick<TRef>(elementRef: React.RefObject<TRef>, callback?: (event: MouseEvent, key?: string) => void) {
   useEffect(() => {
     function fireEvent(ref: React.RefObject<TRef>, event: MouseEvent, key?: string) {
       if (ref.current && !(ref.current as any).contains(event.target)) {

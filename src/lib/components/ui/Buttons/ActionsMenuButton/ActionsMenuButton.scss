@@ -1,0 +1,47 @@
+.data-grid {
+  .actions-menu-constructor-button {
+    all: unset;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    min-width: 25px;
+    max-width: 25px;
+    min-height: 25px;
+    max-height: 25px;
+    border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+    cursor: pointer;
+    transition: 0.3s ease-in-out background;
+    &:focus {
+      outline: 2px solid var(--grid-color-hover);
+    }
+    &:hover {
+      background: var(--grid-color-hover);
+    }
+    .actions-menu-constructor-icon {
+      fill: var(--color-icon);
+      font-size: 24px;
+    }
+    &:active {
+      .actions-menu-constructor-icon {
+        scale: 0.8;
+      }
+    }
+  }
+  .expand-button {
+    .expand-icon {
+      transition: 0.2s ease-in-out transform;
+    }
+  }
+  .actions-menu-constructor-button.active {
+    .actions-menu-constructor-icon {
+      fill: var(--grid-color-primary);
+    }
+    background: var(--grid-color-hover);
+  }
+  .expand-button.active {
+    .expand-icon {
+      transform: rotate(-180deg);
+    }
+  }
+}

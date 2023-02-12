@@ -1,0 +1,32 @@
+.data-grid {
+  .scroller {
+    display: block;
+    position: absolute;
+    inset: 0px;
+    overflow: auto;
+    overscroll-behavior: auto;
+    backface-visibility: hidden;
+    &::-webkit-scrollbar {
+      width: var(--grid-scrollbar-width);
+      height: var(--grid-scrollbar-width);
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 12px;
+      border: 6px solid transparent;
+    }
+  }
+  .scroller.scrolling-active {
+    contain: strict;
+  }
+  .empty-spacer {
+    position: absolute;
+    contain: strict;
+    left: 0px;
+    height: 1px;
+    top: 0px;
+    pointer-events: none;
+  }
+}

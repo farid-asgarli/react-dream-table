@@ -1,12 +1,15 @@
-import { CompleteFilterFnDefinition } from "../types/Utils";
+import { CompleteFilterFnDefinition, DefaultDataGridLocale } from "../types/Utils";
 
 export const ConstProps = {
-  defaultActiveFn: "contains" as CompleteFilterFnDefinition,
-  defaultActiveDateFn: "equals" as CompleteFilterFnDefinition,
   defaultPaginationCurrentPage: 1,
   defaultPaginationPageSize: 10,
-  defaultPickerLocale: "en" as const,
-  defaultPreRenderedRows: 6,
+  defaultPreRenderedRows: 5,
+  defaultLocale: "en" as DefaultDataGridLocale,
+  defaultActiveFn: "contains" as CompleteFilterFnDefinition,
+  defaultActiveDateFn: "equals" as CompleteFilterFnDefinition,
   defaultRangeFns: ["between", "betweenInclusive"] as CompleteFilterFnDefinition[],
   defaultFnsNoFilter: ["empty", "notEmpty"] as CompleteFilterFnDefinition[],
 };
+
+export const DefaultDateDelimiter = "/";
+export const DefaultDateTemplate = `DD${DefaultDateDelimiter}MM${DefaultDateDelimiter}YYYY`;

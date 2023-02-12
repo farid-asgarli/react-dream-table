@@ -1,9 +1,8 @@
 import React from "react";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
-// import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import { cs } from "../../../utils/ConcatStyles";
-import Fade from "../../animations/Fade/Fade";
-import "./EmptyDataGrid.css";
+import { Animations } from "../../animations/Animations";
+import "./EmptyDataGrid.scss";
 
 export default function EmptyDataGrid({
   className,
@@ -16,13 +15,13 @@ export default function EmptyDataGrid({
   const { localization, icons, dimensions } = useDataGridStaticContext();
 
   return (
-    <Fade visible={visible}>
+    <Animations.Auto visible={visible}>
       <div style={{ ...style, bottom: dimensions.defaultScrollbarWidth }} className={cs("empty-data-grid", className)} {...props}>
         <div className={"empty-data-grid-wrapper"}>
           <icons.Empty className={"empty-icon"} />
           <span className={"empty-text"}>{localization.noResult}</span>
         </div>
       </div>
-    </Fade>
+    </Animations.Auto>
   );
 }

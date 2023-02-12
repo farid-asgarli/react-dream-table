@@ -2,11 +2,9 @@ import React, { useMemo } from "react";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import Row from "../../../root/Row/Row";
 import { cs } from "../../../utils/ConcatStyles";
-import Fade from "../../animations/Fade/Fade";
+import { Animations } from "../../animations/Animations";
 import Skeleton from "../Skeleton/Skeleton";
-// import VirtualDataGridRow from "../../../DataGrid/DataGridRow/VirtualDataGridRow";
-// import Skeleton from "../Skeleton/Skeleton";
-import "./LoadingSkeleton.css";
+import "./LoadingSkeleton.scss";
 
 export default function LoadingSkeleton({
   className,
@@ -22,7 +20,7 @@ export default function LoadingSkeleton({
   );
 
   return (
-    <Fade>
+    <Animations.Auto>
       <div
         className={cs("skeleton-data-grid", className)}
         style={{
@@ -30,19 +28,21 @@ export default function LoadingSkeleton({
         }}
         {...props}
       >
-        {[...Array(rowsToRender)].map((_, i) => (
-          <Row
-            style={{
-              height: dimensions.defaultDataRowHeight,
-            }}
-            totalColumnsWidth="100%"
-            className="row-skeleton"
-            key={i}
-          >
-            <Skeleton />
-          </Row>
-        ))}
+        {rowsToRender &&
+          rowsToRender > 0 &&
+          [...Array(rowsToRender)].map((_, i) => (
+            <Row
+              style={{
+                height: dimensions.defaultDataRowHeight,
+              }}
+              totalColumnsWidth="100%"
+              className="row-skeleton"
+              key={i}
+            >
+              <Skeleton />
+            </Row>
+          ))}
       </div>
-    </Fade>
+    </Animations.Auto>
   );
 }

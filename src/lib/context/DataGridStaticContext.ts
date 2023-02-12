@@ -1,26 +1,28 @@
 import React, { useContext } from "react";
+import { DefaultDataGridLocale } from "../types/Utils";
 import {
   KeyLiteralType,
   DataGridDimensionsDefinition,
   DataGridIconsDefinition,
   DataGridLocalizationDefinition,
-  DataGridThemeDefinition,
+  DataGridStylingDefinition,
 } from "../types/DataGrid";
-import { FooterProps } from "../types/Utils";
+import { GridDataType } from "../types/Utils";
 
-type DataGridStaticContextType<DataType> = {
+type DataGridStaticContextType<DataType extends GridDataType> = {
+  defaultLocale: DefaultDataGridLocale;
   localization: DataGridLocalizationDefinition;
   dimensions: DataGridDimensionsDefinition;
-  theming: DataGridThemeDefinition;
+  styling: DataGridStylingDefinition;
   icons: DataGridIconsDefinition;
-  optionsMenuColumns: { key: KeyLiteralType<DataType>; title?: string }[];
-  paginationDefaults: FooterProps<DataType>["paginationDefaults"];
+  columnVisibilityProps: { key: KeyLiteralType<DataType>; title?: string }[];
   striped: boolean;
   isRowClickable: boolean;
   animationProps: {
     duration: number;
   };
   virtualizationEnabled: boolean;
+  groupingHeaderEnabled: boolean;
 };
 
 const DataGridStaticContext = React.createContext<DataGridStaticContextType<any> | null>(null);

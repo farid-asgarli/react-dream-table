@@ -1,12 +1,40 @@
 import { HTMLAttributes } from "react";
+import { LocalizationEntries } from "../static/localization";
+import useDataGridTools from "../logic/tools/data-grid-tools";
 import { DisplayActionsMenu } from "../logic/tools/actions-menu-factory";
-import { ColumnDefinition, ColumnVisibilityProps, InputFiltering, KeyLiteralType, DataGridPaginationProps } from "./DataGrid";
+import { useDataManagement } from "../logic/data-management/dataManagement";
+import { ColumnDefinition, InputFiltering, KeyLiteralType, DataGridPaginationProps, SettingsMenuProps } from "./DataGrid";
 
-export interface ActionsMenuListItem {
+export interface GridTools<DataType extends GridDataType> extends ReturnType<typeof useDataGridTools<DataType>> {
+  getColumnByKey(key: string): ColumnDefinitionExtended<DataType> | undefined;
+}
+
+export type DataTools<DataType extends GridDataType> = ReturnType<typeof useDataManagement<DataType>>;
+
+export interface GroupedColumnHeaderDefinition {
+  width: number;
+  title: string | undefined;
+  keys: string[];
+}
+
+export type GroupedColumnHeaderCollection = {
+  unlockedGroupedColumnHeaders: GroupedColumnHeaderDefinition[] | undefined;
+  leftLockedGroupedColumnHeaders: GroupedColumnHeaderDefinition[] | undefined;
+  rightLockedGroupedColumnHeaders: GroupedColumnHeaderDefinition[] | undefined;
+};
+
+export interface BaseActionsMenuListItemProps {
   content?: React.ReactNode;
-  key?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   isSelected?: boolean;
+  className?: string | undefined;
+  renderCustomComponent?: React.ReactNode;
+}
+
+export interface ActionsMenuListItem extends BaseActionsMenuListItemProps {
+  subMenu?: {
+    items: BaseActionsMenuListItemProps[];
+  };
 }
 
 export interface ActionsMenuProps {
@@ -15,7 +43,7 @@ export interface ActionsMenuProps {
   children: React.ReactNode | Array<ActionsMenuListItem | undefined>;
 }
 
-export interface ColumnDefinitionExtended<DataType> extends Omit<ColumnDefinition<DataType>, "width"> {
+export interface ColumnDefinitionExtended<DataType extends GridDataType> extends Omit<ColumnDefinition<DataType>, "width"> {
   type: "select" | "actions" | "expand" | "data";
   pinned?: "left" | "right" | undefined;
   key: string;
@@ -51,40 +79,51 @@ export type SortDirectionDefinition = "ascending" | "descending" | undefined;
 export type DataFetchingDefinition = "pagination" | "filter-fetch" | "filter-select" | "sort";
 
 export interface DataGridStyleProps extends React.CSSProperties {
-  "--color-primary": string | undefined;
-  "--color-hover": string | undefined;
-  "--border-radius-lg": string | undefined;
-  "--border-radius-md": string | undefined;
-  "--border-radius-sm": string | undefined;
-  "--box-shadow-main": string | undefined;
-  "--scrollbar-width": string | undefined;
+  "--grid-color-primary": string | undefined;
+  "--grid-color-hover": string | undefined;
+  "--grid-border-radius-lg": string | undefined;
+  "--grid-border-radius-md": string | undefined;
+  "--grid-border-radius-sm": string | undefined;
+  "--grid-box-shadow-main": string | undefined;
+  "--grid-scrollbar-width": string | undefined;
 }
 
-export interface OptionsMenuProps<DataType> extends HTMLAttributes<HTMLDivElement> {
+export type DefaultDataGridLocale = keyof typeof LocalizationEntries;
+
+export interface OptionsMenuProps<DataType extends GridDataType> extends HTMLAttributes<HTMLDivElement> {
   visibleColumnKeys: Set<KeyLiteralType<DataType>>;
-  handleColumnVisibility(key: KeyLiteralType<DataType>): Set<KeyLiteralType<DataType>>;
-  toggleFullScreenMode: (() => void) | undefined;
-  hideMenu: () => void;
+  isDarkModeEnabled: boolean;
+  isFullScreenModeEnabled: boolean;
+  isFilterMenuVisible: boolean;
+  isColumnGroupingEnabled: boolean;
+  isColumnVisibilityEnabled: boolean;
+  updateActiveHeader: (key: string | undefined) => void;
+  updateColumnVisibility(key: KeyLiteralType<DataType>): Set<KeyLiteralType<DataType>>;
+  updateDarkMode(): void;
+  updateFullScreenMode(): void;
+  updateFilterMenuVisibility(): void;
+  updateColumnGrouping(): void;
+  optionsMenuProps: SettingsMenuProps | undefined;
 }
 
-export interface FooterProps<DataType> {
-  paginationProps: DataGridPaginationProps;
-  updatePaginationProps: (valuesToUpdate: DataGridPaginationProps) => void;
-  onPaginationChange?: (props: DataGridPaginationProps) => void;
-  progressReporters: Set<DataFetchingDefinition>;
-  paginationDefaults?: {
-    pageSizes?: Array<number>;
-    defaultCurrentPage?: number;
-    defaultPageSize?: number;
+export interface FooterProps {
+  paginationProps: {
+    gridPaginationProps: DataGridPaginationProps;
+    updateCurrentPagination: (valuesToUpdate: DataGridPaginationProps) => void;
+    paginationDefaults?: {
+      pageSizes?: Array<number>;
+      defaultCurrentPage?: number;
+      defaultPageSize?: number;
+    };
   };
+  progressReporters: Set<DataFetchingDefinition>;
   optionsMenu: {
     displayOptionsMenu: DisplayActionsMenu<any>;
     isMenuVisible: boolean;
+    enabled: boolean;
   };
-  columnVisibilityOptions: ColumnVisibilityProps<DataType> | undefined;
   selectedRows: Set<DataGridRowKeyDefinition>;
   loading?: boolean | undefined;
-  toggleFullScreenMode: (() => void) | undefined;
 }
 
 export interface FilteringProps {
@@ -100,8 +139,13 @@ export interface FilteringProps {
   renderCustomInput?: InputFiltering["renderCustomInput"];
   isRangeInput: boolean;
   disableInputIcon: boolean;
-  pickerLocale?: "en" | "az";
 }
+
+export type IndexedData<DataType = GridDataType> = DataType & {
+  __virtual_row_index: number;
+};
+
+export type GridDataType = Record<string, any>;
 
 export interface ScrollPosition {
   left: number;

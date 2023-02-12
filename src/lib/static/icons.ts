@@ -12,7 +12,7 @@ import Date from "../icons/Date";
 import Drag from "../icons/Drag";
 import Empty from "../icons/Empty";
 import FastForward from "../icons/FastForward";
-import Filter from "../icons/Filter";
+import FilterMenu from "../icons/FilterMenu";
 import Hidden from "../icons/Hidden";
 import Settings from "../icons/Settings";
 import Menu from "../icons/Menu";
@@ -26,6 +26,11 @@ import Search from "../icons/Search";
 import ThreeDots from "../icons/ThreeDots";
 import Unpin from "../icons/Unpin";
 import FullScreen from "../icons/FullScreen";
+import DarkMode from "../icons/DarkMode";
+import FilterVisibility from "../icons/FilterVisibility";
+import Columns from "../icons/Columns";
+import Info from "../icons/Info";
+import ColumnGroup from "../icons/ColumnGroup";
 export const DefaultDataGridIcons = {
   ArrowDown,
   ArrowLeft,
@@ -37,13 +42,18 @@ export const DefaultDataGridIcons = {
   ClearFilters,
   ClearSorting,
   Close,
+  Columns,
+  ColumnGroup,
+  DarkMode,
   Date,
   Drag,
   Empty,
   FastForward,
-  Filter,
+  FilterMenu,
+  FilterVisibility,
   FullScreen,
   Hidden,
+  Info,
   Menu,
   Minus,
   MultiDot,

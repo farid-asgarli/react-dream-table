@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { cs } from "../../utils/ConcatStyles";
 import { useDraggable } from "../../hooks/use-draggable/use-draggable";
 import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
-import "./ColumnResizer.css";
+import "./ColumnResizer.scss";
 
 function ColumnResizer({
   className,
@@ -63,7 +63,7 @@ function ColumnResizer({
         ref={ref}
         className={cs("column-resize-handle", pressed && "active", outOfBounds && "out-of-bounds")}
         style={{
-          height: pressed ? `calc(100% + ${containerHeight ?? 0}px)` : undefined,
+          height: pressed ? `calc(100% + ${(containerHeight ?? 0) - dimensions.defaultScrollbarWidth}px)` : undefined,
         }}
       />
     </div>

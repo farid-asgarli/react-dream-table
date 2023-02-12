@@ -1,0 +1,14 @@
+.data-grid .row {
+  display: flex;
+  flex-flow: row;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: stretch;
+  backface-visibility: hidden;
+  visibility: visible;
+  contain: layout style;
+  direction: ltr;
+  overflow: visible;
+  z-index: unset;
+  transition: ease-in-out top;
+}

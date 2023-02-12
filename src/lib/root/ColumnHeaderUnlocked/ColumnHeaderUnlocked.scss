@@ -1,0 +1,34 @@
+.data-grid {
+  .column-header-unlocked {
+    display: inline-flex;
+    vertical-align: middle;
+    flex-flow: row;
+    align-items: center;
+    justify-content: flex-start;
+    -ms-flex: 1 1 auto;
+    flex: 1 1;
+    white-space: nowrap;
+    line-height: 1.6;
+    font-weight: inherit;
+    text-align: start;
+    position: relative;
+    transition: 0.2s ease-in-out outline;
+  }
+  .column-header {
+    &.align-middle {
+      .column-header-unlocked {
+        justify-content: center;
+      }
+    }
+    &.align-left {
+      .column-header-unlocked {
+        justify-content: flex-start;
+      }
+    }
+    &.align-right {
+      .column-header-unlocked {
+        justify-content: flex-end;
+      }
+    }
+  }
+}

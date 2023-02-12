@@ -1,119 +1,143 @@
-import { useCallback, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { cs } from "../../../../utils/ConcatStyles";
-import React from "react";
-import "./Picker.css";
-import "dayjs/locale/az";
-import "dayjs/locale/en";
-import { useDataGridStaticContext } from "../../../../context/DataGridStaticContext";
-import ButtonPrimary from "../../Buttons/ButtonPrimary/ButtonPrimary";
+import React, { useEffect, useState } from "react";
+import DayPicker from "./DayPicker/DayPicker";
+import YearPicker from "./YearPicker/YearPicker";
+import DecadeRangePicker from "./DecadePicker/DecadePicker";
+import MonthPicker from "./MonthPicker/MonthPicker";
+import { Portal } from "../../Portal/Portal";
+import { DatePickerContext } from "../Context/DatePickerContext";
+import "./Picker.scss";
+
+const portalKeys = {
+  century: "century",
+  decade: "decade",
+  year: "year",
+  month: "month",
+  day: "day",
+} as const;
+
+export type PickerPortalKeys = typeof portalKeys[keyof typeof portalKeys];
 
 function DatePicker(
   {
-    dateAttrs: { selectedDate, setSelectedDate },
-    pickerLocale,
+    dateAttrs,
     ...props
   }: React.HtmlHTMLAttributes<HTMLDivElement> & {
     dateAttrs: {
       selectedDate: Dayjs;
       setSelectedDate: (fn: (date: Dayjs) => Dayjs) => void;
     };
-    pickerLocale: "en" | "az";
   },
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
-  const currentDay = useMemo(() => dayjs().toDate(), []);
+  const [currentPicker, setCurrentPicker] = useState<PickerPortalKeys>(portalKeys.day);
 
-  const firstDayOfTheMonth = useMemo(() => selectedDate.clone().startOf("month"), [selectedDate]);
+  function generateRange(type: "decade" | "century"): [number, number] {
+    return [
+      dateAttrs.selectedDate.year() - (dateAttrs.selectedDate.year() % 10),
+      dateAttrs.selectedDate.year() - (dateAttrs.selectedDate.year() % 10) + (type === "century" ? 100 : 10),
+    ];
+  }
 
-  const firstDayOfFirstWeekOfMonth = useMemo(() => dayjs(firstDayOfTheMonth).startOf("week"), [firstDayOfTheMonth]);
+  const [pickerDateState, setPickerDateState] = useState<{
+    century: [number, number];
+    decade: [number, number];
+    year: number;
+    month: number;
+  }>({
+    century: generateRange("century"),
+    decade: generateRange("decade"),
+    year: dateAttrs.selectedDate.year(),
+    month: dateAttrs.selectedDate.month(),
+  });
 
-  const generateFirstDayOfEachWeek = useCallback((day: Dayjs): Dayjs[] => {
-    const dates: Dayjs[] = [day];
-    for (let i = 1; i < 6; i++) {
-      const date = day.clone().add(i, "week");
-      dates.push(date);
-    }
-    return dates;
-  }, []);
+  const updatePickedCenturyRange = (value: [number, number]) => setPickerDateState((prev) => ({ ...prev, century: value }));
 
-  const generateWeek = useCallback((day: Dayjs): Date[] => {
-    const dates: Date[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = day.clone().add(i, "day").toDate();
-      dates.push(date);
-    }
-    return dates;
-  }, []);
+  const updatePickedDecadeRange = (value: [number, number]) => setPickerDateState((prev) => ({ ...prev, decade: value }));
 
-  const generateWeeksOfTheMonth = useMemo((): Date[][] => {
-    const firstDayOfEachWeek = generateFirstDayOfEachWeek(firstDayOfFirstWeekOfMonth);
-    return firstDayOfEachWeek.map((date) => generateWeek(date));
-  }, [generateFirstDayOfEachWeek, firstDayOfFirstWeekOfMonth, generateWeek]);
+  const updatePickedYear = (value: number) => setPickerDateState((prev) => ({ ...prev, year: value }));
 
-  const [flow, setFlow] = useState<"left-flow" | "right-flow">();
+  const updatePickedMonth = (value: number) => {
+    if (value < 0) {
+      const year = pickerDateState.year - 1;
+      const rangeStart = year - (year % 10);
+      setPickerDateState({
+        month: value + 12,
+        year: year,
+        century: [rangeStart, rangeStart + 100],
+        decade: [rangeStart, rangeStart + 10],
+      });
+    } else if (value > 11) {
+      const year = pickerDateState.year + 1;
+      const rangeStart = year - (year % 10);
+      setPickerDateState({
+        month: value - 12,
+        year: year,
+        century: [rangeStart, rangeStart + 100],
+        decade: [rangeStart, rangeStart + 10],
+      });
+    } else
+      setPickerDateState((prev) => ({
+        ...prev,
+        month: value,
+      }));
+  };
 
-  const { localization, icons } = useDataGridStaticContext();
+  const updatePickedDay = (value: Date) => {
+    dateAttrs.setSelectedDate(() => dayjs(value));
+  };
+
+  function updateCurrentPicker(key: PickerPortalKeys) {
+    setCurrentPicker(key);
+  }
+
+  function updateDateEntries() {
+    setPickerDateState({
+      century: generateRange("century"),
+      decade: generateRange("decade"),
+      year: dateAttrs.selectedDate.year(),
+      month: dateAttrs.selectedDate.month(),
+    });
+  }
+
+  useEffect(() => {
+    updateDateEntries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateAttrs.selectedDate]);
 
   return (
-    <div className="data-grid-dp main-wrapper" ref={ref} {...props}>
-      <div className="calendar-header-wrapper">
-        <h3>{selectedDate.clone().locale(pickerLocale).format("MMM YYYY")}</h3>
-        <div className="arrows-wrapper">
-          <ButtonPrimary
-            onClick={() => {
-              setFlow("left-flow");
-              setSelectedDate((date) => date.subtract(1, "month"));
-            }}
-            title={localization.paginationPrev}
-          >
-            <icons.ArrowLeft className="button-icon" />
-          </ButtonPrimary>
-          <ButtonPrimary
-            onClick={() => {
-              setFlow("right-flow");
-              setSelectedDate((date) => date.add(1, "month"));
-            }}
-            title={localization.paginationNext}
-          >
-            <icons.ArrowRight className="button-icon" />
-          </ButtonPrimary>
-        </div>
+    <DatePickerContext.Provider
+      value={{
+        updateCurrentPicker,
+        updatePickedCenturyRange,
+        updatePickedDecadeRange,
+        updatePickedYear,
+        updatePickedMonth,
+        updatePickedDay,
+        pickerDateState,
+      }}
+    >
+      <div className="data-grid-dp main-wrapper" ref={ref} {...props}>
+        <Portal.Container
+          animationVariant="zoom"
+          activeWindowIndex={currentPicker}
+          indexOrder={["century", "decade", "year", "month", "day"] as PickerPortalKeys[]}
+        >
+          <Portal.Window index={portalKeys.decade}>
+            <DecadeRangePicker />
+          </Portal.Window>
+          <Portal.Window index={portalKeys.year}>
+            <YearPicker />
+          </Portal.Window>
+          <Portal.Window index={portalKeys.month}>
+            <MonthPicker />
+          </Portal.Window>
+          <Portal.Window index={portalKeys.day}>
+            <DayPicker selectedDate={dateAttrs.selectedDate} />
+          </Portal.Window>
+        </Portal.Container>
       </div>
-      <div className="week-days-wrapper">
-        {generateWeeksOfTheMonth[0].map((day, index) => (
-          <div className="week-day-cell" key={`week-day-${index}`}>
-            {dayjs(day).locale(pickerLocale).format("dd")}
-          </div>
-        ))}
-      </div>
-      <div className="calendar-flow">
-        <div key={selectedDate.month()} className={cs("calendar-content-wrapper", flow)}>
-          {generateWeeksOfTheMonth.map((week, weekIndex) => (
-            <div className="calendar-content" key={`week-${weekIndex}`}>
-              {week.map((day, dayIndex) => (
-                <button
-                  className="calendar-day-cell"
-                  key={`day-${dayIndex}`}
-                  onClick={() => setSelectedDate(() => dayjs(day))}
-                  style={{
-                    background: dayjs(day).isSame(selectedDate, "date") ? "var(--color-hover)" : undefined,
-                    color:
-                      selectedDate.clone().toDate().getMonth() !== day.getMonth()
-                        ? "#DAE1E7"
-                        : dayjs(currentDay).isSame(day, "date")
-                        ? "#E43F5A"
-                        : "#1B1B2F",
-                  }}
-                >
-                  {day.getDate()}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    </DatePickerContext.Provider>
   );
 }
 export default React.forwardRef(DatePicker);

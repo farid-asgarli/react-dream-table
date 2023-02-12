@@ -1,19 +1,25 @@
 import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { DefaultDateTemplate } from "../../static/constantProps";
 
-const equals = (data: string, filterValue: Dayjs) => filterValue.isSame(data);
+dayjs.extend(customParseFormat);
+const dayjsFormatted = (data: string) => dayjs(data, DefaultDateTemplate);
+
+const equals = (data: string, filterValue: Dayjs) => filterValue.isSame(dayjsFormatted(data));
 
 const contains = equals,
   startsWith = equals,
   endsWith = equals,
   equalsAlt = equals;
 
-const notEquals = (data: string, filterValue: Dayjs) => !filterValue.isSame(data);
+const notEquals = (data: string, filterValue: Dayjs) => !filterValue.isSame(dayjsFormatted(data));
 
-const greaterThan = (data: string, filterValue: Dayjs) => filterValue.isBefore(data);
+const greaterThan = (data: string, filterValue: Dayjs) => filterValue.isBefore(dayjsFormatted(data));
 
 const greaterThanOrEqualTo = (data: string, filterValue: Dayjs) => equals(data, filterValue) || greaterThan(data, filterValue);
 
-const lessThan = (data: string, filterValue: Dayjs) => filterValue.isAfter(data);
+const lessThan = (data: string, filterValue: Dayjs) => filterValue.isAfter(dayjsFormatted(data));
 
 const lessThanOrEqualTo = (data: string, filterValue: Dayjs) => equals(data, filterValue) || lessThan(data, filterValue);
 

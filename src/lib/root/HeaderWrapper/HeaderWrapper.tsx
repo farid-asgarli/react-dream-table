@@ -2,10 +2,9 @@ import React, { useImperativeHandle, useRef } from "react";
 import MenuButton from "../../components/ui/Buttons/MenuButton/MenuButton";
 import SortButton from "../../components/ui/Buttons/SortButton/SortButton";
 import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { HeaderWrapperProps } from "../../types/Elements";
-import { CommonDataType, InputFiltering, SelectFiltering } from "../../types/DataGrid";
-import { ColumnDefinitionExtended, FilteringProps } from "../../types/Utils";
+import { InputFiltering, SelectFiltering } from "../../types/DataGrid";
+import { ColumnDefinitionExtended, FilteringProps, GridDataType } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
 import Header from "../Header/Header";
@@ -13,31 +12,32 @@ import HeaderOrdering from "../HeaderOrdering/HeaderOrdering";
 import HeaderWrapperFill from "../HeaderWrapperFill/HeaderWrapperFill";
 import LockedEndWrapper from "../LockedEndWrapper/LockedEndWrapper";
 import LockedStartWrapper from "../LockedStartWrapper/LockedStartWrapper";
-import "./HeaderWrapper.css";
+import CollapseAllButton from "../../components/ui/Buttons/CollapseAllButton/CollapseAllButton";
+import GroupedColumnsWrapper from "../GroupedColumnsWrapper/GroupedColumnsWrapper";
+import "./HeaderWrapper.scss";
 
 export type HeaderWrapperRef = {
-  updateHeaderTransform: (scroll: number) => void;
+  updateHeaderTransform: (scroll: number, verticalScrollbarWidth: number) => void;
   updateLockedStartTransform: (scroll: number) => void;
   updateLockedEndTransform: (scroll: number) => void;
 };
 
-function HeaderWrapper<DataType extends CommonDataType>(
-  {
-    columnsInUse,
-    totalColumnsWidth,
-    verticalScrollbarWidth,
-    pinnedColumns,
-    tableTools,
-    dataTools,
-    tp,
-    onColumnHeaderFocus,
-    headerActionsMenu,
-    filterFnsMenu,
-    containerHeight,
-    ...props
-  }: React.HtmlHTMLAttributes<HTMLDivElement> & HeaderWrapperProps<DataType>,
-  ref: React.ForwardedRef<HeaderWrapperRef>
-) {
+function HeaderWrapper<DataType extends GridDataType>({
+  columnsToRender,
+  totalColumnsWidth,
+  verticalScrollbarWidth,
+  pinnedColumns,
+  gridTools,
+  dataTools,
+  gridProps,
+  onColumnHeaderFocus,
+  headerActionsMenu,
+  filterFnsMenu,
+  containerHeight,
+  headerWrapperRef,
+  groupedColumnHeaders,
+  ...props
+}: React.HtmlHTMLAttributes<HTMLDivElement> & HeaderWrapperProps<DataType>) {
   const headerRef = useRef<HTMLDivElement | null>(null);
   const lockedStartWrapperRef = useRef<HTMLDivElement | null>(null);
   const lockedEndWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -47,16 +47,19 @@ function HeaderWrapper<DataType extends CommonDataType>(
   }
 
   useImperativeHandle(
-    ref,
+    headerWrapperRef,
     () => ({
-      updateHeaderTransform: (val) => updateTransform(headerRef, val),
+      updateHeaderTransform: (scrollValue, verticalScroll) => {
+        headerRef.current!.style.transform = `translate3d(${-scrollValue}px, 0px, 0px)`;
+        if (lockedStartWrapperRef.current) lockedStartWrapperRef.current.style.transform = `translate3d(${scrollValue}px, 0px, 0px)`;
+        if (lockedEndWrapperRef.current)
+          lockedEndWrapperRef.current.style.transform = `translate3d(${scrollValue - verticalScroll}px, 0px, 0px)`;
+      },
       updateLockedStartTransform: (val) => updateTransform(lockedStartWrapperRef, val),
       updateLockedEndTransform: (val) => updateTransform(lockedEndWrapperRef, val),
     }),
     []
   );
-
-  const { dimensions } = useDataGridStaticContext();
 
   function renderColumnHeader(col: ColumnDefinitionExtended<DataType>, index: number) {
     const { key, title, type, filteringProps, filter, sort, headerAlignment, headerRender, pinned } = col;
@@ -66,7 +69,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
     let tableHeadCellProps;
     switch (type) {
       case "data":
-        const isFilterFnActive = tableTools.checkIfFilterFnIsActive(key);
+        const isFilterFnActive = gridTools.isFilterFnIsActive(key);
         children = title;
         tableHeadCellProps = {
           filterFnsProps: isFilterFnActive
@@ -88,22 +91,21 @@ function HeaderWrapper<DataType extends CommonDataType>(
                 progressReporters: dataTools.progressReporters,
                 filterInputProps: (filteringProps as InputFiltering)?.inputProps,
                 renderCustomInput: (filteringProps as InputFiltering)?.renderCustomInput,
-                isRangeInput: dataTools.isRangeFilterFn(dataTools.getColumnFilterFn(key as string).current),
+                isRangeInput: dataTools.isRangeFilterFn(dataTools.getColumnFilterFn(key).current),
                 disableInputIcon: isFilterFnActive,
-                pickerLocale: (filteringProps as any)?.pickerLocale,
               } as FilteringProps)
             : undefined,
           toolBoxes: [
             sort ? (
               <SortButton
                 sortingDirection={dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined}
-                key={`${key as string}_sort`}
-                onClick={() => dataTools.sortData(key as string)}
+                key={`${key}_sort`}
+                onClick={() => dataTools.updateCurrentSorting(key)}
               />
             ) : undefined,
-            tableTools.checkIfHeaderMenuActive ? (
+            gridTools.isHeaderMenuActive ? (
               <MenuButton
-                key={`${key as string}_menu`}
+                key={`${key}_menu`}
                 onClick={(e) =>
                   headerActionsMenu.displayHeaderActionsMenu({
                     data: { id: col.key } as any,
@@ -111,7 +113,7 @@ function HeaderWrapper<DataType extends CommonDataType>(
                       xAxis: e.currentTarget.getBoundingClientRect().x,
                       yAxis: e.currentTarget.getBoundingClientRect().y + 20,
                     },
-                    identifier: col.key as string,
+                    identifier: col.key,
                   })
                 }
               />
@@ -119,17 +121,22 @@ function HeaderWrapper<DataType extends CommonDataType>(
           ],
         };
         break;
+      case "expand":
+        children = <CollapseAllButton onClick={() => gridTools.closeExpandedRows()} />;
+        break;
       case "select":
         children = (
           <Checkbox
             onChange={(e) =>
-              tableTools.updateSelectedRowsMultiple(
-                !e.target.checked ? new Set() : new Set(dataTools.dataWithoutPagination!.map((x) => x[tp.uniqueRowKey as string]))
+              gridTools.updateSelectedRowsMultiple(
+                !e.target.checked ? new Set() : new Set(dataTools.dataWithoutPagination!.map((x) => x[gridProps.uniqueRowKey]))
               )
             }
             checked={
-              dataTools.paginationProps.dataCount !== 0 &&
-              (tp.serverSide ? dataTools.data?.length === tableTools.selectedRows.size : tp.data?.length === tableTools.selectedRows.size)
+              dataTools.currentPagination.dataCount !== 0 &&
+              (!!gridProps.serverSide?.enabled
+                ? dataTools.data?.length === gridTools.selectedRows.size
+                : gridProps.data?.length === gridTools.selectedRows.size)
             }
           />
         );
@@ -138,31 +145,36 @@ function HeaderWrapper<DataType extends CommonDataType>(
         break;
     }
 
-    return (
-      <ColumnHeader
-        columnProps={col as ColumnDefinitionExtended<unknown>}
-        resizingProps={{
-          isResizable: !isColumnDefinitionUtil && tableTools.checkIfColumnIsResizable(key),
-          updateColumnWidth: tableTools.updateColumnWidth,
-          updateColumnResizingStatus: tableTools.updateColumnResizingStatus,
-        }}
-        draggingProps={{
-          isDraggable: !pinned && !isColumnDefinitionUtil && !!tableTools.checkIfColumnIsDraggable(key),
-        }}
-        tabIndex={!isColumnDefinitionUtil ? index : undefined}
-        key={(col.key as string) + `__${dataTools.filterResetKey}`}
-        onFocus={(e) => onColumnHeaderFocus(e, col.width)}
-        style={{
+    return React.createElement(
+      ColumnHeader<DataType>,
+      {
+        columnProps: col,
+        resizingProps: {
+          isResizable: !isColumnDefinitionUtil && gridTools.isColumnIsResizable(key),
+          updateColumnWidth: gridTools.updateColumnWidth,
+          updateColumnResizingStatus: gridTools.updateColumnResizingStatus,
+        },
+        draggingProps: {
+          isDraggable: !pinned && !isColumnDefinitionUtil && !!gridTools.isColumnIsDraggable(key),
+        },
+        tabIndex: !isColumnDefinitionUtil ? index : undefined,
+        key: col.key + `__${dataTools.filterResetKey}`,
+        onFocus: (e) => onColumnHeaderFocus(e, col.width),
+        style: {
           width: col.width,
           minWidth: col.width,
           maxWidth: col.width,
-        }}
-        className={cs(isColumnDefinitionUtil && "tools", headerAlignment && `align-${headerAlignment}`)}
-        containerHeight={containerHeight}
-        {...(!isColumnDefinitionUtil && tableHeadCellProps)}
-      >
-        {headerRender ? headerRender() : children}
-      </ColumnHeader>
+        },
+        className: cs(
+          isColumnDefinitionUtil && "tools",
+          gridTools.isHeaderIsActive(col.key) && "hover-active",
+          headerAlignment && `align-${headerAlignment}`
+        ),
+        containerHeight: containerHeight,
+        isFilterMenuVisible: gridTools.isFilterMenuVisible && filter,
+        ...(!isColumnDefinitionUtil && tableHeadCellProps),
+      },
+      headerRender ? headerRender() : children
     );
   }
 
@@ -171,40 +183,40 @@ function HeaderWrapper<DataType extends CommonDataType>(
       <Header ref={headerRef} style={{ minWidth: totalColumnsWidth }}>
         {!!pinnedColumns?.leftWidth && (
           <LockedStartWrapper type="header" ref={lockedStartWrapperRef}>
-            {pinnedColumns?.leftColumns.map((col, index) => renderColumnHeader(col, index + 1))}
+            <GroupedColumnsWrapper groupedColumnHeaders={groupedColumnHeaders.leftLockedGroupedColumnHeaders}>
+              {pinnedColumns?.leftColumns.map((col, index) => renderColumnHeader(col, index + 1))}
+            </GroupedColumnsWrapper>
           </LockedStartWrapper>
         )}
-        <HeaderOrdering
-          columnOrder={tableTools.columnOrder}
-          columns={columnsInUse.columns}
-          setColumnOrder={tableTools.updateColumnOrder}
-          onColumnDragged={tp.draggableColumns?.onColumnDragged}
-          draggingEnabled={tp.draggableColumns?.active === true}
-        >
-          {columnsInUse.columns.map((col, index) => renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1))}
-        </HeaderOrdering>
+        <GroupedColumnsWrapper groupedColumnHeaders={groupedColumnHeaders.unlockedGroupedColumnHeaders}>
+          <HeaderOrdering
+            columnOrder={gridTools.columnOrder}
+            columns={columnsToRender.columns}
+            setColumnOrder={gridTools.updateColumnOrder}
+            onColumnDragged={gridProps.draggableColumns?.onColumnDragged}
+            draggingEnabled={gridProps.draggableColumns?.enabled === true}
+          >
+            {columnsToRender.columns.map((col, index) => renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1))}
+          </HeaderOrdering>
+        </GroupedColumnsWrapper>
         {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="header" ref={lockedEndWrapperRef}>
-            {pinnedColumns?.rightColumns.map((col, index) =>
-              renderColumnHeader(col, index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsInUse.columns.length) + 1)
-            )}
+            <GroupedColumnsWrapper groupedColumnHeaders={groupedColumnHeaders.rightLockedGroupedColumnHeaders}>
+              {pinnedColumns?.rightColumns.map((col, index) =>
+                renderColumnHeader(col, index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsToRender.columns.length) + 1)
+              )}
+            </GroupedColumnsWrapper>
           </LockedEndWrapper>
         )}
       </Header>
-      <HeaderWrapperFill
-        style={{
-          width: verticalScrollbarWidth,
-          height:
-            dimensions.defaultHeadRowHeight +
-            dimensions.defaultHeaderFilterHeight +
-            // Bottom - Border
-            1,
-          top: 0,
-          right: 0 /** header-layout bottom-right is active */,
-          zIndex: 99999999,
-        }}
-      />
+      {!!pinnedColumns?.rightWidth && (
+        <HeaderWrapperFill
+          style={{
+            width: verticalScrollbarWidth,
+          }}
+        />
+      )}
     </div>
   );
 }
-export default React.forwardRef(HeaderWrapper);
+export default HeaderWrapper;

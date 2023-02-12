@@ -1,10 +1,10 @@
 import React, { HTMLAttributes, useMemo, useRef, useState } from "react";
 import { useDetectOutsideClick } from "../../../hooks/use-detect-outside-click/use-detect-outside-click";
-import Fade from "../../animations/Fade/Fade";
 import { cs } from "../../../utils/ConcatStyles";
-import "./Select.css";
+import "./Select.scss";
 import Spinner from "../Spinner/Spinner";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
+import { Animations } from "../../animations/Animations";
 
 type ConditionalProps<OptionValue> =
   | {
@@ -107,7 +107,7 @@ export const Select = <OptionValue extends any>({
           {optionsBodyVisible ? <icons.ChevronUp className="select-icon" /> : <icons.ChevronDown className="select-icon" />}
         </div>
       </div>
-      <Fade visible={optionsBodyVisible}>
+      <Animations.Auto visible={optionsBodyVisible}>
         <div
           ref={optionBodyRef}
           style={{
@@ -132,7 +132,7 @@ export const Select = <OptionValue extends any>({
             ))
           )}
         </div>
-      </Fade>
+      </Animations.Auto>
     </div>
   );
 };

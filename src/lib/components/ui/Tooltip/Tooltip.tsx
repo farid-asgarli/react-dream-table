@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useRef, useState } from "react";
-import Fade from "../../animations/Fade/Fade";
-import "./Tooltip.css";
+import { Animations } from "../../animations/Animations";
+import "./Tooltip.scss";
 
 export default function Tooltip({ children, enabled }: { children: JSX.Element; enabled: boolean }) {
   if (!enabled) return children;
@@ -33,15 +33,18 @@ export default function Tooltip({ children, enabled }: { children: JSX.Element; 
 
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { onMouseOver: handleDisplayTooltip, onMouseLeave: handleHideTooltip } as any);
+      return React.cloneElement(child, {
+        onMouseOver: handleDisplayTooltip,
+        onMouseLeave: handleHideTooltip,
+      } as React.HTMLAttributes<HTMLDivElement>);
     }
     return child;
   });
   return (
     <>
-      <Fade visible={tooltipVisible}>
+      <Animations.Auto visible={tooltipVisible}>
         <div className="data-grid-tooltip">{children}</div>
-      </Fade>
+      </Animations.Auto>
       {childrenWithProps}
     </>
   );

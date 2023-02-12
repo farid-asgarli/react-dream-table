@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { KeyLiteralType, DataGridProps } from "../../types/DataGrid";
+import { GridDataType } from "../../types/Utils";
 
-export default function usePinnedColumns<DataType>(tp: DataGridProps<DataType>) {
+export default function usePinnedColumns<DataType extends GridDataType>(gridProps: DataGridProps<DataType>) {
   const [pinnedColumns, setPinnedColumns] = useState<{
     left: Array<KeyLiteralType<DataType>>;
     right: Array<KeyLiteralType<DataType>>;
-  }>({ left: tp.pinnedColumns?.left ?? [], right: tp.pinnedColumns?.right ?? [] });
+  }>({ left: gridProps.pinnedColumns?.left ?? [], right: gridProps.pinnedColumns?.right ?? [] });
 
   function updatePinnedColumns(colKey: string, position: keyof typeof pinnedColumns) {
     let newState = { ...pinnedColumns };
@@ -20,7 +21,7 @@ export default function usePinnedColumns<DataType>(tp: DataGridProps<DataType>) 
       newState[currentPosition] = [...newState[currentPosition].filter((x) => x !== colKey)];
       newState[position] = [...newState[position], colKey];
     }
-    tp.pinnedColumns?.onColumnPin?.(newState);
+    gridProps.pinnedColumns?.onColumnPin?.(newState);
     setPinnedColumns(newState);
   }
 

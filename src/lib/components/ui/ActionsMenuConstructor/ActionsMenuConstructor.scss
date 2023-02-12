@@ -1,0 +1,99 @@
+.actions-menu-constructor {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  z-index: 999;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  border-radius: calc(var(--grid-border-radius-lg) + var(--grid-border-radius-sm));
+  background-color: var(--grid-color-bg);
+  padding: 10px 4px;
+  position: fixed;
+  max-height: 400px;
+  // transition: 0.2s ease-in-out top, 0.2s ease-in-out left;
+  .actions-menu-list {
+    overflow-x: hidden;
+    overflow-y: auto;
+    .back-button-wrapper {
+      margin: 2px;
+      margin-bottom: 5px;
+      button {
+        border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+        font-weight: 600;
+        text-align: left;
+        justify-content: flex-start;
+        font-size: 16px;
+        height: 35px;
+        .button-icon {
+          width: 25px;
+        }
+      }
+    }
+  }
+  .divider {
+    width: 90%;
+    height: 0.5px;
+    border-top: 1px solid var(--grid-color-line);
+    margin: 5px auto;
+  }
+  .button-wrapper {
+    display: flex;
+    margin: 1px 0;
+  }
+  button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+    width: 100%;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: 0.2s ease-in-out background-color, 0.2s ease-in-out transform;
+    gap: 10px;
+    &:not(:disabled) {
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+    &:hover {
+      background-color: var(--grid-color-hover);
+    }
+    .selected-icon {
+      fill: var(--grid-color-primary);
+      width: 20px;
+    }
+    .button-content {
+      display: flex;
+      width: 100%;
+    }
+  }
+  button.selected {
+    background-color: var(--grid-color-hover);
+  }
+  .content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    .symbol {
+      color: var(--grid-color-primary);
+    }
+    .symbol-icon {
+      fill: var(--grid-color-primary);
+      width: 20px;
+    }
+  }
+}
+.data-grid {
+  .actions-menu-constructor {
+    .actions-menu-list {
+      &::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+      &::-webkit-scrollbar-thumb {
+        border-radius: calc(var(--grid-border-radius-md) + var(--grid-border-radius-sm));
+        border: 3px solid transparent;
+      }
+    }
+  }
+}

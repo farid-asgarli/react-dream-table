@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo } from "react";
-import Fade from "../../components/animations/Fade/Fade";
+import { Animations } from "../../components/animations/Animations";
 import ButtonPrimary from "../../components/ui/Buttons/ButtonPrimary/ButtonPrimary";
 import { Select } from "../../components/ui/Select/Select";
 import Skeleton from "../../components/ui/Skeleton/Skeleton";
@@ -8,7 +8,7 @@ import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { DataGridIconsDefinition, DataGridLocalizationDefinition } from "../../types/DataGrid";
 import type { FooterProps } from "../../types/Utils";
 import { cs } from "../../utils/ConcatStyles";
-import "./Footer.css";
+import "./Footer.scss";
 
 interface RenderPaginationButtonProps {
   navigateTo: number;
@@ -19,58 +19,54 @@ interface RenderPaginationButtonProps {
   icons: DataGridIconsDefinition;
 }
 
-export default function Footer<DataType>({
+export default function Footer({
   paginationProps,
-  updatePaginationProps,
-  onPaginationChange,
   className,
   optionsMenu,
   progressReporters,
-  columnVisibilityOptions,
-  toggleFullScreenMode,
   selectedRows,
   loading,
   style,
   ...props
-}: FooterProps<DataType> & React.HTMLAttributes<HTMLDivElement>) {
-  const { localization, dimensions, paginationDefaults, icons } = useDataGridStaticContext();
+}: FooterProps & React.HTMLAttributes<HTMLDivElement>) {
+  const { localization, dimensions, icons } = useDataGridStaticContext();
 
-  const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? ([5, 10, 20, 50, 100] as const);
+  const { gridPaginationProps, updateCurrentPagination, paginationDefaults } = paginationProps;
+
+  const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? [5, 10, 20, 50, 100];
 
   const renderPaginationNumbers = useMemo(
     () =>
       renderPaginationButtons({
         paginationProps,
-        updatePaginationProps,
-        onPaginationChange,
         localization,
         icons,
       }),
 
-    [paginationProps, updatePaginationProps]
+    [gridPaginationProps, updateCurrentPagination]
   );
 
   const renderPaginationPageSize = useMemo(
     () => (
       <Select
-        onChange={(e) => updatePaginationProps({ currentPage: 1, pageSize: e })}
+        onChange={(e) => updateCurrentPagination({ currentPage: 1, pageSize: e })}
         options={DEFAULT_PAGE_SIZES.map((op: number) => ({
           children: op,
           value: op,
         }))}
-        value={paginationProps.pageSize}
+        value={gridPaginationProps.pageSize}
       />
     ),
-    [paginationProps.pageSize]
+    [gridPaginationProps.pageSize]
   );
 
   const renderDataCount = useMemo(
     () =>
       selectedRows.size > 0 ? (
         <div className="selected-data-count">
-          <Fade key={selectedRows.size}>
+          <Animations.Auto key={selectedRows.size}>
             <span className="data-count">{selectedRows.size}&nbsp;</span>
-          </Fade>
+          </Animations.Auto>
           <span className="title">{localization.rowsSelectedTitle}</span>
         </div>
       ) : (
@@ -81,15 +77,15 @@ export default function Footer<DataType>({
             </div>
           ) : (
             <>
-              <Fade key={paginationProps.dataCount}>
-                <span className="data-count">{paginationProps.dataCount ?? 0}&nbsp;</span>
-              </Fade>
+              <Animations.Auto key={gridPaginationProps.dataCount}>
+                <span className="data-count">{gridPaginationProps.dataCount ?? 0}&nbsp;</span>
+              </Animations.Auto>
               <span className="title">{localization.paginationTotalCount}</span>
             </>
           )}
         </div>
       ),
-    [paginationProps.dataCount, selectedRows, loading]
+    [gridPaginationProps.dataCount, selectedRows.size, loading]
   );
 
   return (
@@ -98,10 +94,10 @@ export default function Footer<DataType>({
       style={{ ...style, minHeight: dimensions.defaultFooterHeight, maxHeight: dimensions.defaultFooterHeight }}
       {...props}
     >
-      <Fade>
+      <Animations.Auto>
         <div className={"bottom"}>
           <div className={"pagination-data-count"}>
-            {columnVisibilityOptions?.active && (
+            {optionsMenu.enabled && (
               <div className={"settings"}>
                 <ButtonPrimary
                   title={localization.settingsMenuTitle}
@@ -111,21 +107,17 @@ export default function Footer<DataType>({
                       identifier: "settings",
                       position: {
                         xAxis: e.clientX,
-                        yAxis: e.clientY - 320,
+                        yAxis: e.clientY,
                       },
                     })
                   }
                   className={cs("settings-button", optionsMenu.isMenuVisible && "active")}
                 >
-                  <icons.Settings className={"button-icon"} />
+                  <icons.Settings className="button-icon" />
                 </ButtonPrimary>
               </div>
             )}
-            {columnVisibilityOptions?.active === false && toggleFullScreenMode && (
-              <ButtonPrimary title={localization.fullScreenToggle} onClick={toggleFullScreenMode}>
-                <icons.FullScreen className={"button-icon"} />
-              </ButtonPrimary>
-            )}
+
             {renderDataCount}
           </div>
           <div className={"pagination-page-numbers"}>
@@ -147,36 +139,32 @@ export default function Footer<DataType>({
             )}
           </div>
         </div>
-      </Fade>
+      </Animations.Auto>
     </div>
   );
 }
 
-function renderPaginationButtons<DataType>({
-  paginationProps,
-  updatePaginationProps,
-  onPaginationChange,
+function renderPaginationButtons({
+  paginationProps: { gridPaginationProps, updateCurrentPagination },
   localization,
   icons,
 }: {
-  paginationProps: FooterProps<DataType>["paginationProps"];
-  updatePaginationProps: FooterProps<DataType>["updatePaginationProps"];
-  onPaginationChange: FooterProps<DataType>["onPaginationChange"];
+  paginationProps: FooterProps["paginationProps"];
   localization: DataGridLocalizationDefinition;
   icons: DataGridIconsDefinition;
 }) {
   function updateCurrentPage(navigateTo: number) {
-    if (paginationProps.dataCount && paginationProps.pageSize) {
-      const buttonCount = Math.ceil(paginationProps.dataCount / paginationProps.pageSize);
+    if (gridPaginationProps.dataCount && gridPaginationProps.pageSize) {
+      const buttonCount = Math.ceil(gridPaginationProps.dataCount / gridPaginationProps.pageSize);
       if (navigateTo <= buttonCount && navigateTo >= 1)
-        updatePaginationProps({
+        updateCurrentPagination({
           currentPage: navigateTo,
         });
     }
   }
 
   function renderButton({ navigateTo, component, disabled, title, type, icons }: RenderPaginationButtonProps) {
-    const isActive = paginationProps.currentPage === navigateTo;
+    const isActive = gridPaginationProps.currentPage === navigateTo;
 
     function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
       !isActive && updateCurrentPage(navigateTo);
@@ -205,31 +193,29 @@ function renderPaginationButtons<DataType>({
     );
   }
 
-  if (paginationProps.pageSize && paginationProps.dataCount) {
-    onPaginationChange?.(paginationProps);
-
+  if (gridPaginationProps.pageSize && gridPaginationProps.dataCount) {
     const buttons: {
       type: "numeric" | "ff-left" | "ff-right";
       navigateTo: number;
     }[] = [];
 
-    const buttonCount = Math.ceil(paginationProps.dataCount / paginationProps.pageSize);
-    if (paginationProps.currentPage! > buttonCount) updateCurrentPage(buttonCount);
+    const buttonCount = Math.ceil(gridPaginationProps.dataCount / gridPaginationProps.pageSize);
+    if (gridPaginationProps.currentPage! > buttonCount) updateCurrentPage(buttonCount);
 
     const initialPageNumber = 1;
     const threeDotsDistance = 3;
     const threeDotsNavigationStep = 5;
 
-    const prev1 = paginationProps.currentPage! - 1;
+    const prev1 = gridPaginationProps.currentPage! - 1;
 
-    const next1 = paginationProps.currentPage! + 1;
+    const next1 = gridPaginationProps.currentPage! + 1;
 
     buttons.push({
       navigateTo: initialPageNumber,
       type: "numeric",
     });
 
-    if (paginationProps.currentPage! - threeDotsDistance >= 1)
+    if (gridPaginationProps.currentPage! - threeDotsDistance >= 1)
       buttons.push({
         navigateTo: prev1 - (threeDotsNavigationStep - 1),
         type: "ff-left",
@@ -241,9 +227,9 @@ function renderPaginationButtons<DataType>({
         type: "numeric",
       });
 
-    if (paginationProps.currentPage !== buttonCount && paginationProps.currentPage !== initialPageNumber)
+    if (gridPaginationProps.currentPage !== buttonCount && gridPaginationProps.currentPage !== initialPageNumber)
       buttons.push({
-        navigateTo: paginationProps.currentPage!,
+        navigateTo: gridPaginationProps.currentPage!,
         type: "numeric",
       });
 
@@ -253,7 +239,7 @@ function renderPaginationButtons<DataType>({
         type: "numeric",
       });
 
-    if (paginationProps.currentPage! + threeDotsDistance <= buttonCount)
+    if (gridPaginationProps.currentPage! + threeDotsDistance <= buttonCount)
       buttons.push({
         navigateTo: next1 + (threeDotsNavigationStep - 1),
         type: "ff-right",

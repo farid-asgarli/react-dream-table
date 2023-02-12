@@ -1,6 +1,6 @@
-import { DataGridThemeDefinition } from "../types/DataGrid";
+import { DataGridStylingDefinition } from "../types/DataGrid";
 
-export const DefaultDataGridTheme: DataGridThemeDefinition = {
+export const DefaultDataGridTheme: DataGridStylingDefinition = {
   primaryColor: "#7828c8",
   borderRadiusLg: "10px",
   borderRadiusMd: "5px",

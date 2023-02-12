@@ -1,0 +1,13 @@
+.data-grid {
+  .column-header-filter-wrapper {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    .filter-functions-menu-button {
+      margin-right: 5px;
+      .action-icon {
+        width: 20px;
+      }
+    }
+  }
+}

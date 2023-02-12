@@ -1,6 +1,6 @@
 import React from "react";
 import SortButton from "../../components/ui/Buttons/SortButton/SortButton";
-import "./SortIconWrapper.css";
+import "./SortIconWrapper.scss";
 
 export default function SortIconWrapper(props: React.HtmlHTMLAttributes<HTMLDivElement>) {
   return (

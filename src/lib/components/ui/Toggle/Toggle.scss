@@ -1,0 +1,44 @@
+.toggle-switch {
+  .toggle-switch-input[type="checkbox"] {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+  }
+  display: flex;
+  .toggle-switch-label {
+    cursor: pointer;
+    background: grey;
+    display: block;
+    border-radius: 100px;
+    position: relative;
+    &:after {
+      content: "";
+      position: absolute;
+      top: calc(var(--toggle-switch-size) / 11.5);
+      left: calc(var(--toggle-switch-size) / 15);
+      height: calc((var(--toggle-switch-size) - (var(--toggle-switch-size) / 5)) / 2);
+      width: calc((var(--toggle-switch-size) - (var(--toggle-switch-size) / 5)) / 2);
+      background: #fff;
+      border-radius: 90px;
+      transition: 0.3s;
+    }
+    &:active {
+      &:after {
+        width: calc(var(--toggle-switch-size) / 2);
+      }
+    }
+  }
+  .toggle-switch-input {
+    &:checked {
+      + {
+        .toggle-switch-label {
+          background: var(--grid-color-primary);
+          &:after {
+            left: calc(100% - (var(--toggle-switch-size) / 15));
+            transform: translateX(-100%);
+          }
+        }
+      }
+    }
+  }
+}

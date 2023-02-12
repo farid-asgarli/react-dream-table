@@ -1,0 +1,29 @@
+.data-grid {
+  .column-header-content {
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    user-select: none;
+    &:focus {
+      outline: none;
+    }
+  }
+  .column-header {
+    &.draggable {
+      .column-header-content {
+        cursor: move;
+      }
+    }
+    &.tools {
+      .column-header-content {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+}

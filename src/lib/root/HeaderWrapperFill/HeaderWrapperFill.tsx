@@ -1,5 +1,5 @@
 import React from "react";
-import "./HeaderWrapperFill.css";
+import "./HeaderWrapperFill.scss";
 
 export default function HeaderWrapperFill(props: React.HtmlHTMLAttributes<HTMLDivElement>) {
   return (

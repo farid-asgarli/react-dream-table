@@ -1,9 +1,8 @@
 import React from "react";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
-// import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
-import Fade from "../../animations/Fade/Fade";
+import { Animations } from "../../animations/Animations";
 import Spinner from "../Spinner/Spinner";
-import "./LoadingOverlay.css";
+import "./LoadingOverlay.scss";
 export default function LoadingOverlay({
   visible,
   style,
@@ -13,13 +12,13 @@ export default function LoadingOverlay({
 }) {
   const { localization } = useDataGridStaticContext();
   return (
-    <Fade visible={visible}>
+    <Animations.Auto visible={visible}>
       <div className="loading-overlay" {...props}>
         <div className={"content"}>
           <Spinner />
           <span className={"title"}>{localization.dataLoading}</span>
         </div>
       </div>
-    </Fade>
+    </Animations.Auto>
   );
 }

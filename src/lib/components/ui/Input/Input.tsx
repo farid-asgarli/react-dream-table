@@ -1,8 +1,8 @@
-import { ChangeEvent, InputHTMLAttributes, useRef, useState } from "react";
+import { ChangeEvent, InputHTMLAttributes, useEffect, useRef, useState } from "react";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import { StringExtensions } from "../../../extensions/String";
 import { cs } from "../../../utils/ConcatStyles";
-import "./Input.css";
+import "./Input.scss";
 
 export default function Input({
   defaultValue,
@@ -22,7 +22,6 @@ export default function Input({
 
   function clearUpdateTimeout() {
     if (inputUpdateTimeout.current) clearTimeout(inputUpdateTimeout.current);
-    inputUpdateTimeout.current = null;
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -30,6 +29,12 @@ export default function Input({
     clearUpdateTimeout();
     inputUpdateTimeout.current = setTimeout(() => onChange?.(e.target.value), 600);
   }
+  useEffect(() => {
+    return () => {
+      clearUpdateTimeout();
+    };
+  }, []);
+
   return (
     <div className={cs("input-wrapper", focused && "focused")}>
       {disableIcon === false && (

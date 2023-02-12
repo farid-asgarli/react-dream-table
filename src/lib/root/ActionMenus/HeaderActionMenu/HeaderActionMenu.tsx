@@ -1,53 +1,53 @@
 import { DataGridIconsDefinition, DataGridLocalizationDefinition, DataGridProps } from "../../../types/DataGrid";
-import "./../ActionMenus.css";
+import "./../ActionMenus.scss";
 
 export const renderHeaderActionsMenu = (
   key: string,
   hideMenu: () => void,
-  tableTools: any,
+  gridTools: any,
   dataTools: any,
-  tp: DataGridProps<any>,
+  gridProps: DataGridProps<any>,
   localization: DataGridLocalizationDefinition,
   icons: DataGridIconsDefinition
 ) => {
   return [
-    ...(tp.pinnedColumns?.active === true
+    ...(gridProps.pinnedColumns?.enabled === true
       ? [
           {
-            symbol: tableTools.pinnedColumns.left.includes(key) ? icons.Unpin : icons.PinLeft,
-            label: tableTools.pinnedColumns.left.includes(key) ? localization.unpinColumn : localization.pinColumnToLeft,
+            symbol: gridTools.pinnedColumns.left.includes(key) ? icons.Unpin : icons.PinLeft,
+            label: gridTools.pinnedColumns.left.includes(key) ? localization.unpinColumn : localization.pinColumnToLeft,
             key: "pin-left",
             onClick: () => {
-              tableTools.updatePinnedColumns(key, "left");
+              gridTools.updatePinnedColumns(key, "left");
               hideMenu();
             },
           },
           {
-            symbol: tableTools.pinnedColumns.right.includes(key) ? icons.Unpin : icons.PinRight,
-            label: tableTools.pinnedColumns.right.includes(key) ? localization.unpinColumn : localization.pinColumnToRight,
+            symbol: gridTools.pinnedColumns.right.includes(key) ? icons.Unpin : icons.PinRight,
+            label: gridTools.pinnedColumns.right.includes(key) ? localization.unpinColumn : localization.pinColumnToRight,
             key: "pin-right",
             onClick: () => {
-              tableTools.updatePinnedColumns(key, "right");
+              gridTools.updatePinnedColumns(key, "right");
               hideMenu();
             },
           },
         ]
       : []),
-    tp.columnVisibilityOptions?.active && tp.pinnedColumns?.active ? {} : undefined,
-    ...(tp.columnVisibilityOptions?.active === true
+    gridProps.columnVisibilityOptions?.enabled && gridProps.pinnedColumns?.enabled ? {} : undefined,
+    ...(gridProps.columnVisibilityOptions?.enabled === true
       ? [
           {
             symbol: icons.Hidden,
             label: localization.hideColumn,
             key: "hide",
             onClick: () => {
-              tableTools.updateColumnVisibility(key);
+              gridTools.updateColumnVisibility(key);
               hideMenu();
             },
           },
         ]
       : []),
-    tp.columnVisibilityOptions?.active || tp.pinnedColumns?.active ? {} : undefined,
+    gridProps.columnVisibilityOptions?.enabled || gridProps.pinnedColumns?.enabled ? {} : undefined,
     {
       symbol: icons.ClearFilters,
       label: localization.clearFilers,

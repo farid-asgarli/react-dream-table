@@ -1,0 +1,20 @@
+.column-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex-flow: column nowrap;
+  flex: none;
+  outline: none;
+  padding: 2px 10px;
+  &.hover-active {
+    background-color: var(--grid-color-hover);
+    transition: 0.2s ease-in-out background-color !important;
+  }
+}
+.column-header-dnd-overlay {
+  background: var(--grid-color-bg);
+  opacity: 0.8;
+  color: var(--grid-color-text);
+  border: 1px dashed var(--grid-color-line);
+  cursor: move;
+}

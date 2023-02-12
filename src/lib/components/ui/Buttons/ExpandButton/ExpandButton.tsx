@@ -11,8 +11,8 @@ export default function ExpandButton({
   const { icons } = useDataGridStaticContext();
 
   return (
-    <button type="button" className={cs("expand-button", isExpanded && "active")} {...props}>
-      <icons.ChevronDown className="expand-icon" />
+    <button type="button" className={cs("actions-menu-constructor-button expand-button", isExpanded && "active")} {...props}>
+      <icons.ChevronDown className="expand-icon actions-menu-constructor-icon" />
     </button>
   );
 }

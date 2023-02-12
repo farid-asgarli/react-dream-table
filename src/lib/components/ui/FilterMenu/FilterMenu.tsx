@@ -1,13 +1,11 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
-import { ConstProps } from "../../../static/constantProps";
 import { FilteringProps } from "../../../types/Utils";
-import Fade from "../../animations/Fade/Fade";
-import DatePicker from "../DatePicker/Input/Input";
+import { Animations } from "../../animations/Animations";
+import DatePicker from "../DatePicker/DateInput/DateInput";
 import Input from "../Input/Input";
 import { Select } from "../Select/Select";
-import "./FilterMenu.css";
-// import Select from "react-select";
+import "./FilterMenu.scss";
 
 export default function FilterMenu({
   filterProps: {
@@ -23,14 +21,13 @@ export default function FilterMenu({
     type,
     isRangeInput,
     disableInputIcon,
-    pickerLocale,
   },
   columnKey,
 }: {
   columnKey: string;
   filterProps: FilteringProps;
 }) {
-  const { localization } = useDataGridStaticContext();
+  const { localization, defaultLocale } = useDataGridStaticContext();
 
   function handleInputChange(value: any, index?: number) {
     if (index !== undefined) {
@@ -71,13 +68,7 @@ export default function FilterMenu({
 
     switch (variant) {
       case "date":
-        return (
-          <DatePicker
-            locale={pickerLocale ?? ConstProps.defaultPickerLocale}
-            placeholder={localization.filterDatePlaceholder}
-            {...renderProps}
-          />
-        );
+        return <DatePicker locale={defaultLocale} placeholder={localization.filterDatePlaceholder} {...renderProps} />;
 
       case "number":
         return <Input type="number" disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />;
@@ -111,12 +102,12 @@ export default function FilterMenu({
           renderCustomInput(updateFilterValue, getColumnFilterValue(columnKey), 0)
         )
       ) : isRangeInput ? (
-        <Fade>
+        <Animations.Auto>
           <div className="range-input">
             {renderInput(type, 0)}
             {renderInput(type, 1)}
           </div>
-        </Fade>
+        </Animations.Auto>
       ) : (
         renderInput(type)
       )}

@@ -2,14 +2,12 @@ import { Active, closestCenter, DndContext, PointerSensor, useSensor, useSensors
 import { DragEndEvent } from "@dnd-kit/core/dist/types";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
-import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
 import { HeaderOrderingProps } from "../../types/Elements";
-import { ColumnDefinitionExtended } from "../../types/Utils";
+import { GridDataType } from "../../types/Utils";
 import ColumnHeader from "../ColumnHeader/ColumnHeader";
-import "./HeaderOrdering.css";
 import { SortableOverlay } from "./SortableOverlay";
 
-export default function HeaderOrdering<DataType>({
+export default function HeaderOrdering<DataType extends GridDataType>({
   columnOrder,
   columns,
   setColumnOrder,
@@ -27,17 +25,15 @@ export default function HeaderOrdering<DataType>({
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = columnOrder.indexOf(active.id as any);
-      const newIndex = columnOrder.indexOf(over?.id as any);
+      const oldIndex = columnOrder.indexOf(active.id as string);
+      const newIndex = columnOrder.indexOf(over?.id as string);
       const newArray = arrayMove(columnOrder, oldIndex, newIndex);
       setColumnOrder(newArray);
       onColumnDragged?.(newArray);
     }
     setActive(null);
   }
-  const {
-    dimensions: { defaultHeadRowHeight },
-  } = useDataGridStaticContext();
+
   return (
     <DndContext
       sensors={sensors}
@@ -55,11 +51,7 @@ export default function HeaderOrdering<DataType>({
       </SortableContext>
       <SortableOverlay>
         {activeItem && (
-          <ColumnHeader
-            style={{ height: defaultHeadRowHeight }}
-            className="column-header-dnd-overlay"
-            columnProps={activeItem as ColumnDefinitionExtended<unknown>}
-          >
+          <ColumnHeader style={{ height: "100%", fontWeight: 700 }} className="column-header-dnd-overlay" columnProps={activeItem}>
             {activeItem.headerRender ? activeItem.headerRender() : activeItem.title}
           </ColumnHeader>
         )}

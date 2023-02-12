@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { KeyLiteralType, DataGridProps } from "../../types/DataGrid";
+import { GridDataType } from "../../types/Utils";
 
-export default function useVisibleColumns<DataType>(tp: DataGridProps<DataType>) {
+export default function useVisibleColumns<DataType extends GridDataType>(gridProps: DataGridProps<DataType>) {
   const [visibleColumns, setVisibleColumns] = useState<Set<KeyLiteralType<DataType>>>(
-    tp.columnVisibilityOptions?.active && tp.columnVisibilityOptions?.defaultVisibleHeaders
-      ? new Set(tp.columnVisibilityOptions.defaultVisibleHeaders)
-      : new Set(tp.columns.map((x) => x.key))
+    gridProps.columnVisibilityOptions?.enabled && gridProps.columnVisibilityOptions?.defaultVisibleHeaders
+      ? new Set(gridProps.columnVisibilityOptions.defaultVisibleHeaders)
+      : new Set(gridProps.columns.map((x) => x.key))
   );
 
   function updateColumnVisibility(key: string) {
@@ -15,7 +16,7 @@ export default function useVisibleColumns<DataType>(tp: DataGridProps<DataType>)
       visibleColumnsCopy.delete(key);
     } else visibleColumnsCopy.add(key);
 
-    tp.columnVisibilityOptions?.onVisibilityChange?.(Array.from(visibleColumnsCopy));
+    gridProps.columnVisibilityOptions?.onVisibilityChange?.(Array.from(visibleColumnsCopy));
 
     setVisibleColumns(visibleColumnsCopy);
     return visibleColumnsCopy;

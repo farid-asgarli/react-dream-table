@@ -1,0 +1,44 @@
+.data-grid {
+  .cell {
+    position: relative;
+    padding: 8px;
+    display: inline-flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: flex-start;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    transition: 0.1s background ease-in-out;
+  }
+  .cell.tools {
+    justify-content: center;
+  }
+  .cell.align-middle {
+    text-align: center;
+    justify-content: center;
+    .cell-content {
+      flex: unset;
+      width: 100%;
+    }
+  }
+  .cell.align-left {
+    text-align: left;
+  }
+  .cell.align-right {
+    text-align: right;
+  }
+  .row.active {
+    .cell {
+      &::before {
+        position: absolute;
+        content: " ";
+        top: 0px;
+        bottom: 0px;
+        left: 0;
+        right: 0;
+        border-top: 2px solid var(--grid-color-primary);
+        border-bottom: 2px solid var(--grid-color-primary);
+      }
+    }
+  }
+}

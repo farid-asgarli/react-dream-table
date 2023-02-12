@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { DataGridDimensionsDefinition, DataGridProps } from "../../types/DataGrid";
+import { DataGridDimensionsDefinition, DataGridProps, KeyLiteralType } from "../../types/DataGrid";
+import { GridDataType } from "../../types/Utils";
 import { arrayToObject } from "../../utils/ColumnArrayToRecord";
 
-export default function useColumnDimensions<DataType>(tp: DataGridProps<DataType>, dimensions: DataGridDimensionsDefinition) {
+export default function useColumnDimensions<DataType extends GridDataType>(
+  gridProps: DataGridProps<DataType>,
+  dimensions: DataGridDimensionsDefinition
+) {
   /** Set of column dimensions (e.g. width). */
   const [columnDimensions, setColumnDimensions] = useState<Record<string, number>>(
-    arrayToObject(tp.columns, (col) => col.width) as Record<string, number>
+    arrayToObject(gridProps.columns, (col) => col.width ?? dimensions.defaultColumnWidth) as Record<string, number>
   );
   const [isColumnResizing, setIsColumnResizing] = useState<boolean>(false);
 
@@ -18,7 +22,7 @@ export default function useColumnDimensions<DataType>(tp: DataGridProps<DataType
     else if (width < dimensions.minColumnResizeWidth) newColDimensions = { ...columnDimensions, [key]: dimensions.minColumnResizeWidth };
 
     setColumnDimensions(newColDimensions);
-    tp.resizableColumns?.onColumnResize?.(newColDimensions as any);
+    gridProps.resizableColumns?.onColumnResize?.(newColDimensions as Record<KeyLiteralType<DataType>, number>);
   }
 
   function updateColumnWidthMultiple(collection: Record<string, number>) {
@@ -29,9 +33,23 @@ export default function useColumnDimensions<DataType>(tp: DataGridProps<DataType
     if (isColumnResizing !== val) setIsColumnResizing(val);
   }
 
+  function getColumnWidth(colKey: string) {
+    switch (colKey) {
+      case "select":
+        return dimensions.selectionMenuColumnWidth;
+      case "expand":
+        return dimensions.expandedMenuColumnWidth;
+      case "actions":
+        return dimensions.actionsMenuColumnWidth;
+      default:
+        return columnDimensions[colKey];
+    }
+  }
+
   return {
     isColumnResizing,
     columnDimensions,
+    getColumnWidth,
     updateColumnWidth,
     updateColumnWidthMultiple,
     updateColumnResizingStatus,

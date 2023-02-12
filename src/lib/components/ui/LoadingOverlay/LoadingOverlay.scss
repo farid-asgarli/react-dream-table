@@ -1,0 +1,28 @@
+.data-grid {
+  .loading-overlay {
+    position: absolute;
+    z-index: 100;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    background: var(--grid-color-loading-overlay-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: progress;
+    .content {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      .title {
+        font-weight: 600;
+        margin-top: 10px;
+        font-size: 18px;
+        color: var(--grid-color-text);
+      }
+    }
+  }
+}

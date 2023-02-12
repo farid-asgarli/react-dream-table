@@ -1,23 +1,17 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { DataGridPaginationProps, DataGridProps } from "../../types/DataGrid";
-import {
-  CompleteFilterFnDefinition,
-  DataFetchingDefinition,
-  ICurrentFilterCollection,
-  ICurrentSorting,
-  IPrefetchedFilter,
-} from "../../types/Utils";
+import { CompleteFilterFnDefinition, DataFetchingDefinition, GridDataType, SortDirectionDefinition } from "../../types/Utils";
 import { IClientDataManagement, useClientDataManagement } from "./clientDataManagement";
 
-export interface IServerDataManagement<DataType> extends IClientDataManagement<DataType> {
+export interface IServerDataManagement<DataType extends GridDataType> extends IClientDataManagement<DataType> {
   serverSide?: DataGridProps<DataType>["serverSide"];
 }
 
-export function useServerDataManagement<DataType>({
+export function useServerDataManagement<DataType extends GridDataType>({
   columns,
   data,
   dataCount,
-  paginationDefaults,
+  paginationProps,
   serverSide,
   sortingProps,
 }: IServerDataManagement<DataType>) {
@@ -25,19 +19,10 @@ export function useServerDataManagement<DataType>({
     columns,
     data,
     dataCount,
-    paginationDefaults,
+    paginationProps,
     sortingProps,
+    clientEvaluationDisabled: true,
   });
-
-  const paginationPropsRef = useRef<DataGridPaginationProps>({});
-  const currentSortingRef = useRef<ICurrentSorting>();
-  const prefetchedFilterRef = useRef<IPrefetchedFilter>({});
-  const currentFilterRef = useRef<ICurrentFilterCollection>({});
-
-  paginationPropsRef.current = clientTools.paginationProps;
-  currentSortingRef.current = clientTools.currentSorting;
-  prefetchedFilterRef.current = clientTools.prefetchedFilters;
-  currentFilterRef.current = clientTools.currentFilters;
 
   function startFetching(value: DataFetchingDefinition) {
     clientTools.setProgressReporters((prev) => new Set(prev).add(value));
@@ -51,43 +36,66 @@ export function useServerDataManagement<DataType>({
     });
   }
 
-  function updatePaginationProps(valuesToUpdate: DataGridPaginationProps) {
-    clientTools.updatePaginationProps(valuesToUpdate).then((updatedPagination) => {
-      if (serverSide?.pagination?.onChangeAsync) {
-        startFetching("pagination");
-        serverSide?.pagination?.onChangeAsync(updatedPagination, currentFilterRef.current).then(() => stopFetching("pagination"));
-      }
-    });
-  }
-
   function updateCurrentFilterValue(key: string, value: string | Array<string>) {
-    clientTools.updateCurrentFilterValue(key, value).then((newState) => {
+    clientTools.updateCurrentFilterValue(key, value).then((updatedFilters) => {
       if (serverSide?.filtering?.onFilterChangeAsync) {
         startFetching("filter-select");
         serverSide.filtering
-          .onFilterChangeAsync(newState, clientTools.paginationProps, currentSortingRef.current)
+          .onFilterChangeAsync(updatedFilters, clientTools.currentFilterFns, clientTools.currentPagination, clientTools.currentSorting)
           .then(() => stopFetching("filter-select"));
       }
     });
   }
 
   function updateCurrentFilterFn(key: string, type: CompleteFilterFnDefinition) {
-    clientTools.updateCurrentFilterFn(key, type).then((newState) => {
+    clientTools.updateCurrentFilterFn(key, type).then((updatedFilterFn) => {
       if (serverSide?.filtering.onFilterFunctionChangeAsync) {
         startFetching("filter-select");
         serverSide.filtering
-          .onFilterFunctionChangeAsync(newState, currentFilterRef.current, clientTools.paginationProps, currentSortingRef.current)
+          .onFilterFunctionChangeAsync(
+            clientTools.currentFilters,
+            updatedFilterFn,
+            clientTools.currentPagination,
+            clientTools.currentSorting
+          )
           .then(() => stopFetching("filter-select"));
       }
     });
   }
 
+  function updateCurrentPagination(valuesToUpdate: DataGridPaginationProps) {
+    clientTools.updateCurrentPagination(valuesToUpdate).then((updatedPagination) => {
+      if (serverSide?.pagination?.onChangeAsync) {
+        startFetching("pagination");
+        serverSide?.pagination
+          ?.onChangeAsync(clientTools.currentFilters, clientTools.currentFilterFns, updatedPagination, clientTools.currentSorting)
+          .then(() => stopFetching("pagination"));
+      }
+    });
+  }
+
+  function updateCurrentSorting(key: string, alg?: SortDirectionDefinition) {
+    clientTools.updateCurrentSorting(key, alg).then((updatedSorting) => {
+      if (serverSide?.filtering.onFilterFunctionChangeAsync) {
+        startFetching("sort");
+        serverSide.filtering
+          .onFilterFunctionChangeAsync(
+            clientTools.currentFilters,
+            clientTools.currentFilterFns,
+            clientTools.currentPagination,
+            updatedSorting
+          )
+          .then(() => stopFetching("sort"));
+      }
+    });
+  }
+
   function resetCurrentFilters() {
-    clientTools.resetCurrentFilters().then((newState) => {
+    clientTools.resetCurrentFilters().then((updatedState) => {
       if (serverSide?.filtering?.onFilterChangeAsync) {
         startFetching("filter-select");
         serverSide.filtering
-          .onFilterChangeAsync?.(newState, clientTools.paginationProps, currentSortingRef.current)
+          .onFilterChangeAsync?.(updatedState, clientTools.currentFilterFns, clientTools.currentPagination, clientTools.currentSorting)
           .then(() => stopFetching("filter-select"));
       }
     });
@@ -105,30 +113,16 @@ export function useServerDataManagement<DataType>({
 
   const isFetching = useMemo(() => clientTools.progressReporters.size !== 0, [clientTools.progressReporters]);
 
-  useEffect(() => {
-    if (serverSide?.sorting?.onSortingChangeAsync && currentSortingRef.current) {
-      startFetching("sort");
-      serverSide.sorting
-        .onSortingChangeAsync(
-          currentSortingRef.current.key,
-          currentFilterRef.current,
-          paginationPropsRef.current,
-          currentSortingRef.current.direction
-        )
-        .then(() => stopFetching("sort"));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientTools.currentSorting]);
-
   return {
     ...clientTools,
     data,
     isFetching,
-    paginationProps: { ...clientTools.paginationProps, dataCount: serverSide?.pagination?.dataCount },
-    updatePaginationProps,
+    paginationProps: { ...clientTools.currentPagination, dataCount: serverSide?.pagination?.dataCount },
+    updateCurrentPagination,
     updateCurrentFilterValue,
     pipeFetchedFilters,
     resetCurrentFilters,
     updateCurrentFilterFn,
+    updateCurrentSorting,
   };
 }
