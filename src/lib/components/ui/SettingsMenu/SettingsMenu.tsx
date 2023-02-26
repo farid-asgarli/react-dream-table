@@ -17,26 +17,33 @@ export function OptionsMenu<DataType extends GridDataType>({
   isFilterMenuVisible,
   isColumnGroupingEnabled,
   isColumnVisibilityEnabled,
+  isColumnFilteringEnabled,
   updateDarkMode,
   updateActiveHeader,
   updateFullScreenMode,
   updateColumnVisibility,
   updateFilterMenuVisibility,
   updateColumnGrouping,
+  updatePosition,
   ...props
 }: OptionsMenuProps<DataType>) {
   const { columnVisibilityProps, localization, icons } = useDataGridStaticContext();
 
   const [activeWindowIndex, setActiveWindowIndex] = useState("0");
+
+  function updateActiveWindow(index: string) {
+    setActiveWindowIndex(index);
+  }
+
   return (
     <React.Fragment>
-      <div className={cs("options-menu-body", className)} {...props}>
+      <div className={cs("data-grid-options-menu-body", className)} {...props}>
         <Portal.Container indexOrder={["0", "1"]} activeWindowIndex={activeWindowIndex}>
-          <Portal.Window index="0">
-            <div className="options-menu-header">
-              <h4 className="options-menu-title">{localization.settingsMenuTitle}</h4>
+          <Portal.Window index="0" onAnimationFinish={(val) => val && updatePosition()}>
+            <div className="data-grid-options-menu-header">
+              <h4 className="data-grid-options-menu-title">{localization.settingsMenuTitle}</h4>
             </div>
-            <div className="options-menu-toggles">
+            <div className="data-grid-options-menu-toggles">
               {optionsMenuProps?.fullScreenToggle?.enabled !== false && (
                 <div className="menu-toggle">
                   <label htmlFor="full-screen-toggle" className="menu-toggle-title">
@@ -45,7 +52,7 @@ export function OptionsMenu<DataType extends GridDataType>({
                   <Toggle onChange={updateFullScreenMode} name="full-screen-toggle" checked={isFullScreenModeEnabled} size={40} />
                 </div>
               )}
-              {optionsMenuProps?.filterMenuToggle?.enabled !== false && (
+              {optionsMenuProps?.filterMenuToggle?.enabled !== false && isColumnFilteringEnabled && (
                 <div className="menu-toggle">
                   <label htmlFor="filter-menu-toggle" className="menu-toggle-title">
                     <icons.FilterVisibility className="menu-toggle-icon" /> <span>{localization.filterMenuVisibilityToggle}</span>
@@ -71,24 +78,24 @@ export function OptionsMenu<DataType extends GridDataType>({
               )}
               <div className="menu-divider" />
               {isColumnVisibilityEnabled && (
-                <div onClick={() => setActiveWindowIndex("1")} className="menu-toggle">
+                <div onClick={() => updateActiveWindow("1")} className="menu-toggle">
                   <label className="menu-toggle-title">
                     <icons.Columns className="menu-toggle-icon" /> <span>{localization.columnVisibilityOptions}</span>
                   </label>
                   <icons.ArrowRight className="menu-toggle-icon" />
                 </div>
               )}
-              <div className="menu-toggle">
+              {/* <div className="menu-toggle">
                 <label className="menu-toggle-title">
                   <icons.Info className="menu-toggle-icon" /> <span>{localization.aboutTitle}</span>
                 </label>
-              </div>
+              </div> */}
             </div>
           </Portal.Window>
-          <Portal.Window index="1">
+          <Portal.Window index="1" onAnimationFinish={(val) => val && updatePosition()}>
             <div className="columns-list-wrapper">
-              <div className="options-menu-header">
-                <h4 className="options-menu-title">{localization.columnVisibilityOptions}</h4>
+              <div className="data-grid-options-menu-header">
+                <h4 className="data-grid-options-menu-title">{localization.columnVisibilityOptions}</h4>
               </div>
               <ul>
                 {columnVisibilityProps.map(({ key, title }) => {
@@ -115,7 +122,7 @@ export function OptionsMenu<DataType extends GridDataType>({
               </ul>
             </div>
             <div className="bottom-utility">
-              <ButtonPrimary className="back-button" onClick={() => setActiveWindowIndex("0")}>
+              <ButtonPrimary className="back-button" onClick={() => updateActiveWindow("0")}>
                 <icons.ArrowLeft className="button-icon" />
                 <span>{localization.goBackTitle}</span>
               </ButtonPrimary>

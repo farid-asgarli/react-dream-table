@@ -41,6 +41,7 @@ export interface ActionsMenuProps {
   visible: boolean;
   onHide?: (visible: boolean) => void;
   children: React.ReactNode | Array<ActionsMenuListItem | undefined>;
+  updatePosition: () => void;
 }
 
 export interface ColumnDefinitionExtended<DataType extends GridDataType> extends Omit<ColumnDefinition<DataType>, "width"> {
@@ -97,12 +98,14 @@ export interface OptionsMenuProps<DataType extends GridDataType> extends HTMLAtt
   isFilterMenuVisible: boolean;
   isColumnGroupingEnabled: boolean;
   isColumnVisibilityEnabled: boolean;
+  isColumnFilteringEnabled: boolean;
   updateActiveHeader: (key: string | undefined) => void;
   updateColumnVisibility(key: KeyLiteralType<DataType>): Set<KeyLiteralType<DataType>>;
   updateDarkMode(): void;
   updateFullScreenMode(): void;
   updateFilterMenuVisibility(): void;
   updateColumnGrouping(): void;
+  updatePosition(): void;
   optionsMenuProps: SettingsMenuProps | undefined;
 }
 

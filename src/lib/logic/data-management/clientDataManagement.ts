@@ -2,7 +2,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { StringExtensions } from "../../extensions/String";
 import { ConstProps } from "../../static/constantProps";
-import { ColumnDefinition, KeyLiteralType, DataGridPaginationProps, DataGridProps, InputCommonFiltering } from "../../types/DataGrid";
+import {
+  ColumnDefinition,
+  KeyLiteralType,
+  DataGridPaginationProps,
+  DataGridProps,
+  InputCommonFiltering,
+  InitialDataStateProps,
+} from "../../types/DataGrid";
 import {
   DataFetchingDefinition,
   ICurrentFilterCollection,
@@ -25,6 +32,7 @@ export interface IClientDataManagement<DataType extends GridDataType> {
   sortingProps: DataGridProps<DataType>["sorting"];
   dataCount?: number;
   clientEvaluationDisabled?: boolean | undefined;
+  initialDataState: InitialDataStateProps | undefined;
 }
 
 export function useClientDataManagement<DataType extends GridDataType>({
@@ -34,31 +42,30 @@ export function useClientDataManagement<DataType extends GridDataType>({
   dataCount,
   sortingProps,
   clientEvaluationDisabled,
+  initialDataState,
 }: IClientDataManagement<DataType>) {
   /** Collection of already fetched filters. */
   const [prefetchedFilters, setPrefetchedFilters] = useState<IPrefetchedFilter>({});
-
   /** Filters that are currently in use. */
-  const [currentFilters, setCurrentFilters] = useState<ICurrentFilterCollection>({});
-
+  const [currentFilters, setCurrentFilters] = useState<ICurrentFilterCollection>(initialDataState?.filters ?? {});
   /** Filter functions that are currently in use. */
-  const [currentFilterFns, setCurrentFilterFns] = useState<ICurrentFnCollection>(assignFilterFns(columns));
-
+  const [currentFilterFns, setCurrentFilterFns] = useState<ICurrentFnCollection>(
+    initialDataState?.filterFns ?? assignFilterFns(columns)
+  );
   /** Sorting that is currently in use. */
-  const [currentSorting, setCurrentSorting] = useState<ICurrentSorting>();
-
-  /** Pagination props that are currently active. */
-  const [currentPagination, setCurrentPagination] = useState<DataGridPaginationProps>({
-    currentPage: paginationProps?.defaults?.defaultCurrentPage ?? ConstProps.defaultPaginationCurrentPage,
-    dataCount: undefined,
-    pageSize: paginationProps?.defaults?.defaultPageSize ?? ConstProps.defaultPaginationPageSize,
-  });
-
+  const [currentSorting, setCurrentSorting] = useState<ICurrentSorting | undefined>(initialDataState?.sortingProps);
   /** Data fetching indicators. */
   const [progressReporters, setProgressReporters] = useState<Set<DataFetchingDefinition>>(new Set());
-
   /** DataGrid key to reset filters. */
   const [filterResetKey, setFilterResetKey] = useState(0);
+  /** Pagination props that are currently active. */
+  const [currentPagination, setCurrentPagination] = useState<DataGridPaginationProps>(
+    initialDataState?.paginationProps ?? {
+      currentPage: paginationProps?.defaults?.defaultCurrentPage ?? ConstProps.defaultPaginationCurrentPage,
+      dataCount: undefined,
+      pageSize: paginationProps?.defaults?.defaultPageSize ?? ConstProps.defaultPaginationPageSize,
+    }
+  );
 
   const pipeSorting = (data?: DataType[], filters?: ICurrentSorting) => {
     if (clientEvaluationDisabled) return data;
@@ -99,24 +106,35 @@ export function useClientDataManagement<DataType extends GridDataType>({
       const colFilterProps = getColumn(columnKey)?.filteringProps;
       /** Column filter functions (RDT Filters). */
       const colFilterFn = getColumnFilterFn(columnKey).current;
-      if (!ConstProps.defaultFnsNoFilter.includes(colFilterFn) && (!currentColFilter || currentColFilter?.length === 0)) continue;
+      if (!ConstProps.defaultFnsNoFilter.includes(colFilterFn) && (!currentColFilter || currentColFilter?.length === 0))
+        continue;
       switch (colFilterProps?.type) {
         case "select":
-          if (colFilterProps?.equalityComparer) reFilter((d) => colFilterProps.equalityComparer!(d[columnKey], currentColFilter));
+          if (colFilterProps?.equalityComparer)
+            reFilter((d) => colFilterProps.equalityComparer!(d[columnKey], currentColFilter));
           else {
-            if (colFilterProps?.multipleSelection) reFilter((d) => RDTFilters.containsMultiple(d, columnKey, currentColFilter as string[]));
+            if (colFilterProps?.multipleSelection)
+              reFilter((d) => RDTFilters.containsMultiple(d, columnKey, currentColFilter as string[]));
             else reFilter((d) => RDTFilters.equalsAlt(d, columnKey, currentColFilter as string));
           }
           break;
         default:
           if (colFilterProps?.equalityComparer)
-            reFilter((d) => colFilterProps.equalityComparer!(currentColFilter as string, d[columnKey], filterFns[columnKey] as any));
+            reFilter((d) =>
+              colFilterProps.equalityComparer!(currentColFilter as string, d[columnKey], filterFns[columnKey] as any)
+            );
           else {
             if (colFilterProps?.type === "date")
-              reFilter((d) => RDTDateFilters[colFilterFn as BaseFilterFnDefinition]?.(d[columnKey], currentColFilter as any));
+              reFilter((d) =>
+                RDTDateFilters[colFilterFn as BaseFilterFnDefinition]?.(d[columnKey], currentColFilter as any)
+              );
             else {
-              if (colFilterFn === "fuzzy") dataToFilter = RDTFilters.fuzzy(dataToFilter, columnKey, currentColFilter as string);
-              else reFilter((d) => RDTFilters[colFilterFn as BaseFilterFnDefinition](d, columnKey, currentColFilter as any));
+              if (colFilterFn === "fuzzy")
+                dataToFilter = RDTFilters.fuzzy(dataToFilter, columnKey, currentColFilter as string);
+              else
+                reFilter((d) =>
+                  RDTFilters[colFilterFn as BaseFilterFnDefinition](d, columnKey, currentColFilter as any)
+                );
             }
           }
           break;
@@ -152,7 +170,10 @@ export function useClientDataManagement<DataType extends GridDataType>({
 
   const pipePagination = (data?: DataType[], pagination?: DataGridPaginationProps) => {
     if (clientEvaluationDisabled) return data;
-    return data?.slice(pagination?.pageSize! * (pagination?.currentPage! - 1), pagination?.pageSize! * pagination?.currentPage!);
+    return data?.slice(
+      pagination?.pageSize! * (pagination?.currentPage! - 1),
+      pagination?.pageSize! * pagination?.currentPage!
+    );
   };
 
   const filteredData = useMemo(
@@ -290,7 +311,8 @@ export function useClientDataManagement<DataType extends GridDataType>({
   function isFilterFnActive(colKey: string, activeKey: string | undefined) {
     const colType = getColumnType(colKey);
     const colFilterFn = getColumnFilterFn(colKey);
-    const defaultAssignedFn = colFilterFn.default ?? (colType === "date" ? ConstProps.defaultActiveDateFn : ConstProps.defaultActiveFn);
+    const defaultAssignedFn =
+      colFilterFn.default ?? (colType === "date" ? ConstProps.defaultActiveDateFn : ConstProps.defaultActiveFn);
     return activeKey === colKey || defaultAssignedFn !== colFilterFn.current;
   }
 
@@ -306,7 +328,10 @@ export function useClientDataManagement<DataType extends GridDataType>({
       }));
   }, [dataCount, filteredData]);
 
-  const dataToExport = useMemo(() => pipePagination(filteredData, currentPagination) ?? [], [currentPagination, filteredData]);
+  const dataToExport = useMemo(
+    () => pipePagination(filteredData, currentPagination) ?? [],
+    [currentPagination, filteredData]
+  );
 
   return {
     currentFilterFns,
@@ -324,7 +349,6 @@ export function useClientDataManagement<DataType extends GridDataType>({
     getColumn,
     getColumnFilterFn,
     getColumnFilterValue,
-    setCurrentPagination,
     pipeFetchedFilters,
     resetCurrentFilters,
     resetFetchedFilters,

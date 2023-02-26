@@ -53,13 +53,17 @@ function ColumnHeader<DataType extends GridDataType>({
   return (
     <div
       ref={referenceHandler}
-      className={cs(className, "column-header", active?.id === columnProps.key && "dragging", draggingProps?.isDraggable && "draggable")}
+      className={cs(
+        className,
+        "column-header",
+        active?.id === columnProps.key && "dragging",
+        draggingProps?.isDraggable && "draggable"
+      )}
       style={{ transform: CSS.Transform.toString(transform), transition, ...style }}
       {...props}
     >
       <ColumnHeaderUnlocked
         style={{
-          maxWidth: columnProps.width,
           minHeight: dimensions.defaultHeadRowHeight,
           maxHeight: dimensions.defaultHeadRowHeight,
         }}

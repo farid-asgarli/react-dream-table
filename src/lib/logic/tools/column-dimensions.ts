@@ -8,18 +8,25 @@ export default function useColumnDimensions<DataType extends GridDataType>(
   dimensions: DataGridDimensionsDefinition
 ) {
   /** Set of column dimensions (e.g. width). */
-  const [columnDimensions, setColumnDimensions] = useState<Record<string, number>>(
-    arrayToObject(gridProps.columns, (col) => col.width ?? dimensions.defaultColumnWidth) as Record<string, number>
-  );
+  const [columnDimensions, setColumnDimensions] = useState<Record<string, number>>(initateColumnWidth());
   const [isColumnResizing, setIsColumnResizing] = useState<boolean>(false);
+
+  function initateColumnWidth() {
+    return arrayToObject(gridProps.columns, (col) => col.width ?? dimensions.defaultColumnWidth) as Record<
+      string,
+      number
+    >;
+  }
 
   function updateColumnWidth(key: string, newWidth: number) {
     const width = columnDimensions[key] + newWidth;
     let newColDimensions = columnDimensions;
     if (width >= dimensions.minColumnResizeWidth && dimensions.maxColumnResizeWidth >= width) {
       newColDimensions = { ...columnDimensions, [key]: Math.round(width) };
-    } else if (width > dimensions.maxColumnResizeWidth) newColDimensions = { ...columnDimensions, [key]: dimensions.maxColumnResizeWidth };
-    else if (width < dimensions.minColumnResizeWidth) newColDimensions = { ...columnDimensions, [key]: dimensions.minColumnResizeWidth };
+    } else if (width > dimensions.maxColumnResizeWidth)
+      newColDimensions = { ...columnDimensions, [key]: dimensions.maxColumnResizeWidth };
+    else if (width < dimensions.minColumnResizeWidth)
+      newColDimensions = { ...columnDimensions, [key]: dimensions.minColumnResizeWidth };
 
     setColumnDimensions(newColDimensions);
     gridProps.resizableColumns?.onColumnResize?.(newColDimensions as Record<KeyLiteralType<DataType>, number>);

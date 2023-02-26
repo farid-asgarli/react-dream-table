@@ -51,7 +51,8 @@ function HeaderWrapper<DataType extends GridDataType>({
     () => ({
       updateHeaderTransform: (scrollValue, verticalScroll) => {
         headerRef.current!.style.transform = `translate3d(${-scrollValue}px, 0px, 0px)`;
-        if (lockedStartWrapperRef.current) lockedStartWrapperRef.current.style.transform = `translate3d(${scrollValue}px, 0px, 0px)`;
+        if (lockedStartWrapperRef.current)
+          lockedStartWrapperRef.current.style.transform = `translate3d(${scrollValue}px, 0px, 0px)`;
         if (lockedEndWrapperRef.current)
           lockedEndWrapperRef.current.style.transform = `translate3d(${scrollValue - verticalScroll}px, 0px, 0px)`;
       },
@@ -98,7 +99,9 @@ function HeaderWrapper<DataType extends GridDataType>({
           toolBoxes: [
             sort ? (
               <SortButton
-                sortingDirection={dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined}
+                sortingDirection={
+                  dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined
+                }
                 key={`${key}_sort`}
                 onClick={() => dataTools.updateCurrentSorting(key)}
               />
@@ -129,7 +132,9 @@ function HeaderWrapper<DataType extends GridDataType>({
           <Checkbox
             onChange={(e) =>
               gridTools.updateSelectedRowsMultiple(
-                !e.target.checked ? new Set() : new Set(dataTools.dataWithoutPagination!.map((x) => x[gridProps.uniqueRowKey]))
+                !e.target.checked
+                  ? new Set()
+                  : new Set(dataTools.dataWithoutPagination!.map((x) => x[gridProps.uniqueRowKey]))
               )
             }
             checked={
@@ -196,14 +201,19 @@ function HeaderWrapper<DataType extends GridDataType>({
             onColumnDragged={gridProps.draggableColumns?.onColumnDragged}
             draggingEnabled={gridProps.draggableColumns?.enabled === true}
           >
-            {columnsToRender.columns.map((col, index) => renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1))}
+            {columnsToRender.columns.map((col, index) =>
+              renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1)
+            )}
           </HeaderOrdering>
         </GroupedColumnsWrapper>
         {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="header" ref={lockedEndWrapperRef}>
             <GroupedColumnsWrapper groupedColumnHeaders={groupedColumnHeaders.rightLockedGroupedColumnHeaders}>
               {pinnedColumns?.rightColumns.map((col, index) =>
-                renderColumnHeader(col, index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsToRender.columns.length) + 1)
+                renderColumnHeader(
+                  col,
+                  index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsToRender.columns.length) + 1
+                )
               )}
             </GroupedColumnsWrapper>
           </LockedEndWrapper>

@@ -13,7 +13,10 @@ const config = {
     },
   ],
 
-  plugins: [typescript({ objectHashIgnoreUnknownHack: true }), scss({ failOnError: true, runtime: require("sass") })],
+  plugins: [
+    typescript({ objectHashIgnoreUnknownHack: true }),
+    scss({ failOnError: true, fileName: "index.css", runtime: require("sass") }),
+  ],
   external: ["react", "react-dom"],
 };
 

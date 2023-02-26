@@ -1,10 +1,16 @@
-import { useMemo } from "react";
-import { DataGridPaginationProps, DataGridProps } from "../../types/DataGrid";
-import { CompleteFilterFnDefinition, DataFetchingDefinition, GridDataType, SortDirectionDefinition } from "../../types/Utils";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useMemo } from "react";
+import { DataGridPaginationProps, ServerSideFetchingProps } from "../../types/DataGrid";
+import {
+  CompleteFilterFnDefinition,
+  DataFetchingDefinition,
+  GridDataType,
+  SortDirectionDefinition,
+} from "../../types/Utils";
 import { IClientDataManagement, useClientDataManagement } from "./clientDataManagement";
 
 export interface IServerDataManagement<DataType extends GridDataType> extends IClientDataManagement<DataType> {
-  serverSide?: DataGridProps<DataType>["serverSide"];
+  serverSide?: ServerSideFetchingProps;
 }
 
 export function useServerDataManagement<DataType extends GridDataType>({
@@ -14,6 +20,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
   paginationProps,
   serverSide,
   sortingProps,
+  initialDataState,
 }: IServerDataManagement<DataType>) {
   const clientTools = useClientDataManagement({
     columns,
@@ -22,6 +29,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
     paginationProps,
     sortingProps,
     clientEvaluationDisabled: true,
+    initialDataState,
   });
 
   function startFetching(value: DataFetchingDefinition) {
@@ -36,82 +44,136 @@ export function useServerDataManagement<DataType extends GridDataType>({
     });
   }
 
-  function updateCurrentFilterValue(key: string, value: string | Array<string>) {
-    clientTools.updateCurrentFilterValue(key, value).then((updatedFilters) => {
-      if (serverSide?.filtering?.onFilterChangeAsync) {
-        startFetching("filter-select");
-        serverSide.filtering
-          .onFilterChangeAsync(updatedFilters, clientTools.currentFilterFns, clientTools.currentPagination, clientTools.currentSorting)
-          .then(() => stopFetching("filter-select"));
-      }
-    });
+  async function updateCurrentFilterValue(key: string, value: string | Array<string>) {
+    const updatedFilters = await clientTools.updateCurrentFilterValue(key, value);
+
+    if (serverSide?.filtering?.onFilterChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("filter-select");
+
+    await serverSide?.filtering?.onFilterChangeAsync?.(
+      updatedFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+    await serverSide?.onGlobalChangeAsync?.(
+      updatedFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+
+    stopFetching("filter-select");
+    return updatedFilters;
   }
 
-  function updateCurrentFilterFn(key: string, type: CompleteFilterFnDefinition) {
-    clientTools.updateCurrentFilterFn(key, type).then((updatedFilterFn) => {
-      if (serverSide?.filtering.onFilterFunctionChangeAsync) {
-        startFetching("filter-select");
-        serverSide.filtering
-          .onFilterFunctionChangeAsync(
-            clientTools.currentFilters,
-            updatedFilterFn,
-            clientTools.currentPagination,
-            clientTools.currentSorting
-          )
-          .then(() => stopFetching("filter-select"));
-      }
-    });
+  async function updateCurrentFilterFn(key: string, type: CompleteFilterFnDefinition) {
+    const updatedFilterFn = await clientTools.updateCurrentFilterFn(key, type);
+    if (serverSide?.filtering.onFilterFunctionChangeAsync || serverSide?.onGlobalChangeAsync)
+      startFetching("filter-select");
+
+    await serverSide?.filtering?.onFilterFunctionChangeAsync?.(
+      clientTools.currentFilters,
+      updatedFilterFn,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+    await serverSide?.onGlobalChangeAsync?.(
+      clientTools.currentFilters,
+      updatedFilterFn,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+
+    stopFetching("filter-select");
+
+    return updatedFilterFn;
   }
 
-  function updateCurrentPagination(valuesToUpdate: DataGridPaginationProps) {
-    clientTools.updateCurrentPagination(valuesToUpdate).then((updatedPagination) => {
-      if (serverSide?.pagination?.onChangeAsync) {
-        startFetching("pagination");
-        serverSide?.pagination
-          ?.onChangeAsync(clientTools.currentFilters, clientTools.currentFilterFns, updatedPagination, clientTools.currentSorting)
-          .then(() => stopFetching("pagination"));
-      }
-    });
+  async function updateCurrentPagination(valuesToUpdate: DataGridPaginationProps) {
+    const updatedPagination = await clientTools.updateCurrentPagination(valuesToUpdate);
+    if (serverSide?.pagination?.onChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("pagination");
+
+    await serverSide?.pagination?.onChangeAsync?.(
+      clientTools.currentFilters,
+      clientTools.currentFilterFns,
+      updatedPagination,
+      clientTools.currentSorting
+    );
+    await serverSide?.onGlobalChangeAsync?.(
+      clientTools.currentFilters,
+      clientTools.currentFilterFns,
+      updatedPagination,
+      clientTools.currentSorting
+    );
+    stopFetching("pagination");
+    return updatedPagination;
   }
 
-  function updateCurrentSorting(key: string, alg?: SortDirectionDefinition) {
-    clientTools.updateCurrentSorting(key, alg).then((updatedSorting) => {
-      if (serverSide?.filtering.onFilterFunctionChangeAsync) {
-        startFetching("sort");
-        serverSide.filtering
-          .onFilterFunctionChangeAsync(
-            clientTools.currentFilters,
-            clientTools.currentFilterFns,
-            clientTools.currentPagination,
-            updatedSorting
-          )
-          .then(() => stopFetching("sort"));
-      }
-    });
+  async function updateCurrentSorting(key: string, alg?: SortDirectionDefinition) {
+    const updatedSorting = await clientTools.updateCurrentSorting(key, alg);
+    if (serverSide?.sorting?.onSortingChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("sort");
+
+    await serverSide?.sorting?.onSortingChangeAsync?.(
+      clientTools.currentFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      updatedSorting
+    );
+    await serverSide?.onGlobalChangeAsync?.(
+      clientTools.currentFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      updatedSorting
+    );
+    stopFetching("sort");
+    return updatedSorting;
   }
 
-  function resetCurrentFilters() {
-    clientTools.resetCurrentFilters().then((updatedState) => {
-      if (serverSide?.filtering?.onFilterChangeAsync) {
-        startFetching("filter-select");
-        serverSide.filtering
-          .onFilterChangeAsync?.(updatedState, clientTools.currentFilterFns, clientTools.currentPagination, clientTools.currentSorting)
-          .then(() => stopFetching("filter-select"));
-      }
-    });
+  async function resetCurrentFilters() {
+    const updatedFilters = await clientTools.resetCurrentFilters();
+    if (serverSide?.filtering?.onFilterChangeAsync) startFetching("filter-select");
+
+    await serverSide?.filtering.onFilterChangeAsync?.(
+      updatedFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+    await serverSide?.onGlobalChangeAsync?.(
+      updatedFilters,
+      clientTools.currentFilterFns,
+      clientTools.currentPagination,
+      clientTools.currentSorting
+    );
+    stopFetching("filter-select");
+    return updatedFilters;
   }
 
   async function pipeFetchedFilters(key: string) {
     if (!clientTools.prefetchedFilters[key]) startFetching("filter-fetch");
-    if (serverSide?.filtering?.onDefaultFilterFetchAsync) {
+    if (serverSide?.filtering?.onDefaultFilterFetchAsync)
       await clientTools.pipeFetchedFilters(key, serverSide?.filtering?.onDefaultFilterFetchAsync);
-    } else {
-      await clientTools.pipeFetchedFilters(key);
-    }
+    else await clientTools.pipeFetchedFilters(key);
+
     stopFetching("filter-fetch");
   }
 
   const isFetching = useMemo(() => clientTools.progressReporters.size !== 0, [clientTools.progressReporters]);
+
+  useEffect(() => {
+    if (initialDataState) {
+      console.log(clientTools.currentFilters);
+      startFetching("filter-select");
+      serverSide
+        ?.onGlobalChangeAsync?.(
+          clientTools.currentFilters,
+          clientTools.currentFilterFns,
+          clientTools.currentPagination,
+          clientTools.currentSorting
+        )
+        .then(() => stopFetching("filter-select"));
+    }
+  }, []);
 
   return {
     ...clientTools,

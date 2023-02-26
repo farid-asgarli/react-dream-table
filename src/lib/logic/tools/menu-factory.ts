@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import React from "react";
 import { useCallback } from "react";
+import { OptionsMenu } from "../../components/ui/SettingsMenu/SettingsMenu";
 import { renderFilterFnsActionsMenu } from "../../root/ActionMenus/HeaderActionMenu/FilterFnsMenu";
 import { renderHeaderActionsMenu } from "../../root/ActionMenus/HeaderActionMenu/HeaderActionMenu";
 import { DataGridIconsDefinition, DataGridLocalizationDefinition, DataGridProps } from "../../types/DataGrid";
@@ -59,6 +61,30 @@ export function useMenuFactory<DataType extends GridDataType>({
     }
   );
 
+  const [optionsMenu, optionsMenuProps, displayOptionsMenu] = useActionsMenuFactory(
+    (prop, hide, updatePosition) =>
+      React.createElement(OptionsMenu, {
+        updateColumnVisibility: gridTools.updateColumnVisibility as any,
+        visibleColumnKeys: gridTools.visibleColumns as any,
+        isDarkModeEnabled: gridTools.isDarkModeEnabled,
+        isFullScreenModeEnabled: gridTools.isFullScreenModeEnabled,
+        isFilterMenuVisible: gridTools.isFilterMenuVisible,
+        isColumnGroupingEnabled: gridTools.isColumnGroupingEnabled,
+        updateDarkMode: gridTools.updateDarkMode,
+        updateFullScreenMode: gridTools.updateFullScreenMode,
+        updateActiveHeader: gridTools.updateActiveHeader,
+        updateFilterMenuVisibility: gridTools.updateFilterMenuVisibility,
+        updateColumnGrouping: gridTools.updateColumnGrouping,
+        optionsMenuProps: gridProps.settingsMenu,
+        isColumnVisibilityEnabled: !!gridProps.columnVisibilityOptions?.enabled,
+        isColumnFilteringEnabled: gridTools.isColumnFilteringEnabled,
+        updatePosition: updatePosition,
+      }),
+    {
+      className: "data-grid-options-menu",
+    }
+  );
+
   return {
     dataActionsMenu,
     displayDataActionsMenu,
@@ -67,5 +93,10 @@ export function useMenuFactory<DataType extends GridDataType>({
     filterFnsMenu,
     filterFnsMenuProps,
     displayFilterFnsMenu,
+    settingsMenu: {
+      optionsMenu,
+      optionsMenuProps,
+      displayOptionsMenu,
+    },
   };
 }

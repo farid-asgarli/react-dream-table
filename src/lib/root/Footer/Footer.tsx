@@ -32,7 +32,6 @@ export default function Footer({
   const { localization, dimensions, icons } = useDataGridStaticContext();
 
   const { gridPaginationProps, updateCurrentPagination, paginationDefaults } = paginationProps;
-
   const DEFAULT_PAGE_SIZES = paginationDefaults?.pageSizes ?? [5, 10, 20, 50, 100];
 
   const renderPaginationNumbers = useMemo(

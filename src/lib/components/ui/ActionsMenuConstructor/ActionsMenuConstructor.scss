@@ -1,4 +1,4 @@
-.actions-menu-constructor {
+.data-grid-actions-menu-constructor {
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   z-index: 999;
   min-width: 160px;
@@ -84,7 +84,7 @@
   }
 }
 .data-grid {
-  .actions-menu-constructor {
+  .data-grid-actions-menu-constructor {
     .actions-menu-list {
       &::-webkit-scrollbar {
         width: 12px;

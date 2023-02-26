@@ -30,7 +30,11 @@ type ActionsMenuVisibilityProps<TData> = {
 type ActionsMenuBodyProps = Pick<HtmlHTMLAttributes<HTMLDivElement>, "style" | "className">;
 
 export default function useActionsMenuFactory<TData>(
-  factory: (props: ActionsMenuVisibilityProps<TData>, hide: () => void) => React.ReactNode | (ActionsMenuListItem | undefined)[],
+  factory: (
+    props: ActionsMenuVisibilityProps<TData>,
+    hide: () => void,
+    updatePosition: () => void
+  ) => React.ReactNode | (ActionsMenuListItem | undefined)[],
   bodyProps?: ActionsMenuBodyProps,
   onOpen?: (data: TData) => void,
   onHide?: () => void
@@ -45,21 +49,6 @@ export default function useActionsMenuFactory<TData>(
   const [actionsMenuProps, setActionsMenuProps] = useState<ActionsMenuVisibilityProps<TData>>(emptyState);
 
   const actionsMenuRef = useRef<HTMLDivElement>(null);
-
-  function adjustPosition(position: ScreenPosition, maxElemWidth: number = 300, maxElemHeight: number = 300): ScreenPosition {
-    const widthSpacing = window.innerWidth - position.xAxis;
-    const heightSpacing = window.innerHeight - position.yAxis;
-    let positionToUpdate = { ...position };
-
-    if (widthSpacing < maxElemWidth) {
-      positionToUpdate.xAxis = window.innerWidth - (maxElemWidth + 20);
-    }
-    if (heightSpacing < maxElemHeight) {
-      positionToUpdate.yAxis = window.innerHeight - (maxElemHeight + 20);
-    }
-
-    return positionToUpdate;
-  }
 
   function displayActionsMenu({ identifier, position, data }: { identifier: string; position: ScreenPosition; data: TData }) {
     onOpen?.(data);
@@ -82,11 +71,33 @@ export default function useActionsMenuFactory<TData>(
 
   function handleAnimation(visible: boolean) {
     if (!visible) hideActionsMenu(true);
-    else
+    else updatePosition();
+  }
+
+  function adjustPosition(position?: ScreenPosition, width: number = 300, height: number = 300): ScreenPosition {
+    if (!position) return { xAxis: 0, yAxis: 0 };
+
+    const widthSpacing = window.innerWidth - position.xAxis;
+    const heightSpacing = window.innerHeight - position.yAxis;
+    let positionToUpdate = { ...position };
+
+    if (widthSpacing < width) {
+      positionToUpdate.xAxis = window.innerWidth - (width + 20);
+    }
+    if (heightSpacing < height) {
+      positionToUpdate.yAxis = window.innerHeight - (height + 20 + (actionsMenuProps?.identifier === "settings" ? 20 : 0));
+    }
+
+    return positionToUpdate;
+  }
+
+  function updatePosition() {
+    const boundingClientProps = actionsMenuRef.current?.getBoundingClientRect();
+    if (boundingClientProps) {
       setActionsMenuProps((prev) => {
-        const boundingClientProps = actionsMenuRef.current?.getBoundingClientRect();
-        return { ...prev, position: adjustPosition(prev.position!, boundingClientProps?.width, boundingClientProps?.height) };
+        return { ...prev, position: adjustPosition(prev.position, boundingClientProps.width, boundingClientProps.height) };
       });
+    }
   }
 
   const renderMenu = useMemo(
@@ -100,7 +111,8 @@ export default function useActionsMenuFactory<TData>(
         },
         ref: actionsMenuRef,
         onHide: handleAnimation,
-        children: factory(actionsMenuProps, hideActionsMenu),
+        children: factory(actionsMenuProps, hideActionsMenu, updatePosition),
+        updatePosition,
         ...bodyProps,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

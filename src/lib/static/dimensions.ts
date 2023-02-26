@@ -10,8 +10,9 @@ export const DefaultDataGridDimensions: DataGridDimensionsDefinition = {
   defaultHeadRowHeight: 50,
   defaultHeaderFilterHeight: 55,
   defaultScrollbarWidth: 20,
-  maxColumnResizeWidth: 600,
+  maxColumnResizeWidth: Infinity,
   minColumnResizeWidth: 100,
   defaultExpandPanelHeight: 300,
   defaultGroupedColumnHeight: 60,
+  columnOffsetWidth: 0,
 };

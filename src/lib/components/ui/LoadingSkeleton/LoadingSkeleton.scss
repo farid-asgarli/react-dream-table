@@ -8,6 +8,10 @@
     flex-direction: column;
     justify-content: center;
     pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 999;
+    background: var(--grid-color-bg);
     .row-skeleton {
       width: 100%;
       .skeleton-line {

@@ -5,7 +5,13 @@ import { DefaultDataGridIcons } from "../../static/icons";
 import { LocalizationEntries } from "../../static/localization";
 import { DefaultDataGridTheme } from "../../static/theme";
 import { DataGridProps } from "../../types/DataGrid";
-import { DataGridStyleProps, ColumnDefinitionExtended, GridDataType, GridTools, GroupedColumnHeaderDefinition } from "../../types/Utils";
+import {
+  DataGridStyleProps,
+  ColumnDefinitionExtended,
+  GridDataType,
+  GridTools,
+  GroupedColumnHeaderDefinition,
+} from "../../types/Utils";
 import { lightenColor } from "../../utils/Coloring";
 import { useDataManagement } from "../data-management/dataManagement";
 import useDataGridTools from "./data-grid-tools";
@@ -21,7 +27,10 @@ export function useGridFactory<DataType extends GridDataType>(gridProps: DataGri
 
   const localization = useMemo(() => {
     if (gridProps.localization?.defaultLocale) {
-      return { ...LocalizationEntries[gridProps.localization?.defaultLocale], ...gridProps.localization?.customLocaleProps };
+      return {
+        ...LocalizationEntries[gridProps.localization?.defaultLocale],
+        ...gridProps.localization?.customLocaleProps,
+      };
     }
     return { ...LocalizationEntries[ConstProps.defaultLocale], ...gridProps.localization?.customLocaleProps };
   }, [gridProps.localization]);
@@ -70,10 +79,14 @@ export function useGridFactory<DataType extends GridDataType>(gridProps: DataGri
     paginationProps: gridProps.pagination,
     serverSide: gridProps.serverSide,
     sortingProps: gridProps.sorting,
+    initialDataState: gridProps.initialDataState,
   });
 
   const arePinnedColumnsInUse = useMemo(() => {
-    return gridProps.pinnedColumns?.enabled && (gridTools.pinnedColumns.left.length > 0 || gridTools.pinnedColumns?.right.length > 0);
+    return (
+      gridProps.pinnedColumns?.enabled &&
+      (gridTools.pinnedColumns.left.length > 0 || gridTools.pinnedColumns?.right.length > 0)
+    );
   }, [gridTools.pinnedColumns.left.length, gridTools.pinnedColumns?.right.length, gridProps.pinnedColumns?.enabled]);
 
   const initializedColumns = useMemo(() => {
@@ -95,14 +108,17 @@ export function useGridFactory<DataType extends GridDataType>(gridProps: DataGri
       });
     }
 
-    const dataColumns = gridProps.columns
+    const visibleColumns = gridProps.columns
       .filter((col) => gridTools.visibleColumns.has(col.key))
-      .sort((a, b) => gridTools.columnOrder.indexOf(a.key) - gridTools.columnOrder.indexOf(b.key))
-      .map((col) => ({
-        ...col,
-        width: gridTools.columnDimensions[col.key as string] ?? dimensions.defaultColumnWidth,
-        type: "data",
-      })) as ColumnDefinitionExtended<DataType>[];
+      .sort((a, b) => gridTools.columnOrder.indexOf(a.key) - gridTools.columnOrder.indexOf(b.key));
+
+    const perColOffset = dimensions.columnOffsetWidth / visibleColumns.length;
+
+    const dataColumns = visibleColumns.map((col) => ({
+      ...col,
+      width: (gridTools.columnDimensions[col.key as string] ?? dimensions.defaultColumnWidth) + perColOffset,
+      type: "data",
+    })) as ColumnDefinitionExtended<DataType>[];
 
     columnsAggregated.push(...dataColumns);
 
@@ -174,7 +190,9 @@ export function useGridFactory<DataType extends GridDataType>(gridProps: DataGri
     const colGroupDictionary: Record<string, string | undefined> = {};
     for (let index = 0; index < gridProps.columns.length; index++) {
       const column = gridProps.columns[index];
-      colGroupDictionary[column.key as string] = gridProps.groupedColumns?.groups?.find((x) => x.columnKeys.includes(column.key))?.title;
+      colGroupDictionary[column.key as string] = gridProps.groupedColumns?.groups?.find((x) =>
+        x.columnKeys.includes(column.key)
+      )?.title;
     }
     return colGroupDictionary;
   }, [gridTools.isColumnGroupingEnabled, gridProps.columns, gridProps.groupedColumns?.groups]);

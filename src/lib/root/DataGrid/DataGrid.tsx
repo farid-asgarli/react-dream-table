@@ -6,6 +6,8 @@ import { useMenuFactory } from "../../logic/tools/menu-factory";
 import { useEffect, useImperativeHandle } from "react";
 import { GridDataType } from "../../types/Utils";
 import { ConstProps } from "../../static/constantProps";
+import { createPortal } from "react-dom";
+import React from "react";
 import "../../styles/theming.scss";
 
 function DataGrid<DataType extends GridDataType>(gridProps: DataGridProps<DataType>) {
@@ -30,6 +32,7 @@ function DataGrid<DataType extends GridDataType>(gridProps: DataGridProps<DataTy
     filterFnsMenu,
     filterFnsMenuProps,
     headerActionsMenu,
+    settingsMenu,
   } = useMenuFactory({
     ...dataGridProps,
     gridProps,
@@ -56,6 +59,25 @@ function DataGrid<DataType extends GridDataType>(gridProps: DataGridProps<DataTy
       totalColumns,
     ]
   );
+
+  function renderContextOverlay() {
+    const contextOverlayElements = (
+      <React.Fragment>
+        {gridProps.rowActionsMenu?.enabled && dataActionsMenu}
+        {gridProps.headerActionsMenu?.enabled !== false && headerActionsMenu}
+        {gridProps.settingsMenu?.enabled !== false && settingsMenu.optionsMenu}
+        {filterFnsMenu}
+      </React.Fragment>
+    );
+    if (gridProps.contextMenuRenderRoot)
+      return createPortal(
+        <div className="data-grid" data-theme={gridTools.isDarkModeEnabled ? "dark" : "light"} style={defaultStyling}>
+          {contextOverlayElements}
+        </div>,
+        gridProps.contextMenuRenderRoot
+      );
+    return contextOverlayElements;
+  }
 
   useEffect(() => {
     if (gridTools.expandedRowKeys.size > 0) gridTools.closeExpandedRows();
@@ -95,10 +117,12 @@ function DataGrid<DataType extends GridDataType>(gridProps: DataGridProps<DataTy
           displayFilterFnsMenu,
           activeFilterMenuKey: filterFnsMenuProps.identifier,
         }}
+        optionsMenu={{
+          displayOptionsMenu: settingsMenu.displayOptionsMenu,
+          isVisible: settingsMenu.optionsMenuProps.visible,
+        }}
       >
-        {gridProps.rowActionsMenu?.enabled && dataActionsMenu}
-        {gridProps.headerActionsMenu?.enabled !== false && headerActionsMenu}
-        {filterFnsMenu}
+        {renderContextOverlay()}
       </DataGridFactory>
     </DataGridStaticContext.Provider>
   );

@@ -39,6 +39,10 @@ export interface DataGridFactoryProps<DataType extends GridDataType> extends Rea
     displayFilterFnsMenu: DisplayActionsMenu<DataType>;
     activeFilterMenuKey: string | undefined;
   };
+  optionsMenu: {
+    displayOptionsMenu: DisplayActionsMenu<DataType>;
+    isVisible: boolean;
+  };
 }
 
 export interface CellContentProps extends React.HtmlHTMLAttributes<HTMLDivElement> {

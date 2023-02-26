@@ -7,14 +7,16 @@ export default function Window({
   className,
   animationType,
   animationVariant,
+  onAnimationFinish,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   index: string;
   animationType?: "in" | "out";
   animationVariant?: "zoom" | "slide";
+  onAnimationFinish?: (val: boolean) => void;
 }) {
   return (
-    <Animations.Manual duration={300} type={animationType} variant={animationVariant}>
+    <Animations.Manual duration={300} type={animationType} variant={animationVariant} onAnimationFinish={onAnimationFinish}>
       <div id={index} className={cs("portal-window", className)} {...props}>
         {children}
       </div>

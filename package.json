@@ -1,6 +1,6 @@
 {
   "name": "react-dream-table",
-  "version": "0.7.2",
+  "version": "0.7.4",
   "keywords": [
     "table",
     "react-table",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/faridOP/react-dream-table"
+    "url": "https://github.com/farid-asgarli/react-dream-table"
   },
   "license": "MIT",
   "peerDependencies": {
@@ -46,7 +46,7 @@
     "babel-runtime": "^6.26.0",
     "react-scripts": "5.0.1",
     "rollup": "^2.79.1",
-    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-scss": "^4.0.0",
     "rollup-plugin-typescript2": "^0.34.1",
     "sass": "^1.58.0",
     "typescript": "^4.8.4"

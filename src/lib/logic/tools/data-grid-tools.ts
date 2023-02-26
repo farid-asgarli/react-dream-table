@@ -49,6 +49,8 @@ export default function useDataGridTools<DataType extends GridDataType>({
 
   const isVirtualizationIsEnabled = useMemo(() => gridProps.virtualization?.enabled === true, [gridProps.virtualization?.enabled]);
 
+  const isColumnFilteringEnabled = useMemo(() => gridProps.columns.some((x) => x.filter), [gridProps.columns]);
+
   const isHeaderMenuActive = useMemo(
     () => gridProps.headerActionsMenu?.enabled === undefined || gridProps.headerActionsMenu?.enabled === true,
     [gridProps.headerActionsMenu]
@@ -83,6 +85,7 @@ export default function useDataGridTools<DataType extends GridDataType>({
     isRightClickIsActive,
     isHeaderMenuActive,
     isVirtualizationIsEnabled,
+    isColumnFilteringEnabled,
     onRowClick,
     ...useColumnDimensions(gridProps, dimensions),
     ...useColumnOrder(gridProps),

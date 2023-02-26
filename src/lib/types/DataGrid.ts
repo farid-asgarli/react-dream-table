@@ -158,6 +158,8 @@ export interface DataGridDimensionsDefinition {
   defaultFooterHeight: number;
   /** Default width of scrollbar of grid body. */
   defaultScrollbarWidth: number;
+  /** Additional width to append to the total width of columns. */
+  columnOffsetWidth: number;
 }
 
 export type DataGridIconsDefinition = typeof DefaultDataGridIcons;
@@ -198,9 +200,9 @@ interface ClientSortingProps {
   onSortingChange?: (sorting: ICurrentSorting | undefined) => void;
 }
 
-export interface EllipsisProps {
-  columnHead: boolean;
-  rowData: boolean;
+export interface CellBorderingProps {
+  enableHorizontalBorder?: boolean | undefined;
+  enableVerticalBorder?: boolean | undefined;
 }
 
 interface ColumnSortingProps {
@@ -274,6 +276,12 @@ export interface ColumnResizingProps<DataType extends GridDataType> extends Comm
    * @returns
    */
   onColumnResize?: (collection: Record<KeyLiteralType<DataType>, number>) => void;
+}
+
+export interface AutoColWidthProps {
+  adjustOnInitialRender?: boolean | undefined;
+  adjustOnResize?: boolean | undefined;
+  initialBaseWidth?: number | undefined;
 }
 
 export interface DataGridTooltipProps extends CommonInteractiveProps {
@@ -451,6 +459,7 @@ export type ServerSideCallback = (
 ) => Promise<void>;
 
 export interface ServerSideFetchingProps extends CommonInteractiveProps {
+  onGlobalChangeAsync?: ServerSideCallback;
   pagination?: {
     /** Data count on the server.
      * Must be correctly supplied to construct and assign pagination properties.
@@ -474,19 +483,36 @@ export interface ServerSideFetchingProps extends CommonInteractiveProps {
   };
 }
 
+export interface InitialDataStateProps {
+  /** Up to date filter object. */
+  filters?: ICurrentFilterCollection;
+  /** Up to date filter functions object. */
+  filterFns?: ICurrentFnCollection;
+  /** Up to date pagination object. */
+  paginationProps?: DataGridPaginationProps;
+  /** Up to date sorting object. */
+  sortingProps?: ICurrentSorting;
+}
+
 export interface DataGridProps<DataType extends GridDataType> {
   /** Data to output. Object keys must match column keys if default rendering is used. */
   data: DataType[] | undefined;
+  /** Columns that will be used in the data-grid. */
+  columns: ColumnDefinition<DataType>[];
+  /** Identifier key of the data object. */
+  uniqueRowKey: KeyLiteralType<DataType>;
+  /** Initial value of data state. */
+  initialDataState?: InitialDataStateProps | undefined;
   /** Displays settings menu at the bottom start of the footer. */
   settingsMenu?: SettingsMenuProps | undefined;
+  /** Appends the context menu overlay to the specified node. */
+  contextMenuRenderRoot?: HTMLElement | undefined;
   /** Displays three-dot context menu at the end of the row. */
   rowActionsMenu?: RowActionsMenuProps<DataType> | undefined;
   /** Displays three-dot context menu at the end of head cell. */
   headerActionsMenu?: HeaderActionsMenuProps | undefined;
   /** Displays filter functions menu next to inputs. */
   filterFnsMenu?: FilterFnsMenuProps | undefined;
-  /** Columns that will be used in the data-grid. */
-  columns: ColumnDefinition<DataType>[];
   /** Displays loading-skeleton if activated. */
   loading?: boolean | undefined;
   /** Allows the ability to resize the columns. */
@@ -501,18 +527,16 @@ export interface DataGridProps<DataType extends GridDataType> {
   columnVisibilityOptions?: ColumnVisibilityProps<DataType> | undefined;
   /** Allows the ability to display tooltip on cells. */
   tooltipOptions?: DataGridTooltipProps | undefined;
-  /** Identifier key of the data object. */
-  uniqueRowKey: KeyLiteralType<DataType>;
   /** Allows the usage of checkboxes and row selection. */
   rowSelection?: RowSelectionProps | undefined;
   /** Allows the usage of pinning columns to either left or right. */
   pinnedColumns?: ColumnPinProps<DataType> | undefined;
   /** Adds border around data cells. */
-  borderedCell?: boolean | undefined;
+  cellBordering?: CellBorderingProps | undefined;
   /** Allows the user to hover over the rows. */
   isHoverable?: boolean | undefined;
-  /** Adjusts column width automatically on initial render. */
-  autoAdjustColWidthOnInitialRender?: boolean | undefined;
+  /** Adjusts column width automatically. */
+  autoAdjustColWidth?: AutoColWidthProps | undefined;
   /** Default pagination props to partition data. */
   pagination?: ClientPaginationProps | undefined;
   /** Default sorting props, such as event handler when sorting operation occurs. */

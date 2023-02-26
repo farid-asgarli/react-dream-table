@@ -15,12 +15,12 @@ export default function CollapseAllButton({
     <button
       title={localization.rowShrinkAllTitle}
       type="button"
-      className={cs("actions-menu-constructor-button collapse-all-button")}
+      className={cs("data-grid-actions-menu-constructor-button collapse-all-button")}
       {...props}
     >
       <span className="icon-wrapper">
-        <icons.ChevronUp className="actions-menu-constructor-icon" />
-        <icons.ChevronUp className="actions-menu-constructor-icon" />
+        <icons.ChevronUp className="data-grid-actions-menu-constructor-icon" />
+        <icons.ChevronUp className="data-grid-actions-menu-constructor-icon" />
       </span>
     </button>
   );

@@ -10,8 +10,9 @@ export default function LoadingSkeleton({
   className,
   style,
   containerHeight,
+  visible,
   ...props
-}: React.HtmlHTMLAttributes<HTMLDivElement> & { containerHeight: number }) {
+}: React.HtmlHTMLAttributes<HTMLDivElement> & { containerHeight: number; visible: boolean }) {
   const { dimensions } = useDataGridStaticContext();
 
   const rowsToRender = useMemo(
@@ -20,7 +21,7 @@ export default function LoadingSkeleton({
   );
 
   return (
-    <Animations.Auto>
+    <Animations.Auto visible={visible}>
       <div
         className={cs("skeleton-data-grid", className)}
         style={{

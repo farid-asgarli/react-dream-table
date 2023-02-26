@@ -1,5 +1,5 @@
 .data-grid {
-  .actions-menu-constructor-button {
+  .data-grid-actions-menu-constructor-button {
     all: unset;
     display: flex;
     justify-content: center;
@@ -18,12 +18,12 @@
     &:hover {
       background: var(--grid-color-hover);
     }
-    .actions-menu-constructor-icon {
+    .data-grid-actions-menu-constructor-icon {
       fill: var(--color-icon);
       font-size: 24px;
     }
     &:active {
-      .actions-menu-constructor-icon {
+      .data-grid-actions-menu-constructor-icon {
         scale: 0.8;
       }
     }
@@ -33,8 +33,8 @@
       transition: 0.2s ease-in-out transform;
     }
   }
-  .actions-menu-constructor-button.active {
-    .actions-menu-constructor-icon {
+  .data-grid-actions-menu-constructor-button.active {
+    .data-grid-actions-menu-constructor-icon {
       fill: var(--grid-color-primary);
     }
     background: var(--grid-color-hover);

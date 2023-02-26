@@ -10,7 +10,7 @@ import "./ActionsMenuConstructor.scss";
 export const ActionsMenuConstructor = React.forwardRef<
   HTMLDivElement,
   Omit<React.HTMLAttributes<HTMLDivElement>, "children"> & ActionsMenuProps
->(({ children, visible, onHide, className, ...props }, ref) => {
+>(({ children, visible, onHide, className, updatePosition, ...props }, ref) => {
   const MAIN_INDEX = "__action_base";
   const { icons, localization } = useDataGridStaticContext();
   const [activeWindowIndex, setActiveWindowIndex] = useState<string>(MAIN_INDEX);
@@ -22,18 +22,22 @@ export const ActionsMenuConstructor = React.forwardRef<
     return index + "__action_menu_key";
   }
 
+  function updateActiveWindow(index: string) {
+    setActiveWindowIndex(index);
+  }
+
   const renderChildren = (children: ActionsMenuListItem[], isSubMenu = false) => {
     let childrenCopy = children;
     if (isSubMenu) {
       childrenCopy = [
         {
           renderCustomComponent: (
-            <ButtonPrimary onClick={() => setActiveWindowIndex(MAIN_INDEX)} className="back-button">
+            <ButtonPrimary onClick={() => updateActiveWindow(MAIN_INDEX)} className="back-button">
               <icons.ArrowLeft className="button-icon" />
               <span>{localization.goBackTitle}</span>
             </ButtonPrimary>
           ),
-          onClick: () => setActiveWindowIndex(MAIN_INDEX),
+          onClick: () => updateActiveWindow(MAIN_INDEX),
           className: "back-button-wrapper",
         },
         ...children,
@@ -51,7 +55,7 @@ export const ActionsMenuConstructor = React.forwardRef<
             ) : (
               <button
                 className={cs(listItem.isSelected && "selected")}
-                onClick={listItem.subMenu ? () => setActiveWindowIndex(key) : listItem.onClick}
+                onClick={listItem.subMenu ? () => updateActiveWindow(key) : listItem.onClick}
                 type="button"
               >
                 <span className="button-content">{listItem?.content}</span>
@@ -100,13 +104,13 @@ export const ActionsMenuConstructor = React.forwardRef<
   }, [activeWindowIndex, children]);
 
   function onMenuHide(visible: boolean) {
-    if (MAIN_INDEX !== activeWindowIndex) setActiveWindowIndex(MAIN_INDEX);
+    if (MAIN_INDEX !== activeWindowIndex) updateActiveWindow(MAIN_INDEX);
     onHide?.(visible);
   }
 
   return (
     <Animations.Auto onAnimationFinish={onMenuHide} duration={200} visible={visible}>
-      <div ref={ref} className={cs("actions-menu-constructor", className)} {...props}>
+      <div ref={ref} className={cs("data-grid-actions-menu-constructor", className)} {...props}>
         <div className="actions-menu-list">{generateActionsPortal}</div>
       </div>
     </Animations.Auto>
