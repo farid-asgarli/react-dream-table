@@ -54,8 +54,8 @@ export const ActionsMenuConstructor = React.forwardRef<
               listItem.renderCustomComponent
             ) : (
               <button
-                className={cs(listItem.isSelected && "selected")}
-                onClick={listItem.subMenu ? () => updateActiveWindow(key) : listItem.onClick}
+                className={cs(listItem?.isSelected && "selected")}
+                onClick={listItem?.subMenu ? () => updateActiveWindow(key) : listItem.onClick}
                 type="button"
               >
                 <span className="button-content">{listItem?.content}</span>
@@ -73,7 +73,7 @@ export const ActionsMenuConstructor = React.forwardRef<
       const subMenuIndexes: string[] = [];
       for (let index = 0; index < children.length; index++) {
         const listItem = children[index];
-        if (listItem.subMenu) {
+        if (listItem && listItem.subMenu) {
           const key = generateKey(index);
           subMenuIndexes.push(key);
           availableSubMenus.push(

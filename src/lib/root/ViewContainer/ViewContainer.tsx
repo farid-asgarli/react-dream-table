@@ -62,6 +62,36 @@ const ViewContainer = <DataType extends GridDataType>({
     [displayActionsMenu]
   );
 
+  const createExpandButton = (rowIndex: number, data: DataType) => {
+    const isExpanded = gridTools.expandedRowKeys.has(rowIndex);
+    return (
+      (!gridProps.expandableRows?.excludeWhen || !gridProps.expandableRows.excludeWhen(data)) && (
+        <ExpandButton
+          isExpanded={isExpanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            gridTools.updateRowExpansion(rowIndex);
+          }}
+          title={isExpanded ? localization?.rowShrinkTitle : localization?.rowExpandTitle}
+        />
+      )
+    );
+  };
+
+  const createActionsMenuButton = (data: DataType) => <ActionsMenuButton onClick={rowActionsMenu(data)} />;
+
+  const createCheckBox = (data: DataType) => (
+    <Checkbox
+      onChange={
+        gridProps.rowSelection?.enabled && gridProps.rowSelection.type !== "onRowClick"
+          ? (e) => gridTools.updateSelectedRows(data[gridProps.uniqueRowKey])
+          : undefined
+      }
+      readOnly={gridProps.rowSelection?.type === "onRowClick"}
+      checked={gridTools.selectedRows.has(data[gridProps.uniqueRowKey])}
+    />
+  );
+
   function renderCell(
     { width, data, dataRender, type, colKey, dataCellAlignment }: ReturnType<typeof extractBasicCellProps>,
     index: number,
@@ -85,40 +115,23 @@ const ViewContainer = <DataType extends GridDataType>({
         children = dataRender ? dataRender?.(data) : dataToRender;
         break;
       case "actions":
-        children = <ActionsMenuButton onClick={rowActionsMenu(data)} />;
+        children = createActionsMenuButton(data);
         break;
       case "expand":
-        const isExpanded = gridTools.expandedRowKeys.has(rowIndex);
-        children = (!gridProps.expandableRows?.excludeWhen || !gridProps.expandableRows.excludeWhen(data)) && (
-          <ExpandButton
-            isExpanded={isExpanded}
-            onClick={(e) => {
-              e.stopPropagation();
-              gridTools.updateRowExpansion(rowIndex);
-            }}
-            title={isExpanded ? localization?.rowShrinkTitle : localization?.rowExpandTitle}
-          />
-        );
-
+        children = createExpandButton(rowIndex, data);
         break;
       case "select":
-        children = (
-          <Checkbox
-            onChange={
-              gridProps.rowSelection?.enabled && gridProps.rowSelection.type === "default"
-                ? (e) => gridTools.updateSelectedRows(data[gridProps.uniqueRowKey])
-                : undefined
-            }
-            readOnly={gridProps.rowSelection?.type === "onRowClick"}
-            checked={gridTools.selectedRows.has(data[gridProps.uniqueRowKey])}
-          />
-        );
+        children = createCheckBox(data);
         break;
     }
 
     return (
       <Cell
-        className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`, index === 0 && "no-border")}
+        className={cs(
+          type !== "data" && "tools",
+          dataCellAlignment && `align-${dataCellAlignment}`,
+          index === 0 && "no-border"
+        )}
         {...commonDataGridRowCellProps}
       >
         <CellContent tooltipProps={gridProps.tooltipOptions}>{children}</CellContent>
@@ -139,7 +152,9 @@ const ViewContainer = <DataType extends GridDataType>({
           showSeparatorLine: gridProps.expandableRows?.showSeparatorLine === true,
           isRowExpanded: isExpanded,
           leftOffset: pinnedColumns?.leftWidth,
-          updateExpandRowHeightCache: gridTools.isDynamicRowExpandHeightEnabled ? gridTools.updateExpandRowHeightCache : undefined,
+          updateExpandRowHeightCache: gridTools.isDynamicRowExpandHeightEnabled
+            ? gridTools.updateExpandRowHeightCache
+            : undefined,
           rowIndex: index,
         },
         isRowSelected: gridTools.isRowSelected(identifier),
@@ -182,7 +197,9 @@ const ViewContainer = <DataType extends GridDataType>({
         {columnsToRender.columns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
         {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="body">
-            {pinnedColumns.rightColumns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
+            {pinnedColumns.rightColumns.map((col, cellIndex) =>
+              renderCellCollection(col, rowData, cellIndex, rowIndex)
+            )}
           </LockedEndWrapper>
         )}
       </Row>
@@ -215,7 +232,9 @@ const ViewContainer = <DataType extends GridDataType>({
             renderElement={renderFullRow}
           />
         )}
-        {!gridTools.isVirtualizationIsEnabled && dataTools.data && dataTools.data.map((dat, index) => renderFullRow(dat, undefined, index))}
+        {!gridTools.isVirtualizationIsEnabled &&
+          dataTools.data &&
+          dataTools.data.map((dat, index) => renderFullRow(dat, undefined, index))}
       </RowContainer>
     </div>
   );

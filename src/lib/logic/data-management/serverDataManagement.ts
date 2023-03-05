@@ -162,7 +162,6 @@ export function useServerDataManagement<DataType extends GridDataType>({
 
   useEffect(() => {
     if (initialDataState) {
-      console.log(clientTools.currentFilters);
       startFetching("filter-select");
       serverSide
         ?.onGlobalChangeAsync?.(

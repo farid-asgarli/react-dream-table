@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo } from "react";
 import { Animations } from "../../components/animations/Animations";
 import ButtonPrimary from "../../components/ui/Buttons/ButtonPrimary/ButtonPrimary";
@@ -42,7 +41,7 @@ export default function Footer({
         icons,
       }),
 
-    [gridPaginationProps, updateCurrentPagination]
+    [icons, localization, paginationProps]
   );
 
   const renderPaginationPageSize = useMemo(
@@ -56,6 +55,7 @@ export default function Footer({
         value={gridPaginationProps.pageSize}
       />
     ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [gridPaginationProps.pageSize]
   );
 
@@ -84,7 +84,13 @@ export default function Footer({
           )}
         </div>
       ),
-    [gridPaginationProps.dataCount, selectedRows.size, loading]
+    [
+      selectedRows.size,
+      localization.rowsSelectedTitle,
+      localization.paginationTotalCount,
+      loading,
+      gridPaginationProps.dataCount,
+    ]
   );
 
   return (
@@ -261,7 +267,8 @@ function renderPaginationButtons({
       ...buttons.map((btn) =>
         renderButton({
           navigateTo: btn.navigateTo,
-          component: btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
+          component:
+            btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
           type: btn.type,
           icons,
         })

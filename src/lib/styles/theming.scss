@@ -2,6 +2,7 @@
   --grid-color-bg: #fff;
   --grid-color-line: #e4e3e2;
   --grid-color-text: #555e68;
+  --grid-color-stroke: #99a1aa;
   --grid-color-bg-odd: #f8f8f8;
   --grid-box-shadow-main: 0 12px 20px 6px rgb(104 112 118 / 0.08);
   --grid-box-shadow-primary: 0 4px 14px 0 var(--grid-color-hover);
@@ -22,6 +23,7 @@
 .data-grid[data-theme="dark"] {
   --grid-color-bg: #313943;
   --grid-color-line: #4f575f;
+  --grid-color-stroke: #7c8792;
   --grid-color-text: #9ba7b4;
   --grid-color-bg-odd: #343d48;
   --grid-color-input-bg: #464d56;

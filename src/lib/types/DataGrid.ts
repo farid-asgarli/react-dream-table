@@ -338,6 +338,16 @@ export interface RowSelectionProps extends CommonInteractiveProps {
    * - `default` - Selects only if checkbox is checked.
    */
   type?: "onRowClick" | "default" | undefined;
+  /**
+   * Fires an event when row selection is updated.
+   * @param selectedRows Collection of selected rows.
+   * @returns
+   */
+  onChange?: (selectedRows: Array<any>) => void;
+  /**
+   * Default selected row ids.
+   */
+  defaultValues?: Array<any> | undefined;
 }
 
 export interface RowActionsMenuProps<DataType> extends CommonInteractiveProps {
@@ -445,6 +455,14 @@ export interface DataGridReference<DataType extends GridDataType> {
    * Resets collection of filters that are currently active.
    */
   resetCurrentFilters: () => void;
+  /**
+   * Clears the selected rows.
+   */
+  clearSelectedRows: () => void;
+  /**
+   * Updates currently selected rows.
+   */
+  updateSelectedRows: (values: DataGridRowKeyDefinition | Array<DataGridRowKeyDefinition>) => void;
 }
 
 export type ServerSideCallback = (

@@ -4,7 +4,7 @@ import { DataGridProps, DataGridReference } from "../../types/DataGrid";
 import { useGridFactory } from "../../logic/tools/grid-factory";
 import { useMenuFactory } from "../../logic/tools/menu-factory";
 import { useEffect, useImperativeHandle } from "react";
-import { GridDataType } from "../../types/Utils";
+import { DataGridRowKeyDefinition, GridDataType } from "../../types/Utils";
 import { ConstProps } from "../../static/constantProps";
 import { createPortal } from "react-dom";
 import React from "react";
@@ -49,7 +49,11 @@ function DataGrid<DataType extends GridDataType>(gridProps: DataGridProps<DataTy
       getCurrentPagination: () => dataTools.currentPagination,
       resetCurrentFilters: dataTools.resetCurrentFilters,
       getSelectedRows: () => gridTools.selectedRows,
+      clearSelectedRows: () => gridTools.clearSelectedRows(),
+      updateSelectedRows: (value: DataGridRowKeyDefinition | Array<DataGridRowKeyDefinition>) =>
+        Array.isArray(value) ? gridTools.updateSelectedRowsMultiple(value) : gridTools.updateSelectedRows(value),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       dataTools.currentFilters,
       dataTools.currentPagination,

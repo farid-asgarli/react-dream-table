@@ -135,11 +135,6 @@ function DataGrid<DataType extends GridDataType>({
   }, [pinnedColumns?.rightColumns.length, verticalScrollbarWidth]);
 
   useEffect(() => {
-    if (gridProps.data) gridTools.updateSelectedRowsMultiple(new Set());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gridProps.data]);
-
-  useEffect(() => {
     if (scrollerRef.current && scrollerRef.current.scrollTop !== 0)
       scrollerRef.current?.scrollTo({
         behavior: "smooth",
@@ -267,7 +262,6 @@ function DataGrid<DataType extends GridDataType>({
       {...props}
     >
       {gridTools.isColumnResizing && <ColumnResizingOverlay />}
-      {/* {gridProps.settingsMenu?.enabled !== false && optionsMenu} */}
       {children}
       <Body>
         <ColumnLayout style={{ height: layoutDimensions.containerHeight }}>

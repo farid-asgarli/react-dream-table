@@ -62,6 +62,50 @@ function HeaderWrapper<DataType extends GridDataType>({
     []
   );
 
+  const createCheckBox = () => {
+    function updateSelection(e: React.ChangeEvent<HTMLInputElement>) {
+      if (dataTools.dataWithoutPagination)
+        gridTools.updateSelectedRowsMultiple(
+          !e.target.checked ? [] : dataTools.dataWithoutPagination.map((x) => x[gridProps.uniqueRowKey])
+        );
+    }
+    const isChecked =
+      dataTools.currentPagination.dataCount !== 0 &&
+      (!!gridProps.serverSide?.enabled
+        ? dataTools.data?.length === gridTools.selectedRows.size
+        : gridProps.data?.length === gridTools.selectedRows.size);
+
+    return <Checkbox onChange={updateSelection} checked={isChecked} />;
+  };
+
+  const createHeaderActionMenuButton = (key: string) =>
+    gridTools.isHeaderMenuActive ? (
+      <MenuButton
+        key={`${key}_menu`}
+        onClick={(e) =>
+          headerActionsMenu.displayHeaderActionsMenu({
+            data: { id: key } as any,
+            position: {
+              xAxis: e.currentTarget.getBoundingClientRect().x,
+              yAxis: e.currentTarget.getBoundingClientRect().y + 20,
+            },
+            identifier: key,
+          })
+        }
+      />
+    ) : undefined;
+
+  const createSortButton = (sort: boolean | undefined, key: string) =>
+    sort ? (
+      <SortButton
+        sortingDirection={dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined}
+        key={`${key}_sort`}
+        onClick={() => dataTools.updateCurrentSorting(key)}
+      />
+    ) : undefined;
+
+  const createExpandButton = () => <CollapseAllButton onClick={() => gridTools.closeExpandedRows()} />;
+
   function renderColumnHeader(col: ColumnDefinitionExtended<DataType>, index: number) {
     const { key, title, type, filteringProps, filter, sort, headerAlignment, headerRender, pinned } = col;
 
@@ -96,55 +140,14 @@ function HeaderWrapper<DataType extends GridDataType>({
                 disableInputIcon: isFilterFnActive,
               } as FilteringProps)
             : undefined,
-          toolBoxes: [
-            sort ? (
-              <SortButton
-                sortingDirection={
-                  dataTools.currentSorting?.key === key ? dataTools.currentSorting?.direction : undefined
-                }
-                key={`${key}_sort`}
-                onClick={() => dataTools.updateCurrentSorting(key)}
-              />
-            ) : undefined,
-            gridTools.isHeaderMenuActive ? (
-              <MenuButton
-                key={`${key}_menu`}
-                onClick={(e) =>
-                  headerActionsMenu.displayHeaderActionsMenu({
-                    data: { id: col.key } as any,
-                    position: {
-                      xAxis: e.currentTarget.getBoundingClientRect().x,
-                      yAxis: e.currentTarget.getBoundingClientRect().y + 20,
-                    },
-                    identifier: col.key,
-                  })
-                }
-              />
-            ) : undefined,
-          ],
+          toolBoxes: [createSortButton(sort, key), createHeaderActionMenuButton(key)],
         };
         break;
       case "expand":
-        children = <CollapseAllButton onClick={() => gridTools.closeExpandedRows()} />;
+        children = createExpandButton();
         break;
       case "select":
-        children = (
-          <Checkbox
-            onChange={(e) =>
-              gridTools.updateSelectedRowsMultiple(
-                !e.target.checked
-                  ? new Set()
-                  : new Set(dataTools.dataWithoutPagination!.map((x) => x[gridProps.uniqueRowKey]))
-              )
-            }
-            checked={
-              dataTools.currentPagination.dataCount !== 0 &&
-              (!!gridProps.serverSide?.enabled
-                ? dataTools.data?.length === gridTools.selectedRows.size
-                : gridProps.data?.length === gridTools.selectedRows.size)
-            }
-          />
-        );
+        children = createCheckBox();
         break;
       default:
         break;
