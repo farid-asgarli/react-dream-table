@@ -22,6 +22,7 @@ import {
   GridDataType,
 } from "../../types/Utils";
 import { assignFilterFns } from "../../utils/AssignFilterFn";
+import { debug } from "../../_dev/Debug";
 import { RDTDateFilters } from "./dateFilterFns";
 import { RDTFilters } from "./filterFns";
 
@@ -106,12 +107,10 @@ export function useClientDataManagement<DataType extends GridDataType>({
       const colFilterProps = getColumn(columnKey)?.filteringProps;
       /** Column filter functions (RDT Filters). */
       const colFilterFn = getColumnFilterFn(columnKey).current;
-      if (!ConstProps.defaultFnsNoFilter.includes(colFilterFn) && (!currentColFilter || currentColFilter?.length === 0))
-        continue;
+      if (!ConstProps.defaultFnsNoFilter.includes(colFilterFn) && (!currentColFilter || currentColFilter?.length === 0)) continue;
       switch (colFilterProps?.type) {
         case "select":
-          if (colFilterProps?.equalityComparer)
-            reFilter((d) => colFilterProps.equalityComparer!(d[columnKey], currentColFilter));
+          if (colFilterProps?.equalityComparer) reFilter((d) => colFilterProps.equalityComparer!(d[columnKey], currentColFilter));
           else {
             if (colFilterProps?.multipleSelection)
               reFilter((d) => RDTFilters.containsMultiple(d, columnKey, currentColFilter as string[]));
@@ -125,16 +124,10 @@ export function useClientDataManagement<DataType extends GridDataType>({
             );
           else {
             if (colFilterProps?.type === "date")
-              reFilter((d) =>
-                RDTDateFilters[colFilterFn as BaseFilterFnDefinition]?.(d[columnKey], currentColFilter as any)
-              );
+              reFilter((d) => RDTDateFilters[colFilterFn as BaseFilterFnDefinition]?.(d[columnKey], currentColFilter as any));
             else {
-              if (colFilterFn === "fuzzy")
-                dataToFilter = RDTFilters.fuzzy(dataToFilter, columnKey, currentColFilter as string);
-              else
-                reFilter((d) =>
-                  RDTFilters[colFilterFn as BaseFilterFnDefinition](d, columnKey, currentColFilter as any)
-                );
+              if (colFilterFn === "fuzzy") dataToFilter = RDTFilters.fuzzy(dataToFilter, columnKey, currentColFilter as string);
+              else reFilter((d) => RDTFilters[colFilterFn as BaseFilterFnDefinition](d, columnKey, currentColFilter as any));
             }
           }
           break;
@@ -170,10 +163,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
 
   const pipePagination = (data?: DataType[], pagination?: DataGridPaginationProps) => {
     if (clientEvaluationDisabled) return data;
-    return data?.slice(
-      pagination?.pageSize! * (pagination?.currentPage! - 1),
-      pagination?.pageSize! * pagination?.currentPage!
-    );
+    return data?.slice(pagination?.pageSize! * (pagination?.currentPage! - 1), pagination?.pageSize! * pagination?.currentPage!);
   };
 
   const filteredData = useMemo(
@@ -320,6 +310,15 @@ export function useClientDataManagement<DataType extends GridDataType>({
     return ConstProps.defaultRangeFns.includes(fnsKey);
   }
 
+  function hydrateSelectInputs() {
+    debug.log("Initialized");
+    columns.filter((x) => x.filteringProps?.type === "select").forEach((col) => pipeFetchedFilters(col.key as string));
+  }
+
+  useEffect(() => {
+    if (initialDataState) hydrateSelectInputs();
+  }, []);
+
   useEffect(() => {
     if (filteredData && filteredData.length > 0)
       setCurrentPagination((prev) => ({
@@ -328,10 +327,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
       }));
   }, [dataCount, filteredData]);
 
-  const dataToExport = useMemo(
-    () => pipePagination(filteredData, currentPagination) ?? [],
-    [currentPagination, filteredData]
-  );
+  const dataToExport = useMemo(() => pipePagination(filteredData, currentPagination) ?? [], [currentPagination, filteredData]);
 
   return {
     currentFilterFns,
@@ -349,6 +345,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
     getColumn,
     getColumnFilterFn,
     getColumnFilterValue,
+    hydrateSelectInputs,
     pipeFetchedFilters,
     resetCurrentFilters,
     resetFetchedFilters,

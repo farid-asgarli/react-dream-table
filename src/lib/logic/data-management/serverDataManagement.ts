@@ -1,12 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo } from "react";
 import { DataGridPaginationProps, ServerSideFetchingProps } from "../../types/DataGrid";
-import {
-  CompleteFilterFnDefinition,
-  DataFetchingDefinition,
-  GridDataType,
-  SortDirectionDefinition,
-} from "../../types/Utils";
+import { CompleteFilterFnDefinition, DataFetchingDefinition, GridDataType, SortDirectionDefinition } from "../../types/Utils";
 import { IClientDataManagement, useClientDataManagement } from "./clientDataManagement";
 
 export interface IServerDataManagement<DataType extends GridDataType> extends IClientDataManagement<DataType> {
@@ -68,8 +63,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
 
   async function updateCurrentFilterFn(key: string, type: CompleteFilterFnDefinition) {
     const updatedFilterFn = await clientTools.updateCurrentFilterFn(key, type);
-    if (serverSide?.filtering.onFilterFunctionChangeAsync || serverSide?.onGlobalChangeAsync)
-      startFetching("filter-select");
+    if (serverSide?.filtering.onFilterFunctionChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("filter-select");
 
     await serverSide?.filtering?.onFilterFunctionChangeAsync?.(
       clientTools.currentFilters,
@@ -170,6 +164,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
           clientTools.currentPagination,
           clientTools.currentSorting
         )
+        .then(clientTools.hydrateSelectInputs)
         .then(() => stopFetching("filter-select"));
     }
   }, []);

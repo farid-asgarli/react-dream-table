@@ -71,7 +71,14 @@ export default function FilterMenu({
         return <DatePicker locale={defaultLocale} placeholder={localization.filterDatePlaceholder} {...renderProps} />;
 
       case "number":
-        return <Input type="number" disableIcon={disableInputIcon} placeholder={localization.filterInputPlaceholder} {...renderProps} />;
+        return (
+          <Input
+            type="number"
+            disableIcon={disableInputIcon}
+            placeholder={localization.filterInputPlaceholder}
+            {...renderProps}
+          />
+        );
       case "select":
         return (
           <Select

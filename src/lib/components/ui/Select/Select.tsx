@@ -1,10 +1,10 @@
 import React, { HTMLAttributes, useMemo, useRef, useState } from "react";
 import { useDetectOutsideClick } from "../../../hooks/use-detect-outside-click/use-detect-outside-click";
 import { cs } from "../../../utils/ConcatStyles";
-import "./Select.scss";
 import Spinner from "../Spinner/Spinner";
 import { useDataGridStaticContext } from "../../../context/DataGridStaticContext";
 import { Animations } from "../../animations/Animations";
+import "./Select.scss";
 
 type ConditionalProps<OptionValue> =
   | {
@@ -92,7 +92,6 @@ export const Select = <OptionValue extends any>({
       </span>
     ));
   }
-
   const renderSelectedValues = useMemo(() => {
     const elements = options.filter((x) => (multiple ? value.includes(x.value) : x.value === value)).map((x) => x.children);
     if (elements.length === 0) return <span className="select-placeholder">{localization.selectPlaceholder}</span>;
