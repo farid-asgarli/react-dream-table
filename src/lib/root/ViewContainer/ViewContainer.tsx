@@ -127,11 +127,7 @@ const ViewContainer = <DataType extends GridDataType>({
 
     return (
       <Cell
-        className={cs(
-          type !== "data" && "tools",
-          dataCellAlignment && `align-${dataCellAlignment}`,
-          index === 0 && "no-border"
-        )}
+        className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`, index === 0 && "no-border")}
         {...commonDataGridRowCellProps}
       >
         <CellContent tooltipProps={gridProps.tooltipOptions}>{children}</CellContent>
@@ -145,16 +141,14 @@ const ViewContainer = <DataType extends GridDataType>({
       const isExpanded = gridTools.isRowExpanded(index);
       return {
         onClick: (e: React.MouseEvent<HTMLDivElement>) => gridTools.onRowClick(e, dat),
-        key: identifier,
+        key: index.toString(),
         onContextMenu: gridTools.isRightClickIsActive ? rowActionsMenu(dat) : undefined,
         expandRowProps: {
           children: gridProps.expandableRows?.render?.(dat, containerWidth),
           showSeparatorLine: gridProps.expandableRows?.showSeparatorLine === true,
           isRowExpanded: isExpanded,
           leftOffset: pinnedColumns?.leftWidth,
-          updateExpandRowHeightCache: gridTools.isDynamicRowExpandHeightEnabled
-            ? gridTools.updateExpandRowHeightCache
-            : undefined,
+          updateExpandRowHeightCache: gridTools.isDynamicRowExpandHeightEnabled ? gridTools.updateExpandRowHeightCache : undefined,
           rowIndex: index,
         },
         isRowSelected: gridTools.isRowSelected(identifier),
@@ -197,9 +191,7 @@ const ViewContainer = <DataType extends GridDataType>({
         {columnsToRender.columns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
         {!!pinnedColumns?.rightWidth && (
           <LockedEndWrapper type="body">
-            {pinnedColumns.rightColumns.map((col, cellIndex) =>
-              renderCellCollection(col, rowData, cellIndex, rowIndex)
-            )}
+            {pinnedColumns.rightColumns.map((col, cellIndex) => renderCellCollection(col, rowData, cellIndex, rowIndex))}
           </LockedEndWrapper>
         )}
       </Row>
@@ -232,9 +224,7 @@ const ViewContainer = <DataType extends GridDataType>({
             renderElement={renderFullRow}
           />
         )}
-        {!gridTools.isVirtualizationIsEnabled &&
-          dataTools.data &&
-          dataTools.data.map((dat, index) => renderFullRow(dat, undefined, index))}
+        {!gridTools.isVirtualizationIsEnabled && dataTools.data && dataTools.data.map((dat, index) => renderFullRow(dat, undefined, index))}
       </RowContainer>
     </div>
   );

@@ -64,10 +64,11 @@ function HeaderWrapper<DataType extends GridDataType>({
 
   const createCheckBox = () => {
     function updateSelection(e: React.ChangeEvent<HTMLInputElement>) {
-      if (dataTools.dataWithoutPagination)
-        gridTools.updateSelectedRowsMultiple(
-          !e.target.checked ? [] : dataTools.dataWithoutPagination.map((x) => x[gridProps.uniqueRowKey])
-        );
+      if (dataTools.dataWithoutPagination) {
+        const selectedRows = !e.target.checked ? [] : dataTools.dataWithoutPagination.map((x) => x[gridProps.uniqueRowKey]);
+        gridTools.updateSelectedRowsMultiple(selectedRows);
+        gridProps.rowSelection?.onChangePrimarySelection?.(selectedRows, e.target.checked);
+      }
     }
     const isChecked =
       dataTools.currentPagination.dataCount !== 0 &&
@@ -213,10 +214,7 @@ function HeaderWrapper<DataType extends GridDataType>({
           <LockedEndWrapper type="header" ref={lockedEndWrapperRef}>
             <GroupedColumnsWrapper groupedColumnHeaders={groupedColumnHeaders.rightLockedGroupedColumnHeaders}>
               {pinnedColumns?.rightColumns.map((col, index) =>
-                renderColumnHeader(
-                  col,
-                  index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsToRender.columns.length) + 1
-                )
+                renderColumnHeader(col, index + ((pinnedColumns?.leftColumns.length ?? 0) + columnsToRender.columns.length) + 1)
               )}
             </GroupedColumnsWrapper>
           </LockedEndWrapper>

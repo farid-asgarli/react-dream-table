@@ -1,4 +1,4 @@
-import { DataGridLocalizationDefinition } from "../../../types/DataGrid";
+import { DataGridLocalizationDefinition, InputCommonFiltering } from "../../../types/DataGrid";
 import { CompleteFilterFnDefinition, DataTools, GridDataType } from "../../../types/Utils";
 
 export const renderFilterFnsActionsMenu = <DataType extends GridDataType>(
@@ -8,7 +8,8 @@ export const renderFilterFnsActionsMenu = <DataType extends GridDataType>(
   localization: DataGridLocalizationDefinition
 ) => {
   const activeColFilterFn = dataTools.getColumnFilterFn(key).current;
-  const columnType = dataTools.getColumnType(key);
+  const currentColumn = dataTools.getColumn(key);
+  const columnType = currentColumn?.filteringProps?.type;
 
   let baseFns = [
     {
@@ -92,8 +93,41 @@ export const renderFilterFnsActionsMenu = <DataType extends GridDataType>(
 
   if (columnType !== "date" && columnType !== "select") baseFns = [...restrictedFns, ...baseFns];
 
-  return baseFns.map((it) => {
-    if (Object.keys(it).length > 0)
+  type FilterFnObject =
+    | {
+        key: string;
+        symbol: string;
+        label: string;
+      }
+    | {
+        key?: undefined;
+        symbol?: undefined;
+        label?: undefined;
+      };
+
+  const isEmpty = (obj: FilterFnObject) => !obj.key;
+
+  function applyDefaultFilterFns(values: Array<FilterFnObject>) {
+    const defaultFilterFnOptions = (currentColumn?.filteringProps as InputCommonFiltering)?.defaultFilterFnOptions;
+    if (defaultFilterFnOptions) {
+      const valuesToApply: FilterFnObject[] = [];
+      for (let index = 0; index < values.length; index++) {
+        const currItem = values[index];
+        if (
+          (isEmpty(currItem) && valuesToApply[valuesToApply.length - 1]?.key) ||
+          defaultFilterFnOptions.includes(currItem.key as CompleteFilterFnDefinition)
+        )
+          valuesToApply.push(currItem);
+      }
+      const lastItem = valuesToApply[valuesToApply.length - 1];
+      if (isEmpty(lastItem)) valuesToApply.pop();
+      return valuesToApply;
+    }
+    return values;
+  }
+
+  return applyDefaultFilterFns(baseFns).map((it) => {
+    if (it.key)
       return {
         content: (
           <div className="content-wrapper">
@@ -103,7 +137,7 @@ export const renderFilterFnsActionsMenu = <DataType extends GridDataType>(
         ),
         isSelected: it.key === activeColFilterFn,
         onClick: () => {
-          dataTools.updateCurrentFilterFn(key, it.key as CompleteFilterFnDefinition);
+          if (it.key !== activeColFilterFn) dataTools.updateCurrentFilterFn(key, it.key as CompleteFilterFnDefinition);
           hideMenu();
         },
       };

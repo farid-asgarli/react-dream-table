@@ -44,16 +44,18 @@ export function useServerDataManagement<DataType extends GridDataType>({
 
     if (serverSide?.filtering?.onFilterChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("filter-select");
 
+    const currentPagination = clientTools.resetPagination();
+
     await serverSide?.filtering?.onFilterChangeAsync?.(
       updatedFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
     await serverSide?.onGlobalChangeAsync?.(
       updatedFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
 
@@ -65,16 +67,18 @@ export function useServerDataManagement<DataType extends GridDataType>({
     const updatedFilterFn = await clientTools.updateCurrentFilterFn(key, type);
     if (serverSide?.filtering.onFilterFunctionChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("filter-select");
 
+    const currentPagination = clientTools.resetPagination();
+
     await serverSide?.filtering?.onFilterFunctionChangeAsync?.(
       clientTools.currentFilters,
       updatedFilterFn,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
     await serverSide?.onGlobalChangeAsync?.(
       clientTools.currentFilters,
       updatedFilterFn,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
 
@@ -85,6 +89,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
 
   async function updateCurrentPagination(valuesToUpdate: DataGridPaginationProps) {
     const updatedPagination = await clientTools.updateCurrentPagination(valuesToUpdate);
+
     if (serverSide?.pagination?.onChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("pagination");
 
     await serverSide?.pagination?.onChangeAsync?.(
@@ -107,16 +112,18 @@ export function useServerDataManagement<DataType extends GridDataType>({
     const updatedSorting = await clientTools.updateCurrentSorting(key, alg);
     if (serverSide?.sorting?.onSortingChangeAsync || serverSide?.onGlobalChangeAsync) startFetching("sort");
 
+    const currentPagination = clientTools.resetPagination();
+
     await serverSide?.sorting?.onSortingChangeAsync?.(
       clientTools.currentFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       updatedSorting
     );
     await serverSide?.onGlobalChangeAsync?.(
       clientTools.currentFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       updatedSorting
     );
     stopFetching("sort");
@@ -127,16 +134,18 @@ export function useServerDataManagement<DataType extends GridDataType>({
     const updatedFilters = await clientTools.resetCurrentFilters();
     if (serverSide?.filtering?.onFilterChangeAsync) startFetching("filter-select");
 
+    const currentPagination = clientTools.resetPagination();
+
     await serverSide?.filtering.onFilterChangeAsync?.(
       updatedFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
     await serverSide?.onGlobalChangeAsync?.(
       updatedFilters,
       clientTools.currentFilterFns,
-      clientTools.currentPagination,
+      currentPagination,
       clientTools.currentSorting
     );
     stopFetching("filter-select");

@@ -23,13 +23,20 @@ export function useMenuFactory<DataType extends GridDataType>({
 }) {
   const filterFnsMenuContent = useCallback(
     (key: string, hideMenu: () => void) => renderFilterFnsActionsMenu(key, hideMenu, dataTools, localization),
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dataTools.currentFilterFns, localization]
+    [
+      dataTools.currentFilterFns,
+      dataTools.currentSorting,
+      dataTools.currentPagination,
+      dataTools.prefetchedFilters,
+      dataTools.currentFilters,
+      localization,
+    ]
   );
 
   const headerMenuContent = useCallback(
-    (key: string, hideMenu: () => void) => renderHeaderActionsMenu(key, hideMenu, gridTools, dataTools, gridProps, localization, icons),
+    (key: string, hideMenu: () => void) =>
+      renderHeaderActionsMenu(key, hideMenu, gridTools, dataTools, gridProps, localization, icons),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       gridTools.pinnedColumns,

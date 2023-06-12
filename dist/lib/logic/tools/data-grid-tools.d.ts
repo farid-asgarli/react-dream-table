@@ -1,0 +1,63 @@
+/// <reference types="react" />
+import { DataGridProps, DataGridDimensionsDefinition } from "../../types/DataGrid";
+import { GridDataType } from "../../types/Utils";
+export default function useDataGridTools<DataType extends GridDataType>({ tableProps: gridProps, dimensions, }: {
+    tableProps: DataGridProps<DataType>;
+    dimensions: DataGridDimensionsDefinition;
+}): {
+    selectedRows: Set<import("../../types/Utils").DataGridRowKeyDefinition>;
+    updateSelectedRows: (value: import("../../types/Utils").DataGridRowKeyDefinition) => void;
+    updateSelectedRowsMultiple: (collection: import("../../types/Utils").DataGridRowKeyDefinition[]) => void;
+    isRowSelected: (uniqueRowKey: string) => boolean;
+    clearSelectedRows: () => void;
+    updateActiveRow: (uniqueRowKey: string) => void;
+    clearActiveRow: () => void;
+    isRowActive: (uniqueRowKey: string) => boolean;
+    activeRow: string | undefined;
+    updateActiveHeader: (key: string | undefined) => void;
+    isHeaderIsActive: (key: string) => boolean;
+    updateDarkMode: () => void;
+    updateFullScreenMode: () => void;
+    updateFilterMenuVisibility: () => void;
+    updateColumnGrouping: () => void;
+    isDarkModeEnabled: boolean;
+    isFullScreenModeEnabled: boolean;
+    isFilterMenuVisible: boolean;
+    isColumnGroupingEnabled: boolean;
+    visibleColumns: Set<import("../../types/DataGrid").KeyLiteralType<DataType>>;
+    updateColumnVisibility: (key: string) => Set<import("../../types/DataGrid").KeyLiteralType<DataType>>;
+    pinnedColumns: {
+        left: import("../../types/DataGrid").KeyLiteralType<DataType>[];
+        right: import("../../types/DataGrid").KeyLiteralType<DataType>[];
+    };
+    updatePinnedColumns: (colKey: string, position: "left" | "right") => void;
+    expandedRowKeys: Set<number>;
+    expandRowHeightCache: Record<number, number | undefined>;
+    updateRowExpansion: (index: number) => void;
+    closeExpandedRows: () => void;
+    isRowExpanded: (uniqueRowKey: number) => boolean;
+    updateExpandRowHeightCache: (index: number, height: number, forceUpdate?: boolean) => void;
+    clearExpandRowHeightCache: () => void;
+    getExpandRowHeightFromCache: (index: number) => number | undefined;
+    isDynamicRowExpandHeightEnabled: boolean;
+    __lastExpRowCache: import("react").MutableRefObject<{
+        index: number;
+        isOpen: boolean;
+    } | null>;
+    columnOrder: import("../../types/DataGrid").KeyLiteralType<DataType>[];
+    updateColumnOrder: (collection: import("../../types/DataGrid").KeyLiteralType<DataType>[]) => void;
+    isColumnResizing: boolean;
+    columnDimensions: Record<string, number>;
+    getColumnWidth: (colKey: string) => number;
+    updateColumnWidth: (key: string, newWidth: number) => void;
+    updateColumnWidthMultiple: (collection: Record<string, number>) => void;
+    updateColumnResizingStatus: (val: boolean) => void;
+    isColumnIsDraggable: (columnKey: string) => boolean | undefined;
+    isColumnIsResizable: (columnKey: string) => boolean | undefined;
+    isFilterFnIsActive: (columnKey: string) => boolean | undefined;
+    isRightClickIsActive: boolean | undefined;
+    isHeaderMenuActive: boolean;
+    isVirtualizationIsEnabled: boolean;
+    isColumnFilteringEnabled: boolean;
+    onRowClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>, cellData: DataType) => void;
+};

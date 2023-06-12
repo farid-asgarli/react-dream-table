@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StringExtensions } from "../../extensions/String";
 import { ConstProps } from "../../static/constantProps";
 import {
@@ -22,7 +22,6 @@ import {
   GridDataType,
 } from "../../types/Utils";
 import { assignFilterFns } from "../../utils/AssignFilterFn";
-import { debug } from "../../_dev/Debug";
 import { RDTDateFilters } from "./dateFilterFns";
 import { RDTFilters } from "./filterFns";
 
@@ -60,13 +59,17 @@ export function useClientDataManagement<DataType extends GridDataType>({
   /** DataGrid key to reset filters. */
   const [filterResetKey, setFilterResetKey] = useState(0);
   /** Pagination props that are currently active. */
-  const [currentPagination, setCurrentPagination] = useState<DataGridPaginationProps>(
+  const currentPagination = useRef<DataGridPaginationProps>(
     initialDataState?.paginationProps ?? {
       currentPage: paginationProps?.defaults?.defaultCurrentPage ?? ConstProps.defaultPaginationCurrentPage,
       dataCount: undefined,
       pageSize: paginationProps?.defaults?.defaultPageSize ?? ConstProps.defaultPaginationPageSize,
     }
   );
+
+  const [, renderState] = useState(false);
+
+  const forceRender = () => renderState((prev) => !prev);
 
   const pipeSorting = (data?: DataType[], filters?: ICurrentSorting) => {
     if (clientEvaluationDisabled) return data;
@@ -184,32 +187,36 @@ export function useClientDataManagement<DataType extends GridDataType>({
   function updateCurrentPagination(valuesToUpdate: DataGridPaginationProps) {
     paginationProps?.onPaginationChange?.(valuesToUpdate);
     return new Promise<DataGridPaginationProps>((res) => {
-      setCurrentPagination((prev) => {
-        const updatedState = { ...prev, ...valuesToUpdate };
-        res(updatedState);
-        return updatedState;
-      });
+      const updatedState = { ...currentPagination.current, ...valuesToUpdate };
+      currentPagination.current = updatedState;
+      forceRender();
+      res(updatedState);
+      return updatedState;
     });
   }
 
   function updateCurrentFilterFn(key: string, type: CompleteFilterFnDefinition) {
-    if (isRangeFilterFn(type) && !isRangeFilterFn(currentFilterFns[key])) {
+    if (isRangeFilterFn(type) && !isRangeFilterFn(currentFilterFns[key]))
       setCurrentFilters((prev) => ({ ...prev, [key]: [prev[key] as string] }));
-    } else if (!isRangeFilterFn(type) && isRangeFilterFn(currentFilterFns[key])) {
+    else if (!isRangeFilterFn(type) && isRangeFilterFn(currentFilterFns[key]))
       setCurrentFilters((prev) => ({ ...prev, [key]: prev[key]?.[0] }));
-    }
 
-    if (ConstProps.defaultFnsNoFilter.includes(type) && currentFilters[key] === undefined) {
+    if (ConstProps.defaultFnsNoFilter.includes(type) && currentFilters[key] === undefined)
       setCurrentFilters((prev) => ({ ...prev, [key]: StringExtensions.Empty }));
-    }
 
-    const stateCopy = { ...currentFilterFns, [key]: type };
-    setCurrentFilterFns(stateCopy);
-    return Promise.resolve<ICurrentFnCollection>(stateCopy);
+    resetPagination();
+    return new Promise<ICurrentFnCollection>((res) => {
+      setCurrentFilterFns((prev) => {
+        const stateCopy = { ...prev, [key]: type };
+        res(stateCopy);
+        return stateCopy;
+      });
+    });
   }
 
   function updateCurrentFilterValue(key: string, value: string | Array<string>) {
     return new Promise<ICurrentFilterCollection>((res) => {
+      resetPagination();
       setCurrentFilters((prev) => {
         const updatedState = {
           ...prev,
@@ -222,6 +229,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
   }
 
   function updateCurrentSorting(key: string, alg?: SortDirectionDefinition) {
+    resetPagination();
     if (alg) {
       const updatedState = {
         key,
@@ -268,6 +276,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
   function resetCurrentFilters() {
     return new Promise<ICurrentFilterCollection>((res) => {
       const emptyState = {};
+      resetPagination();
       setCurrentFilters(emptyState);
       setFilterResetKey(Date.now());
       res(emptyState);
@@ -311,33 +320,46 @@ export function useClientDataManagement<DataType extends GridDataType>({
   }
 
   function hydrateSelectInputs() {
-    debug.log("Initialized");
     columns.filter((x) => x.filteringProps?.type === "select").forEach((col) => pipeFetchedFilters(col.key as string));
   }
+
+  const resetPagination = () => {
+    let pagPropsToSet: DataGridPaginationProps = {
+      ...currentPagination.current,
+      currentPage: paginationProps?.defaults?.defaultCurrentPage ?? ConstProps.defaultPaginationCurrentPage,
+    };
+    currentPagination.current = pagPropsToSet;
+    return pagPropsToSet;
+  };
 
   useEffect(() => {
     if (initialDataState) hydrateSelectInputs();
   }, []);
 
   useEffect(() => {
-    if (filteredData && filteredData.length > 0)
-      setCurrentPagination((prev) => ({
-        ...prev,
+    if (filteredData && filteredData.length > 0) {
+      currentPagination.current = {
+        ...currentPagination.current,
         dataCount: dataCount ?? filteredData.length,
-      }));
+      };
+      forceRender();
+    }
   }, [dataCount, filteredData]);
 
-  const dataToExport = useMemo(() => pipePagination(filteredData, currentPagination) ?? [], [currentPagination, filteredData]);
+  const dataToExport = useMemo(
+    () => pipePagination(filteredData, currentPagination.current) ?? [],
+    [currentPagination.current, filteredData]
+  );
 
   return {
     currentFilterFns,
     currentSorting,
     currentFilters,
-    currentPagination,
     filterResetKey,
     prefetchedFilters,
     progressReporters,
     data: dataToExport,
+    currentPagination: currentPagination.current,
     dataWithoutPagination: filteredData,
     getColumnType,
     isRangeFilterFn,
@@ -349,6 +371,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
     pipeFetchedFilters,
     resetCurrentFilters,
     resetFetchedFilters,
+    resetPagination,
     setProgressReporters,
     updateCurrentSorting,
     updateCurrentFilterFn,

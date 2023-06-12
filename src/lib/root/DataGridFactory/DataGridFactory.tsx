@@ -121,16 +121,13 @@ function DataGrid<DataType extends GridDataType>({
   }, [gridTools.isFullScreenModeEnabled]);
 
   useEffect(() => {
-    if (pinnedColumns?.leftWidth)
-      headerWrapperRef.current?.updateLockedStartTransform(scrollerRef.current?.scrollLeft ?? 0);
+    if (pinnedColumns?.leftWidth) headerWrapperRef.current?.updateLockedStartTransform(scrollerRef.current?.scrollLeft ?? 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinnedColumns?.leftColumns.length, verticalScrollbarWidth]);
 
   useEffect(() => {
     if (pinnedColumns?.rightWidth)
-      headerWrapperRef.current?.updateLockedEndTransform(
-        (scrollerRef.current?.scrollLeft ?? 0) - verticalScrollbarWidth
-      );
+      headerWrapperRef.current?.updateLockedEndTransform((scrollerRef.current?.scrollLeft ?? 0) - verticalScrollbarWidth);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinnedColumns?.rightColumns.length, verticalScrollbarWidth]);
 
@@ -155,8 +152,7 @@ function DataGrid<DataType extends GridDataType>({
     const topScroll = e.currentTarget.scrollTop;
 
     headerWrapperRef.current?.updateHeaderTransform(e.currentTarget.scrollLeft, verticalScrollbarWidth);
-    if (topScroll !== topScrollPosition && Math.abs(topScroll - topScrollPosition) > 100)
-      updateScrollPositionY(topScroll);
+    if (topScroll !== topScrollPosition && Math.abs(topScroll - topScrollPosition) > 100) updateScrollPositionY(topScroll);
   };
 
   const onColumnHeaderFocus = useCallback(
@@ -306,9 +302,7 @@ function DataGrid<DataType extends GridDataType>({
                 ref={scrollerRef}
                 onScroll={onBodyScroll}
                 minWidth={totalColumnsWidth}
-                minHeight={
-                  (dataTools.data?.length ?? 0) * dimensions.defaultDataRowHeight + (getTotalExpansionHeight ?? 0)
-                }
+                minHeight={(dataTools.data?.length ?? 0) * dimensions.defaultDataRowHeight + (getTotalExpansionHeight ?? 0)}
                 verticalScrollbarWidth={verticalScrollbarWidth}
                 emptySpacerVisible={!gridProps.loading && (!dataTools.data || !dataTools.data?.length)}
               >
@@ -337,7 +331,7 @@ function DataGrid<DataType extends GridDataType>({
                 ...dataTools.currentPagination,
                 ...(!gridProps.serverSide?.enabled
                   ? { dataCount: dataTools.dataWithoutPagination?.length }
-                  : undefined),
+                  : { dataCount: gridProps.serverSide.pagination?.dataCount }),
               },
               paginationDefaults: gridProps.pagination?.defaults,
             }}

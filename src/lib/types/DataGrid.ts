@@ -22,6 +22,8 @@ export interface InputDateFiltering {
    * @default "equals"
    */
   defaultFilterFn?: BaseFilterFnDefinition;
+  /** Set of default filter functions to display in fns menu. */
+  defaultFilterFnOptions?: BaseFilterFnDefinition[] | undefined;
   /** Allows the ability to execute custom comparison when search event occurs. */
   equalityComparer?: (filterValue?: Dayjs, data?: any, filterFn?: BaseFilterFnDefinition) => boolean;
 }
@@ -33,6 +35,8 @@ export interface InputCommonFiltering {
    * @default "contains"
    */
   defaultFilterFn?: CompleteFilterFnDefinition;
+  /** Set of default filter functions to display in fns menu. */
+  defaultFilterFnOptions?: CompleteFilterFnDefinition[] | undefined;
   /** Allows the ability to execute custom comparison when search event occurs. */
   equalityComparer?: (filterValue?: string, data?: any, filterFn?: CompleteFilterFnDefinition) => boolean;
 }
@@ -344,6 +348,13 @@ export interface RowSelectionProps extends CommonInteractiveProps {
    * @returns
    */
   onChange?: (selectedRows: Array<any>) => void;
+  /**
+   * Fires an event when primary checkbox in table head is checked.
+   * @param selectedRows Collection of selected rows.
+   * @param isChecked `true` if the checkbox is checked.
+   * @returns
+   */
+  onChangePrimarySelection?: (selectedRows: Array<any>, isChecked: boolean) => void;
   /**
    * Default selected row ids.
    */

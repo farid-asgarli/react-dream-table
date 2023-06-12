@@ -44,21 +44,6 @@ export default function Footer({
     [icons, localization, paginationProps]
   );
 
-  const renderPaginationPageSize = useMemo(
-    () => (
-      <Select
-        onChange={(e) => updateCurrentPagination({ currentPage: 1, pageSize: e })}
-        options={DEFAULT_PAGE_SIZES.map((op: number) => ({
-          children: op,
-          value: op,
-        }))}
-        value={gridPaginationProps.pageSize}
-      />
-    ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gridPaginationProps.pageSize]
-  );
-
   const renderDataCount = useMemo(
     () =>
       selectedRows.size > 0 ? (
@@ -84,13 +69,7 @@ export default function Footer({
           )}
         </div>
       ),
-    [
-      selectedRows.size,
-      localization.rowsSelectedTitle,
-      localization.paginationTotalCount,
-      loading,
-      gridPaginationProps.dataCount,
-    ]
+    [selectedRows.size, localization.rowsSelectedTitle, localization.paginationTotalCount, loading, gridPaginationProps.dataCount]
   );
 
   return (
@@ -140,7 +119,14 @@ export default function Footer({
                 <Skeleton />
               </div>
             ) : (
-              renderPaginationPageSize
+              <Select
+                onChange={(e) => updateCurrentPagination({ currentPage: 1, pageSize: e })}
+                options={DEFAULT_PAGE_SIZES.map((op: number) => ({
+                  children: op,
+                  value: op,
+                }))}
+                value={gridPaginationProps.pageSize}
+              />
             )}
           </div>
         </div>
@@ -267,8 +253,7 @@ function renderPaginationButtons({
       ...buttons.map((btn) =>
         renderButton({
           navigateTo: btn.navigateTo,
-          component:
-            btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
+          component: btn.type === "ff-left" || btn.type === "ff-right" ? <icons.ThreeDots className="btn-icon" /> : undefined,
           type: btn.type,
           icons,
         })
