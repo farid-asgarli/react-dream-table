@@ -66,8 +66,10 @@ export type BaseFilterFnDefinition =
 export type OptionalFilterFnDefinition = "contains" | "startsWith" | "endsWith" | "fuzzy";
 export type CompleteFilterFnDefinition = BaseFilterFnDefinition | OptionalFilterFnDefinition;
 
+export type SelectFilterOptionType = { label: string; value: any };
+
 export type DataGridRowKeyDefinition = string | number;
-export type IPrefetchedFilter = Record<string, string[]>;
+export type IPrefetchedFilter = Record<string, Array<SelectFilterOptionType>>;
 export type ICurrentFnCollection = Record<string, CompleteFilterFnDefinition>;
 export type ICurrentFilterCollection = Record<string, Array<string> | string | undefined>;
 export interface ICurrentSorting {
@@ -133,9 +135,9 @@ export interface FilteringProps {
   updateFilterValue: (key: string, value: string | Array<string>) => void;
   getColumnFilterValue: (key: string) => string | Array<string>;
   fetchFilters?: (key: string) => Promise<void>;
-  prefetchedFilters?: Record<string, string[]>;
+  prefetchedFilters?: Record<string, SelectFilterOptionType[]>;
   type?: "text" | "date" | "number" | "select";
-  render?: (text: string) => React.ReactNode;
+  render?: (label: string, value: any) => React.ReactNode;
   multiple?: boolean | undefined;
   progressReporters: Set<DataFetchingDefinition>;
   filterInputProps?: ((key: string) => React.InputHTMLAttributes<HTMLInputElement>) | undefined;

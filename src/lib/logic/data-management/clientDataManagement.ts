@@ -20,6 +20,7 @@ import {
   ICurrentFnCollection,
   BaseFilterFnDefinition,
   GridDataType,
+  SelectFilterOptionType,
 } from "../../types/Utils";
 import { assignFilterFns } from "../../utils/AssignFilterFn";
 import { RDTDateFilters } from "./dateFilterFns";
@@ -141,10 +142,10 @@ export function useClientDataManagement<DataType extends GridDataType>({
 
   async function pipeFetchedFilters(
     key: string,
-    asyncFetchCallback?: ((key: string, inputSearchValues?: string | undefined) => Promise<string[]>) | undefined
+    asyncFetchCallback?: ((key: string, inputSearchValues?: string | undefined) => Promise<SelectFilterOptionType[]>) | undefined
   ) {
-    if (!prefetchedFilters[key]) {
-      let mappedFilters: string[] | undefined;
+    if (!prefetchedFilters[key] || prefetchedFilters[key].length < 1) {
+      let mappedFilters: SelectFilterOptionType[] | undefined;
 
       const column = getColumn(key);
 
@@ -153,13 +154,13 @@ export function useClientDataManagement<DataType extends GridDataType>({
       } else {
         if (asyncFetchCallback) {
           mappedFilters = await asyncFetchCallback?.(key);
-        } else mappedFilters = data?.flatMap((x) => `${x[key]}`);
+        } else mappedFilters = Array.from(new Set(data?.flatMap((it) => `${it[key]}`))).map((x) => ({ label: x, value: x }));
       }
 
       updatePrefetchedFilters(
         key,
         // Eliminate duplicate values.
-        Array.from(new Set(mappedFilters))
+        mappedFilters
       );
     }
   }
@@ -174,7 +175,7 @@ export function useClientDataManagement<DataType extends GridDataType>({
     [data, currentFilters, currentFilterFns, currentSorting]
   );
 
-  function updatePrefetchedFilters(key: KeyLiteralType<DataType>, value: string[]) {
+  function updatePrefetchedFilters(key: KeyLiteralType<DataType>, value: SelectFilterOptionType[]) {
     return new Promise<IPrefetchedFilter>((res) =>
       setPrefetchedFilters((prev) => {
         const updatedState = { ...prev, [key]: value };

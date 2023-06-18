@@ -42,13 +42,13 @@ export default function FilterMenu({
   const renderOptions = useMemo(() => {
     if (render) {
       return prefetchedFilters?.[columnKey]?.map((x) => ({
-        children: render?.(x),
-        value: x,
+        children: render?.(x.label, x.value),
+        value: x.value,
       }));
     }
     return prefetchedFilters?.[columnKey]?.map((x) => ({
-      children: x,
-      value: x,
+      children: x.label,
+      value: x.value,
     }));
   }, [columnKey, prefetchedFilters, render]);
 

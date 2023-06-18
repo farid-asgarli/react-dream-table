@@ -153,7 +153,7 @@ export function useServerDataManagement<DataType extends GridDataType>({
   }
 
   async function pipeFetchedFilters(key: string) {
-    if (!clientTools.prefetchedFilters[key]) startFetching("filter-fetch");
+    if (!clientTools.prefetchedFilters[key] || clientTools.prefetchedFilters[key].length < 1) startFetching("filter-fetch");
     if (serverSide?.filtering?.onDefaultFilterFetchAsync)
       await clientTools.pipeFetchedFilters(key, serverSide?.filtering?.onDefaultFilterFetchAsync);
     else await clientTools.pipeFetchedFilters(key);

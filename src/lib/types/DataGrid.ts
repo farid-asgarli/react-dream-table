@@ -11,6 +11,7 @@ import {
   ICurrentFnCollection,
   GridDataType,
   DefaultDataGridLocale,
+  SelectFilterOptionType,
 } from "./Utils";
 
 export type KeyLiteralType<DataType extends GridDataType> = keyof DataType | (string & {});
@@ -66,11 +67,11 @@ export interface SelectFiltering<DataType = any> {
   /** Allows the ability to execute custom comparison when search event occurs. */
   equalityComparer?: (filterValue?: DataType, data?: DataType) => boolean;
   /** Set of default filters to display. Will override automatic filter generation. */
-  defaultFilters?: Array<string> | undefined;
+  defaultFilters?: Array<SelectFilterOptionType> | undefined;
   /** Allows the ability to choose multiple options. */
   multipleSelection?: boolean | undefined;
   /** Custom rendering of filter values. */
-  render?: (text: string) => React.ReactNode;
+  render?: (label: string, value: string) => React.ReactNode;
 }
 export type DataGridFilteringProps = InputFiltering | SelectFiltering;
 
@@ -500,7 +501,7 @@ export interface ServerSideFetchingProps extends CommonInteractiveProps {
   filtering: {
     /** Fires an event when input field's value is changed.
      * Required when select options are fetched server-side.  */
-    onDefaultFilterFetchAsync?: (key: string) => Promise<string[]>;
+    onDefaultFilterFetchAsync?: (key: string) => Promise<SelectFilterOptionType[]>;
     /** Fires an event when filtering updates. */
     onFilterChangeAsync?: ServerSideCallback;
     /** Fires an event when filtering function is updated. */
