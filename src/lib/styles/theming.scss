@@ -157,4 +157,21 @@
       }
     }
   }
+  &.no-horizontal-scroll {
+    .body {
+      position: relative;
+      .list {
+        .scroller {
+          min-height: 250px;
+          position: relative;
+          .sticky-scroller > div {
+            position: relative !important;
+            .view-container {
+              position: relative;
+            }
+          }
+        }
+      }
+    }
+  }
 }

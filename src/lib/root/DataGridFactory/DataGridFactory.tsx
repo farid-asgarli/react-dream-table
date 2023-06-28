@@ -251,6 +251,7 @@ function DataGrid<DataType extends GridDataType>({
         gridProps.isHoverable && "hoverable",
         gridProps.cellBordering?.enableHorizontalBorder !== false && "bordered-horizontal",
         gridProps.cellBordering?.enableVerticalBorder !== false && "bordered-vertical",
+        gridProps.disableInnerScroll && "no-horizontal-scroll",
         virtualizationEnabled && "virtualized",
         gridProps.className,
         gridTools.isFullScreenModeEnabled && "full-screen-mode"
@@ -260,7 +261,7 @@ function DataGrid<DataType extends GridDataType>({
       {gridTools.isColumnResizing && <ColumnResizingOverlay />}
       {children}
       <Body>
-        <ColumnLayout style={{ height: layoutDimensions.containerHeight }}>
+        <ColumnLayout style={{ height: !gridProps.disableInnerScroll ? layoutDimensions.containerHeight : undefined }}>
           <HeaderLayout>
             <HeaderWrapper
               onColumnHeaderFocus={onColumnHeaderFocus}
@@ -282,7 +283,7 @@ function DataGrid<DataType extends GridDataType>({
           </HeaderLayout>
           <List
             style={{
-              height: containerHeight,
+              height: !gridProps.disableInnerScroll ? containerHeight : undefined,
             }}
           >
             <LoadingOverlay

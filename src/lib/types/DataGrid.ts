@@ -599,6 +599,8 @@ export interface DataGridProps<DataType extends GridDataType> {
   ) => void;
   /** Configurations to allow API based filtering and pagination. */
   serverSide?: ServerSideFetchingProps;
+  /** Disables the horizontal inner scroll. */
+  disableInnerScroll?: boolean;
 }
 
 export interface DataGridPaginationProps {
