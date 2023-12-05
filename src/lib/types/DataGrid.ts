@@ -1,5 +1,5 @@
-import { Dayjs } from "dayjs";
-import { DefaultDataGridIcons } from "../static/icons";
+import { Dayjs } from 'dayjs';
+import { DefaultDataGridIcons } from '../static/icons';
 import {
   ActionsMenuListItem,
   BaseFilterFnDefinition,
@@ -12,13 +12,13 @@ import {
   GridDataType,
   DefaultDataGridLocale,
   SelectFilterOptionType,
-} from "./Utils";
+} from './Utils';
 
 export type KeyLiteralType<DataType extends GridDataType> = keyof DataType | (string & {});
 
 export interface InputDateFiltering {
   /** Value type of default inputs. */
-  type?: "date";
+  type?: 'date';
   /**
    * @default "equals"
    */
@@ -31,7 +31,7 @@ export interface InputDateFiltering {
 
 export interface InputCommonFiltering {
   /** Value type of default inputs. */
-  type?: "text" | "number";
+  type?: 'text' | 'number';
   /**
    * @default "contains"
    */
@@ -63,7 +63,7 @@ export type InputFiltering = (InputDateFiltering | InputCommonFiltering) & {
 };
 
 export interface SelectFiltering<DataType = any> {
-  type?: "select";
+  type?: 'select';
   /** Allows the ability to execute custom comparison when search event occurs. */
   equalityComparer?: (filterValue?: DataType, data?: DataType) => boolean;
   /** Set of default filters to display. Will override automatic filter generation. */
@@ -235,9 +235,9 @@ export interface ColumnDefinition<DataType extends GridDataType> {
   /** Enables additional customization of sorting process. */
   sortingProps?: ColumnSortingProps | undefined;
   /** Alignment of data-grid head. */
-  headerAlignment?: "left" | "middle" | "right" | undefined;
+  headerAlignment?: 'left' | 'middle' | 'right' | undefined;
   /** Alignment of data-grid row data cell. */
-  cellAlignment?: "left" | "middle" | "right" | undefined;
+  cellAlignment?: 'left' | 'middle' | 'right' | undefined;
 }
 
 export interface CommonInteractiveProps {
@@ -250,7 +250,7 @@ export interface CommonInteractiveProps {
  * - "select" - The key to pin select menu.
  * - "expand" - The key to pin expand menu.
  */
-type ColumnPinCollection<DataType> = Array<"select" | "actions" | "expand" | keyof DataType | (string & {})>;
+type ColumnPinCollection<DataType> = Array<'select' | 'actions' | 'expand' | keyof DataType | (string & {})>;
 
 export type ColumnPinProps<DataType> = CommonInteractiveProps & {
   /**
@@ -290,7 +290,7 @@ export interface AutoColWidthProps {
 }
 
 export interface DataGridTooltipProps extends CommonInteractiveProps {
-  type?: "native" | "styled" | undefined;
+  type?: 'native' | 'styled' | undefined;
 }
 
 export interface ColumnVisibilityProps<DataType extends GridDataType> extends CommonInteractiveProps {
@@ -337,12 +337,12 @@ export interface GroupedColumnProps<DataType extends GridDataType> extends Commo
     | undefined;
 }
 
-export interface RowSelectionProps extends CommonInteractiveProps {
+export interface RowSelectionProps<DataType> extends CommonInteractiveProps {
   /**
    * - `onRowClick` - Selects if row is clicked on.
    * - `default` - Selects only if checkbox is checked.
    */
-  type?: "onRowClick" | "default" | undefined;
+  type?: 'onRowClick' | 'default' | undefined;
   /**
    * Fires an event when row selection is updated.
    * @param selectedRows Collection of selected rows.
@@ -360,6 +360,25 @@ export interface RowSelectionProps extends CommonInteractiveProps {
    * Default selected row ids.
    */
   defaultValues?: Array<any> | undefined;
+  /**
+   * @param isChecked Represents checked state of the input.
+   * @param onChange Change event that fires when input state updates.
+   * @returns Element to render.
+   */
+  renderHeaderSelection?: (isChecked: boolean, onChange: React.ChangeEventHandler<HTMLInputElement>) => React.ReactNode;
+  /**
+   * @param data Row data.
+   * @param isChecked Represents checked state of the input.
+   * @param onChange Change event that fires when input state updates.
+   * @param isReadOnly Determines if the checkbox is read-only (disabled). `true` if `onRowClick` is set for selection type.
+   * @returns Element to render.
+   */
+  renderRowSelection?: (
+    data: DataType,
+    isChecked: boolean,
+    onChange: React.ChangeEventHandler<HTMLInputElement> | undefined,
+    isReadOnly: boolean
+  ) => React.ReactNode;
 }
 
 export interface RowActionsMenuProps<DataType> extends CommonInteractiveProps {
@@ -385,7 +404,7 @@ export interface SettingsMenuProps extends CommonInteractiveProps {
     onChange?: (visible: boolean) => void;
   };
   darkModeToggle?: CommonInteractiveProps & {
-    onChange?: (theme: "dark" | "light" | (string & {})) => void;
+    onChange?: (theme: 'dark' | 'light' | (string & {})) => void;
   };
   filterMenuToggle?: CommonInteractiveProps & {
     onChange?: (visible: boolean) => void;
@@ -558,7 +577,7 @@ export interface DataGridProps<DataType extends GridDataType> {
   /** Allows the ability to display tooltip on cells. */
   tooltipOptions?: DataGridTooltipProps | undefined;
   /** Allows the usage of checkboxes and row selection. */
-  rowSelection?: RowSelectionProps | undefined;
+  rowSelection?: RowSelectionProps<DataType> | undefined;
   /** Allows the usage of pinning columns to either left or right. */
   pinnedColumns?: ColumnPinProps<DataType> | undefined;
   /** Adds border around data cells. */
@@ -580,7 +599,7 @@ export interface DataGridProps<DataType extends GridDataType> {
   /** Allows the ability to use custom data-grid styling. */
   styling?: Partial<DataGridStylingDefinition> | undefined;
   /** Allows the ability to set custom theme. */
-  theme?: "dark" | "light" | (string & {});
+  theme?: 'dark' | 'light' | (string & {});
   /** Reference to data-grid element to provide data and column access gridTools. */
   dataGridApiRef?: React.MutableRefObject<DataGridReference<DataType> | null>;
   /** Allows the data-grid rows to contain striped background color.  */

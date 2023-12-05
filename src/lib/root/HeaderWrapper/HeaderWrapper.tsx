@@ -1,20 +1,20 @@
-import React, { useImperativeHandle, useRef } from "react";
-import MenuButton from "../../components/ui/Buttons/MenuButton/MenuButton";
-import SortButton from "../../components/ui/Buttons/SortButton/SortButton";
-import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { HeaderWrapperProps } from "../../types/Elements";
-import { InputFiltering, SelectFiltering } from "../../types/DataGrid";
-import { ColumnDefinitionExtended, FilteringProps, GridDataType } from "../../types/Utils";
-import { cs } from "../../utils/ConcatStyles";
-import ColumnHeader from "../ColumnHeader/ColumnHeader";
-import Header from "../Header/Header";
-import HeaderOrdering from "../HeaderOrdering/HeaderOrdering";
-import HeaderWrapperFill from "../HeaderWrapperFill/HeaderWrapperFill";
-import LockedEndWrapper from "../LockedEndWrapper/LockedEndWrapper";
-import LockedStartWrapper from "../LockedStartWrapper/LockedStartWrapper";
-import CollapseAllButton from "../../components/ui/Buttons/CollapseAllButton/CollapseAllButton";
-import GroupedColumnsWrapper from "../GroupedColumnsWrapper/GroupedColumnsWrapper";
-import "./HeaderWrapper.scss";
+import React, { useImperativeHandle, useRef } from 'react';
+import MenuButton from '../../components/ui/Buttons/MenuButton/MenuButton';
+import SortButton from '../../components/ui/Buttons/SortButton/SortButton';
+import Checkbox from '../../components/ui/Checkbox/Checkbox';
+import { HeaderWrapperProps } from '../../types/Elements';
+import { InputFiltering, SelectFiltering } from '../../types/DataGrid';
+import { ColumnDefinitionExtended, FilteringProps, GridDataType } from '../../types/Utils';
+import { cs } from '../../utils/ConcatStyles';
+import ColumnHeader from '../ColumnHeader/ColumnHeader';
+import Header from '../Header/Header';
+import HeaderOrdering from '../HeaderOrdering/HeaderOrdering';
+import HeaderWrapperFill from '../HeaderWrapperFill/HeaderWrapperFill';
+import LockedEndWrapper from '../LockedEndWrapper/LockedEndWrapper';
+import LockedStartWrapper from '../LockedStartWrapper/LockedStartWrapper';
+import CollapseAllButton from '../../components/ui/Buttons/CollapseAllButton/CollapseAllButton';
+import GroupedColumnsWrapper from '../GroupedColumnsWrapper/GroupedColumnsWrapper';
+import './HeaderWrapper.scss';
 
 export type HeaderWrapperRef = {
   updateHeaderTransform: (scroll: number, verticalScrollbarWidth: number) => void;
@@ -51,10 +51,8 @@ function HeaderWrapper<DataType extends GridDataType>({
     () => ({
       updateHeaderTransform: (scrollValue, verticalScroll) => {
         headerRef.current!.style.transform = `translate3d(${-scrollValue}px, 0px, 0px)`;
-        if (lockedStartWrapperRef.current)
-          lockedStartWrapperRef.current.style.transform = `translate3d(${scrollValue}px, 0px, 0px)`;
-        if (lockedEndWrapperRef.current)
-          lockedEndWrapperRef.current.style.transform = `translate3d(${scrollValue - verticalScroll}px, 0px, 0px)`;
+        if (lockedStartWrapperRef.current) lockedStartWrapperRef.current.style.transform = `translate3d(${scrollValue}px, 0px, 0px)`;
+        if (lockedEndWrapperRef.current) lockedEndWrapperRef.current.style.transform = `translate3d(${scrollValue - verticalScroll}px, 0px, 0px)`;
       },
       updateLockedStartTransform: (val) => updateTransform(lockedStartWrapperRef, val),
       updateLockedEndTransform: (val) => updateTransform(lockedEndWrapperRef, val),
@@ -62,20 +60,22 @@ function HeaderWrapper<DataType extends GridDataType>({
     []
   );
 
-  const createCheckBox = () => {
-    function updateSelection(e: React.ChangeEvent<HTMLInputElement>) {
-      if (dataTools.dataWithoutPagination) {
-        const selectedRows = !e.target.checked ? [] : dataTools.dataWithoutPagination.map((x) => x[gridProps.uniqueRowKey]);
-        gridTools.updateSelectedRowsMultiple(selectedRows);
-        gridProps.rowSelection?.onChangePrimarySelection?.(selectedRows, e.target.checked);
-      }
+  function updateSelection(e: React.ChangeEvent<HTMLInputElement>) {
+    if (dataTools.dataWithoutPagination) {
+      const selectedRows = !e.target.checked ? [] : dataTools.dataWithoutPagination.map((x) => x[gridProps.uniqueRowKey]);
+      gridTools.updateSelectedRowsMultiple(selectedRows);
+      gridProps.rowSelection?.onChangePrimarySelection?.(selectedRows, e.target.checked);
     }
+  }
+
+  const createCheckBox = () => {
     const isChecked =
       dataTools.currentPagination.dataCount !== 0 &&
       (!!gridProps.serverSide?.enabled
         ? dataTools.data?.length === gridTools.selectedRows.size
         : gridProps.data?.length === gridTools.selectedRows.size);
 
+    if (gridProps.rowSelection?.renderHeaderSelection) return gridProps.rowSelection.renderHeaderSelection(isChecked, updateSelection);
     return <Checkbox onChange={updateSelection} checked={isChecked} />;
   };
 
@@ -110,11 +110,11 @@ function HeaderWrapper<DataType extends GridDataType>({
   function renderColumnHeader(col: ColumnDefinitionExtended<DataType>, index: number) {
     const { key, title, type, filteringProps, filter, sort, headerAlignment, headerRender, pinned } = col;
 
-    const isColumnDefinitionUtil = type !== "data";
+    const isColumnDefinitionUtil = type !== 'data';
     let children: React.ReactNode;
     let tableHeadCellProps;
     switch (type) {
-      case "data":
+      case 'data':
         const isFilterFnActive = gridTools.isFilterFnIsActive(key);
         children = title;
         tableHeadCellProps = {
@@ -144,10 +144,10 @@ function HeaderWrapper<DataType extends GridDataType>({
           toolBoxes: [createSortButton(sort, key), createHeaderActionMenuButton(key)],
         };
         break;
-      case "expand":
+      case 'expand':
         children = createExpandButton();
         break;
-      case "select":
+      case 'select':
         children = createCheckBox();
         break;
       default:
@@ -157,6 +157,7 @@ function HeaderWrapper<DataType extends GridDataType>({
     return React.createElement(
       ColumnHeader<DataType>,
       {
+        'data-key': col.key,
         columnProps: col,
         resizingProps: {
           isResizable: !isColumnDefinitionUtil && gridTools.isColumnIsResizable(key),
@@ -175,8 +176,8 @@ function HeaderWrapper<DataType extends GridDataType>({
           maxWidth: col.width,
         },
         className: cs(
-          isColumnDefinitionUtil && "tools",
-          gridTools.isHeaderIsActive(col.key) && "hover-active",
+          isColumnDefinitionUtil && 'tools',
+          gridTools.isHeaderIsActive(col.key) && 'hover-active',
           headerAlignment && `align-${headerAlignment}`
         ),
         containerHeight: containerHeight,
@@ -205,9 +206,7 @@ function HeaderWrapper<DataType extends GridDataType>({
             onColumnDragged={gridProps.draggableColumns?.onColumnDragged}
             draggingEnabled={gridProps.draggableColumns?.enabled === true}
           >
-            {columnsToRender.columns.map((col, index) =>
-              renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1)
-            )}
+            {columnsToRender.columns.map((col, index) => renderColumnHeader(col, index + (pinnedColumns?.leftColumns.length ?? 0) + 1))}
           </HeaderOrdering>
         </GroupedColumnsWrapper>
         {!!pinnedColumns?.rightWidth && (

@@ -1,17 +1,17 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import React from "react";
-import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
-import { ColumnHeaderProps } from "../../types/Elements";
-import { GridDataType } from "../../types/Utils";
-import { cs } from "../../utils/ConcatStyles";
-import ColumnHeaderContent from "../ColumnHeaderContent/ColumnHeaderContent";
-import ColumnHeaderFilter from "../ColumnHeaderFilter/ColumnHeaderFilter";
-import ColumnHeaderFilterWrapper from "../ColumnHeaderFilterWrapper/ColumnHeaderFilterWrapper";
-import ColumnHeaderMenuTool from "../ColumnHeaderMenuTool/ColumnHeaderMenuTool";
-import ColumnHeaderUnlocked from "../ColumnHeaderUnlocked/ColumnHeaderUnlocked";
-import ColumnResizer from "../ColumnResizer/ColumnResizer";
-import "./ColumnHeader.scss";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import React from 'react';
+import { useDataGridStaticContext } from '../../context/DataGridStaticContext';
+import { ColumnHeaderProps } from '../../types/Elements';
+import { GridDataType } from '../../types/Utils';
+import { cs } from '../../utils/ConcatStyles';
+import ColumnHeaderContent from '../ColumnHeaderContent/ColumnHeaderContent';
+import ColumnHeaderFilter from '../ColumnHeaderFilter/ColumnHeaderFilter';
+import ColumnHeaderFilterWrapper from '../ColumnHeaderFilterWrapper/ColumnHeaderFilterWrapper';
+import ColumnHeaderMenuTool from '../ColumnHeaderMenuTool/ColumnHeaderMenuTool';
+import ColumnHeaderUnlocked from '../ColumnHeaderUnlocked/ColumnHeaderUnlocked';
+import ColumnResizer from '../ColumnResizer/ColumnResizer';
+import './ColumnHeader.scss';
 
 function ColumnHeader<DataType extends GridDataType>({
   resizingProps,
@@ -26,7 +26,7 @@ function ColumnHeader<DataType extends GridDataType>({
   containerHeight,
   isFilterMenuVisible,
   ...props
-}: React.HtmlHTMLAttributes<HTMLDivElement> & ColumnHeaderProps<DataType>) {
+}: React.HtmlHTMLAttributes<HTMLDivElement> & { 'data-key': string } & ColumnHeaderProps<DataType>) {
   const { dimensions } = useDataGridStaticContext();
 
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, active } = useSortable({
@@ -53,13 +53,9 @@ function ColumnHeader<DataType extends GridDataType>({
   return (
     <div
       ref={referenceHandler}
-      className={cs(
-        className,
-        "column-header",
-        active?.id === columnProps.key && "dragging",
-        draggingProps?.isDraggable && "draggable"
-      )}
+      className={cs(className, 'column-header', active?.id === columnProps.key && 'dragging', draggingProps?.isDraggable && 'draggable')}
       style={{ transform: CSS.Transform.toString(transform), transition, ...style }}
+      role="columnheader"
       {...props}
     >
       <ColumnHeaderUnlocked

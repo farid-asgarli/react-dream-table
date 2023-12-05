@@ -1,19 +1,19 @@
-import React, { useCallback } from "react";
-import VirtualList from "../VirtualList/VirtualList";
-import ActionsMenuButton from "../../components/ui/Buttons/ActionsMenuButton/ActionsMenuButton";
-import ExpandButton from "../../components/ui/Buttons/ExpandButton/ExpandButton";
-import Checkbox from "../../components/ui/Checkbox/Checkbox";
-import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
-import { ColumnDefinitionExtended, GridDataType } from "../../types/Utils";
-import { cs } from "../../utils/ConcatStyles";
-import Cell from "../Cell/Cell";
-import CellContent from "../CellContent/CellContent";
-import LockedEndWrapper from "../LockedEndWrapper/LockedEndWrapper";
-import LockedStartWrapper from "../LockedStartWrapper/LockedStartWrapper";
-import Row from "../Row/Row";
-import RowContainer from "../RowContainer/RowContainer";
-import { RowProps, ViewContainerProps } from "../../types/Elements";
-import "./ViewContainer.scss";
+import React, { useCallback } from 'react';
+import VirtualList from '../VirtualList/VirtualList';
+import ActionsMenuButton from '../../components/ui/Buttons/ActionsMenuButton/ActionsMenuButton';
+import ExpandButton from '../../components/ui/Buttons/ExpandButton/ExpandButton';
+import Checkbox from '../../components/ui/Checkbox/Checkbox';
+import { useDataGridStaticContext } from '../../context/DataGridStaticContext';
+import { ColumnDefinitionExtended, GridDataType } from '../../types/Utils';
+import { cs } from '../../utils/ConcatStyles';
+import Cell from '../Cell/Cell';
+import CellContent from '../CellContent/CellContent';
+import LockedEndWrapper from '../LockedEndWrapper/LockedEndWrapper';
+import LockedStartWrapper from '../LockedStartWrapper/LockedStartWrapper';
+import Row from '../Row/Row';
+import RowContainer from '../RowContainer/RowContainer';
+import { RowProps, ViewContainerProps } from '../../types/Elements';
+import './ViewContainer.scss';
 
 const ViewContainer = <DataType extends GridDataType>({
   gridProps,
@@ -80,17 +80,20 @@ const ViewContainer = <DataType extends GridDataType>({
 
   const createActionsMenuButton = (data: DataType) => <ActionsMenuButton onClick={rowActionsMenu(data)} />;
 
-  const createCheckBox = (data: DataType) => (
-    <Checkbox
-      onChange={
-        gridProps.rowSelection?.enabled && gridProps.rowSelection.type !== "onRowClick"
-          ? (e) => gridTools.updateSelectedRows(data[gridProps.uniqueRowKey])
-          : undefined
-      }
-      readOnly={gridProps.rowSelection?.type === "onRowClick"}
-      checked={gridTools.selectedRows.has(data[gridProps.uniqueRowKey])}
-    />
-  );
+  const createCheckBox = (data: DataType) => {
+    const isChecked = gridTools.selectedRows.has(data[gridProps.uniqueRowKey]);
+    const isReadOnly = gridProps.rowSelection?.type === 'onRowClick';
+    const onChangeEvent: React.ChangeEventHandler<HTMLInputElement> | undefined =
+      gridProps.rowSelection?.enabled && gridProps.rowSelection.type !== 'onRowClick'
+        ? (e) => gridTools.updateSelectedRows(data[gridProps.uniqueRowKey])
+        : undefined;
+
+    return gridProps.rowSelection?.renderRowSelection ? (
+      gridProps.rowSelection.renderRowSelection(data, isChecked, onChangeEvent, isReadOnly)
+    ) : (
+      <Checkbox onChange={onChangeEvent} readOnly={isReadOnly} checked={isChecked} />
+    );
+  };
 
   function renderCell(
     { width, data, dataRender, type, colKey, dataCellAlignment }: ReturnType<typeof extractBasicCellProps>,
@@ -110,24 +113,24 @@ const ViewContainer = <DataType extends GridDataType>({
     let children: React.ReactNode;
 
     switch (type) {
-      case "data":
+      case 'data':
         const dataToRender = data[colKey];
         children = dataRender ? dataRender?.(data) : dataToRender;
         break;
-      case "actions":
+      case 'actions':
         children = createActionsMenuButton(data);
         break;
-      case "expand":
+      case 'expand':
         children = createExpandButton(rowIndex, data);
         break;
-      case "select":
+      case 'select':
         children = createCheckBox(data);
         break;
     }
 
     return (
       <Cell
-        className={cs(type !== "data" && "tools", dataCellAlignment && `align-${dataCellAlignment}`, index === 0 && "no-border")}
+        className={cs(type !== 'data' && 'tools', dataCellAlignment && `align-${dataCellAlignment}`, index === 0 && 'no-border')}
         {...commonDataGridRowCellProps}
       >
         <CellContent tooltipProps={gridProps.tooltipOptions}>{children}</CellContent>
@@ -167,20 +170,17 @@ const ViewContainer = <DataType extends GridDataType>({
     ]
   );
 
-  const renderCellCollection = (
-    col: ColumnDefinitionExtended<DataType>,
-    d: DataType,
-    cellIndex: number,
-    rowIndex: number = d.__virtual_row_index
-  ) => renderCell(extractBasicCellProps(col, d), cellIndex, rowIndex);
+  const renderCellCollection = (col: ColumnDefinitionExtended<DataType>, d: DataType, cellIndex: number, rowIndex: number = d.__virtual_row_index) =>
+    renderCell(extractBasicCellProps(col, d), cellIndex, rowIndex);
 
   const renderFullRow = useCallback(
     (rowData: DataType, style: React.CSSProperties = {}, rowIndex = rowData.__virtual_row_index) => (
       <Row
-        className={rowIndex % 2 === 0 ? undefined : "odd"}
+        className={rowIndex % 2 === 0 ? undefined : 'odd'}
         style={style}
         totalColumnsWidth={totalColumnsWidth}
         tabIndex={rowIndex + 1}
+        data-id={rowData[gridProps.uniqueRowKey]}
         {...mapCommonRowProps(rowData, rowIndex)}
       >
         {!!pinnedColumns?.leftWidth && (
@@ -197,14 +197,7 @@ const ViewContainer = <DataType extends GridDataType>({
       </Row>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      columnsToRender.columns,
-      mapCommonRowProps,
-      pinnedColumns?.leftWidth,
-      pinnedColumns?.rightWidth,
-      renderCellCollection,
-      totalColumnsWidth,
-    ]
+    [columnsToRender.columns, mapCommonRowProps, pinnedColumns?.leftWidth, pinnedColumns?.rightWidth, renderCellCollection, totalColumnsWidth]
   );
   return (
     <div ref={viewRef} className="view-container" {...props}>

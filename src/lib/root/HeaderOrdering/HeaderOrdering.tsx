@@ -1,11 +1,11 @@
-import { Active, closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { DragEndEvent } from "@dnd-kit/core/dist/types";
-import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { useMemo, useState } from "react";
-import { HeaderOrderingProps } from "../../types/Elements";
-import { GridDataType } from "../../types/Utils";
-import ColumnHeader from "../ColumnHeader/ColumnHeader";
-import { SortableOverlay } from "./SortableOverlay";
+import { Active, closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DragEndEvent } from '@dnd-kit/core/dist/types';
+import { arrayMove, horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
+import { useMemo, useState } from 'react';
+import { HeaderOrderingProps } from '../../types/Elements';
+import { GridDataType } from '../../types/Utils';
+import ColumnHeader from '../ColumnHeader/ColumnHeader';
+import { SortableOverlay } from './SortableOverlay';
 
 export default function HeaderOrdering<DataType extends GridDataType>({
   columnOrder,
@@ -42,16 +42,17 @@ export default function HeaderOrdering<DataType extends GridDataType>({
       onDragStart={({ active }) => setActive(active)}
       onDragCancel={() => setActive(null)}
     >
-      <SortableContext
-        disabled={!draggingEnabled}
-        items={columnOrder.map((x) => ({ id: x as string }))}
-        strategy={horizontalListSortingStrategy}
-      >
+      <SortableContext disabled={!draggingEnabled} items={columnOrder.map((x) => ({ id: x as string }))} strategy={horizontalListSortingStrategy}>
         {children}
       </SortableContext>
       <SortableOverlay>
         {activeItem && (
-          <ColumnHeader style={{ height: "100%", fontWeight: 700 }} className="column-header-dnd-overlay" columnProps={activeItem}>
+          <ColumnHeader
+            data-key={activeItem.key}
+            style={{ height: '100%', fontWeight: 700 }}
+            className="column-header-dnd-overlay"
+            columnProps={activeItem}
+          >
             {activeItem.headerRender ? activeItem.headerRender() : activeItem.title}
           </ColumnHeader>
         )}

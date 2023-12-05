@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react";
-import { useCallback } from "react";
-import { OptionsMenu } from "../../components/ui/SettingsMenu/SettingsMenu";
-import { renderFilterFnsActionsMenu } from "../../root/ActionMenus/HeaderActionMenu/FilterFnsMenu";
-import { renderHeaderActionsMenu } from "../../root/ActionMenus/HeaderActionMenu/HeaderActionMenu";
-import { DataGridIconsDefinition, DataGridLocalizationDefinition, DataGridProps } from "../../types/DataGrid";
-import { DataTools, GridDataType, GridTools } from "../../types/Utils";
-import useActionsMenuFactory from "./actions-menu-factory";
+import React from 'react';
+import { useCallback } from 'react';
+import { OptionsMenu } from '../../components/ui/SettingsMenu/SettingsMenu';
+import { renderFilterFnsActionsMenu } from '../../root/ActionMenus/HeaderActionMenu/FilterFnsMenu';
+import { renderHeaderActionsMenu } from '../../root/ActionMenus/HeaderActionMenu/HeaderActionMenu';
+import { DataGridIconsDefinition, DataGridLocalizationDefinition, DataGridProps } from '../../types/DataGrid';
+import { DataTools, GridDataType, GridTools } from '../../types/Utils';
+import useActionsMenuFactory from './actions-menu-factory';
 
 export function useMenuFactory<DataType extends GridDataType>({
   dataTools,
@@ -35,8 +35,7 @@ export function useMenuFactory<DataType extends GridDataType>({
   );
 
   const headerMenuContent = useCallback(
-    (key: string, hideMenu: () => void) =>
-      renderHeaderActionsMenu(key, hideMenu, gridTools, dataTools, gridProps, localization, icons),
+    (key: string, hideMenu: () => void) => renderHeaderActionsMenu(key, hideMenu, gridTools, dataTools, gridProps, localization, icons),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       gridTools.pinnedColumns,
@@ -57,14 +56,12 @@ export function useMenuFactory<DataType extends GridDataType>({
     }
   );
 
-  const [headerActionsMenu, __, displayHeaderActionsMenu] = useActionsMenuFactory((props, hide) =>
-    headerMenuContent(props.identifier!, hide)
-  );
+  const [headerActionsMenu, __, displayHeaderActionsMenu] = useActionsMenuFactory((props, hide) => headerMenuContent(props.identifier!, hide));
 
   const [filterFnsMenu, filterFnsMenuProps, displayFilterFnsMenu] = useActionsMenuFactory(
     (props, hide) => filterFnsMenuContent(props.identifier!, hide),
     {
-      className: "filter-fns-menu",
+      className: 'filter-fns-menu',
     }
   );
 
@@ -88,7 +85,7 @@ export function useMenuFactory<DataType extends GridDataType>({
         updatePosition: updatePosition,
       }),
     {
-      className: "data-grid-options-menu",
+      className: 'data-grid-options-menu',
     }
   );
 

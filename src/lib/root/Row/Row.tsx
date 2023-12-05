@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
-import { useDataGridStaticContext } from "../../context/DataGridStaticContext";
-import { RowProps } from "../../types/Elements";
-import { cs } from "../../utils/ConcatStyles";
-import ExpandRowWrap from "../ExpandRowWrap/ExpandRowWrap";
-import RowCellWrap from "../RowCellWrap/RowCellWrap";
-import "./Row.scss";
+import React, { useMemo } from 'react';
+import { useDataGridStaticContext } from '../../context/DataGridStaticContext';
+import { RowProps } from '../../types/Elements';
+import { cs } from '../../utils/ConcatStyles';
+import ExpandRowWrap from '../ExpandRowWrap/ExpandRowWrap';
+import RowCellWrap from '../RowCellWrap/RowCellWrap';
+import './Row.scss';
 
 export default function Row({
   className,
@@ -39,12 +39,16 @@ export default function Row({
 
   return (
     <div
-      className={cs("row", isRowSelected && "selected", isRowActive && "active", isRowClickable && "clickable", className)}
+      className={cs('row', isRowSelected && 'selected', isRowActive && 'active', isRowClickable && 'clickable', className)}
       style={{
         ...style,
         transitionDuration: `${animationProps.duration}ms`,
         ...commonStyle,
       }}
+      role="row"
+      data-clickable={isRowClickable}
+      data-active={isRowActive}
+      data-selected={isRowSelected}
       {...props}
     >
       <RowCellWrap style={rowCellWrapStyle} onContextMenu={onContextMenu}>
